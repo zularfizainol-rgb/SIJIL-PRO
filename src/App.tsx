@@ -1,0 +1,898 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { Student, CertificateConfig, AchievementLevel } from './types/certificate';
+import { DEFAULT_CONFIG, SAMPLE_STUDENTS, LEVEL_BADGES } from './data/defaultData';
+import { CertificateView } from './components/CertificateView';
+import { StudentSelector } from './components/StudentSelector';
+import { TemplateCustomizer } from './components/TemplateCustomizer';
+import { StudentManager } from './components/StudentManager';
+import { ImportModal } from './components/ImportModal';
+import { StudentEditModal } from './components/StudentEditModal';
+import { BatchPrintModal } from './components/BatchPrintModal';
+import { StudentQuickForm } from './components/StudentQuickForm';
+import { exportCertificateToPDF, exportCertificateToImage, triggerPrint } from './utils/pdfExport';
+import { 
+  Award, 
+  Printer, 
+  Download, 
+  FileSpreadsheet, 
+  Sliders, 
+  Users, 
+  FileText, 
+  ZoomIn, 
+  ZoomOut, 
+  RotateCcw, 
+  Check, 
+  Sparkles,
+  School,
+  Share2,
+  Loader2,
+  Layers
+} from 'lucide-react';
+
+export default function App() {
+  // State for students with localStorage persistence
+  const [students, setStudents] = useState<Student[]>(() => {
+    try {
+      const saved = localStorage.getItem('sijilpro_students');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {
+      console.error('Failed to load students from localStorage:', e);
+    }
+    return SAMPLE_STUDENTS;
+  });
+
+  // State for certificate configuration
+  const [config, setConfig] = useState<CertificateConfig>(() => {
+    try {
+      const saved = localStorage.getItem('sijilpro_config');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.error('Failed to load config from localStorage:', e);
+    }
+    return DEFAULT_CONFIG;
+  });
+
+  // Currently selected student
+  const [selectedStudentId, setSelectedStudentId] = useState<string>(() => {
+    return students[0]?.id || 'std-1';
+  });
+
+  // Active view tab: 'preview' | 'database' | 'settings'
+  const [activeTab, setActiveTab] = useState<'preview' | 'database' | 'settings'>('preview');
+
+  // Modals state
+  const [isImportOpen, setIsImportOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [studentToEdit, setStudentToEdit] = useState<Student | null>(null);
+  const [isBatchPrintOpen, setIsBatchPrintOpen] = useState(false);
+  const [batchSelectedIds, setBatchSelectedIds] = useState<string[]>([]);
+
+  // Preview zoom scale
+  const [zoomScale, setZoomScale] = useState<number>(0.72);
+  const [isExportingPDF, setIsExportingPDF] = useState(false);
+  const [saveToast, setSaveToast] = useState<string | null>(null);
+
+  // Sync to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('sijilpro_students', JSON.stringify(students));
+    } catch (e) {
+      console.error(e);
+    }
+  }, [students]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('sijilpro_config', JSON.stringify(config));
+    } catch (e) {
+      console.error(e);
+    }
+  }, [config]);
+
+  // Current active student
+  const currentStudent = students.find((s) => s.id === selectedStudentId) || students[0] || SAMPLE_STUDENTS[0];
+
+  // Helper for flash toast
+  const showToast = (msg: string) => {
+    setSaveToast(msg);
+    setTimeout(() => setSaveToast(null), 3000);
+  };
+
+  // Student actions
+  const handleSelectStudent = (student: Student) => {
+    setSelectedStudentId(student.id);
+  };
+
+  const handleUpdateStudent = (updated: Student) => {
+    setStudents((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
+    showToast('Maklumat murid dikemaskini');
+  };
+
+  const handleSaveStudentFromModal = (student: Student) => {
+    setStudents((prev) => {
+      const exists = prev.some((s) => s.id === student.id);
+      if (exists) {
+        return prev.map((s) => (s.id === student.id ? student : s));
+      } else {
+        return [student, ...prev];
+      }
+    });
+    setSelectedStudentId(student.id);
+    showToast(studentToEdit ? 'Murid berjaya dikemaskini' : 'Murid berjaya ditambah');
+  };
+
+  const handleDeleteStudent = (id: string) => {
+    setStudents((prev) => {
+      const updated = prev.filter((s) => s.id !== id);
+      if (selectedStudentId === id && updated.length > 0) {
+        setSelectedStudentId(updated[0].id);
+      }
+      return updated;
+    });
+    showToast('Rekod murid dipadam');
+  };
+
+  const handleImportStudents = (newStudents: Student[], mode: 'replace' | 'append') => {
+    if (mode === 'replace') {
+      setStudents(newStudents);
+      if (newStudents.length > 0) {
+        setSelectedStudentId(newStudents[0].id);
+      }
+    } else {
+      setStudents((prev) => [...prev, ...newStudents]);
+    }
+    showToast(`${newStudents.length} rekod murid berjaya diimport!`);
+  };
+
+  // Export handlers
+  const handleExportPDF = async () => {
+    setIsExportingPDF(true);
+    const filename = `Sijil_${currentStudent.name.replace(/\s+/g, '_')}_${currentStudent.ic || 'Murid'}.pdf`;
+    const success = await exportCertificateToPDF('active-certificate', filename, config.orientation);
+    setIsExportingPDF(false);
+    if (success) {
+      showToast('Fail PDF berjaya dimuat turun!');
+    }
+  };
+
+  const handleExportPNG = async () => {
+    const filename = `Sijil_${currentStudent.name.replace(/\s+/g, '_')}.png`;
+    const success = await exportCertificateToImage('active-certificate', filename, config.orientation);
+    if (success) {
+      showToast('Imej sijil berjaya dimuat turun!');
+    }
+  };
+
+  const handleOpenBatch = (ids?: string[]) => {
+    if (ids && ids.length > 0) {
+      setBatchSelectedIds(ids);
+    } else {
+      setBatchSelectedIds(students.map((s) => s.id));
+    }
+    setIsBatchPrintOpen(true);
+  };
+
+  // Compute student counts per level
+  const levelCounts = {
+    zon: students.filter((s) => s.level === 'zon' || !s.level).length,
+    daerah: students.filter((s) => s.level === 'daerah').length,
+    negeri: students.filter((s) => s.level === 'negeri').length,
+    kebangsaan: students.filter((s) => s.level === 'kebangsaan').length,
+    antarabangsa: students.filter((s) => s.level === 'antarabangsa').length,
+    sekolah: students.filter((s) => s.level === 'sekolah').length,
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-100 flex flex-col font-sans">
+      
+      {/* 1. TOP NAVIGATION / HEADER (No-print) */}
+      <header className="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-40 shadow-md no-print">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            
+            {/* Logo & School Branding */}
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 text-slate-950 flex items-center justify-center font-black shadow-md">
+                <Award className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-base font-extrabold tracking-tight text-white flex items-center gap-1.5">
+                    SijilPro <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-600 text-blue-100">RASMI</span>
+                  </h1>
+                </div>
+                <p className="text-[11px] text-slate-400 font-medium truncate max-w-xs sm:max-w-sm">
+                  {config.schoolName} ({config.schoolCode})
+                </p>
+              </div>
+            </div>
+
+            {/* Quick Level Statistics Pill (Desktop) */}
+            <div className="hidden lg:flex items-center gap-2 text-[11px]">
+              <span className="px-2.5 py-1 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-lg font-bold">
+                Zon: {levelCounts.zon}
+              </span>
+              <span className="px-2.5 py-1 bg-orange-500/20 text-orange-300 border border-orange-500/30 rounded-lg font-bold">
+                Daerah: {levelCounts.daerah}
+              </span>
+              <span className="px-2.5 py-1 bg-blue-500/20 text-blue-300 border border-blue-500/30 rounded-lg font-bold">
+                Negeri: {levelCounts.negeri}
+              </span>
+              <span className="px-2.5 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-lg font-bold">
+                Kebangsaan: {levelCounts.kebangsaan}
+              </span>
+              <span className="px-2.5 py-1 bg-purple-500/20 text-purple-300 border border-purple-500/30 rounded-lg font-bold">
+                Antarabangsa: {levelCounts.antarabangsa}
+              </span>
+            </div>
+
+            {/* Top Right Action Buttons */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsImportOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition shadow-xs"
+                title="Import data nama & IC dari Google Sheets, CSV atau Excel"
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Import Google Sheet / Excel</span>
+                <span className="sm:hidden">Import</span>
+              </button>
+
+              <button
+                onClick={() => handleOpenBatch()}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-amber-300 rounded-xl text-xs font-bold transition shadow-xs"
+                title="Cetak sijil untuk semua murid sekaligus"
+              >
+                <Printer className="w-3.5 h-3.5 text-amber-400" />
+                <span className="hidden md:inline">Cetak Berkelompok ({students.length})</span>
+                <span className="md:hidden">Cetak Semua</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        {/* View Tabs */}
+        <div className="border-t border-slate-800/80 bg-slate-900/95 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto flex gap-4 overflow-x-auto">
+            <button
+              onClick={() => setActiveTab('preview')}
+              className={`flex items-center gap-2 py-2.5 px-3 text-xs font-bold border-b-2 transition shrink-0 ${
+                activeTab === 'preview'
+                  ? 'border-amber-400 text-amber-300'
+                  : 'border-transparent text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <FileText className="w-4 h-4" />
+              Pratonton & Cetak Sijil
+            </button>
+
+            <button
+              onClick={() => setActiveTab('database')}
+              className={`flex items-center gap-2 py-2.5 px-3 text-xs font-bold border-b-2 transition shrink-0 ${
+                activeTab === 'database'
+                  ? 'border-amber-400 text-amber-300'
+                  : 'border-transparent text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Users className="w-4 h-4" />
+              Senarai Murid & Data ({students.length})
+            </button>
+
+            <button
+              onClick={() => setActiveTab('settings')}
+              className={`flex items-center gap-2 py-2.5 px-3 text-xs font-bold border-b-2 transition shrink-0 ${
+                activeTab === 'settings'
+                  ? 'border-amber-400 text-amber-300'
+                  : 'border-transparent text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Sliders className="w-4 h-4" />
+              Format Sijil & Guru Besar
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Floating Save Toast */}
+      {saveToast && (
+        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-4 py-2.5 rounded-xl shadow-xl flex items-center gap-2 text-xs font-bold animate-bounce no-print border border-slate-700">
+          <Check className="w-4 h-4 text-emerald-400" />
+          <span>{saveToast}</span>
+        </div>
+      )}
+
+      {/* 2. MAIN APPLICATION CONTENT (No-print) */}
+      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6 no-print">
+        
+        {/* TAB 1: PREVIEW & QUICK ACTIONS */}
+        {activeTab === 'preview' && (
+          <div className="space-y-6">
+            
+            {/* Student Search & Quick Selection Bar */}
+            <StudentSelector
+              students={students}
+              selectedStudent={currentStudent}
+              onSelectStudent={handleSelectStudent}
+              onAddNewStudent={() => {
+                setStudentToEdit(null);
+                setIsEditModalOpen(true);
+              }}
+              onEditStudent={(s) => {
+                setStudentToEdit(s);
+                setIsEditModalOpen(true);
+              }}
+            />
+
+            {/* Main Working Area: Split 2 columns on desktop */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              
+              {/* Left Column (5 cols): Quick Form & Customizer Toggle */}
+              <div className="lg:col-span-5 space-y-5">
+                <StudentQuickForm
+                  student={currentStudent}
+                  onChange={handleUpdateStudent}
+                />
+
+                {/* Quick Shortcuts to Settings */}
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200/90 p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5 uppercase">
+                      <School className="w-4 h-4 text-blue-600" />
+                      Maklumat Guru Besar Semasa:
+                    </span>
+                    <button
+                      onClick={() => setActiveTab('settings')}
+                      className="text-xs font-bold text-blue-600 hover:text-blue-800"
+                    >
+                      Ubah Suai
+                    </button>
+                  </div>
+                  <div className="text-xs bg-slate-50 p-2.5 rounded-xl border border-slate-200 space-y-1">
+                    <p className="font-black text-slate-900 uppercase">
+                      {config.headmasterName}
+                    </p>
+                    <p className="text-slate-600 font-medium">
+                      {config.headmasterTitle} • {config.headmasterSchool}
+                    </p>
+                    <p className="text-[11px] text-emerald-600 font-semibold flex items-center gap-1 pt-1">
+                      <Check className="w-3.5 h-3.5" />
+                      {config.headmasterSignatureUrl ? 'Imej Tandatangan Tersuai Aktif' : 'Tandatangan E-Digital Kaligrafi Digunakan'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Batch Printing Shortcut */}
+                <div className="bg-gradient-to-br from-blue-900 to-indigo-900 text-white rounded-2xl p-4 shadow-sm space-y-2">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-blue-200">
+                      Percetakan Pukal Sekolah
+                    </h3>
+                    <Layers className="w-4 h-4 text-blue-300" />
+                  </div>
+                  <p className="text-xs text-blue-100">
+                    Cetak terus sijil untuk semua {students.length} murid dengan sekali klik sahaja.
+                  </p>
+                  <button
+                    onClick={() => handleOpenBatch()}
+                    className="w-full mt-2 py-2 px-3 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold rounded-xl text-xs transition flex items-center justify-center gap-2 shadow-sm"
+                  >
+                    <Printer className="w-3.5 h-3.5" />
+                    Buka Kotak Percetakan Berkelompok
+                  </button>
+                </div>
+              </div>
+
+              {/* Right Column (7 cols): Certificate Live Preview Stage & Controls */}
+              <div className="lg:col-span-7 space-y-3">
+                
+                {/* Mode Alert Banner if Blank Template is active */}
+                {config.templateId === 'blank-preprinted' && (
+                  <div className="bg-amber-50 border border-amber-300/90 p-3 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-amber-950 shadow-xs">
+                    <div className="flex items-center gap-2.5">
+                      <span className="p-1.5 bg-amber-200 text-amber-950 rounded-lg font-bold text-xs shrink-0">📄</span>
+                      <div>
+                        <span className="font-black">Mod Templat Kosong Aktif:</span> Hanya maklumat murid & pengesahan dicetak pada kertas sijil rasmi sekolah anda.
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0 bg-white/80 px-2.5 py-1 rounded-xl border border-amber-200">
+                      <span className="text-[11px] font-semibold text-slate-700">Jidar:</span>
+                      <input
+                        type="range"
+                        min="-40"
+                        max="160"
+                        step="5"
+                        value={config.topMarginOffset}
+                        onChange={(e) => setConfig({ ...config, topMarginOffset: parseInt(e.target.value) })}
+                        className="w-20 accent-amber-600 h-1.5 bg-slate-200 rounded-lg cursor-pointer"
+                        title="Nudge teks atas/bawah"
+                      />
+                      <span className="font-mono font-bold text-[11px] min-w-[34px] text-right">{config.topMarginOffset}px</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Preview Toolbar */}
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200/90 p-3 flex flex-wrap items-center justify-between gap-2">
+                  
+                  {/* Left: Template Mode Quick Toggle */}
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        const isBlank = config.templateId === 'blank-preprinted';
+                        if (isBlank) {
+                          setConfig({
+                            ...config,
+                            templateId: 'skau-sports',
+                            showSchoolHeader: true,
+                            showSchoolLogos: true,
+                            showBackgroundArt: true,
+                            showOfficialSeal: true,
+                          });
+                          showToast('Templat Sijil Penuh SK AU Keramat diaktifkan');
+                        } else {
+                          setConfig({
+                            ...config,
+                            templateId: 'blank-preprinted',
+                            showSchoolHeader: false,
+                            showSchoolLogos: false,
+                            showBackgroundArt: false,
+                            showOfficialSeal: false,
+                            showCertTitle: true,
+                          });
+                          showToast('Mod Templat Kosong (Cetak atas kertas sijil fizikal) diaktifkan');
+                        }
+                      }}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                        config.templateId === 'blank-preprinted'
+                          ? 'bg-amber-400 hover:bg-amber-300 text-slate-950 ring-2 ring-amber-500/30'
+                          : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                      }`}
+                      title="Tukar antara mod templat lengkap atau templat kosong untuk kertas siap cetak"
+                    >
+                      <FileText className="w-3.5 h-3.5" />
+                      <span>{config.templateId === 'blank-preprinted' ? 'Templat Kosong (Aktif)' : 'Guna Templat Kosong'}</span>
+                    </button>
+
+                    {/* 3 Pilihan Format Utama Sijil */}
+                    <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-xl border border-slate-200">
+                      <button
+                        onClick={() => {
+                          setConfig({
+                            ...config,
+                            paragraphLayout: 'format-rasmi',
+                            certTitle: 'SIJIL PENGHARGAAN',
+                            introText: 'Dengan ini diperakukan bahawa didokumenkan',
+                            showDividers: false,
+                            showStudentIC: true,
+                            showStudentClass: true,
+                            showActivity: true,
+                            headmasterName: config.headmasterName || 'NAMA PENGETUA / GURU BESAR',
+                            headmasterTitle: 'Pengetua / Guru Besar',
+                            secondSignerName: config.secondSignerName || 'NAMA PK HEM / GURU',
+                            secondSignerTitle: 'Penolong Kanan HEM',
+                            signatureMode: config.signatureMode || 'both',
+                            hasSecondSigner: config.signatureMode ? config.signatureMode !== 'headmaster-only' : true,
+                          });
+                          showToast('Format 1: Susunan Rasmi (Umum/Sahsiah) diaktifkan');
+                        }}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 ${
+                          config.paragraphLayout === 'format-rasmi'
+                            ? 'bg-blue-600 text-white shadow-xs'
+                            : 'text-slate-700 hover:bg-slate-200'
+                        }`}
+                        title="1. Format Susunan Rasmi (Umum / Sahsiah / Kehadiran)"
+                      >
+                        <span>📜</span>
+                        <span className="hidden sm:inline">Format 1: Rasmi</span>
+                        <span className="sm:hidden">Fmt 1</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setConfig({
+                            ...config,
+                            paragraphLayout: 'format-akademik',
+                            certTitle: 'SIJIL PENGHARGAAN',
+                            introText: 'Diberikan dengan tulus ikhlas kepada',
+                            closingText: 'Semoga kejayaan ini menjadi pendorong untuk terus cemerlang pada masa hadapan.',
+                            showDividers: false,
+                            showStudentIC: true,
+                            showActivity: true,
+                            headmasterName: config.headmasterName || 'NAMA PENGETUA / GURU BESAR',
+                            headmasterTitle: 'Pengetua / Guru Besar',
+                            secondSignerName: config.secondSignerName || 'NAMA PK PENTADBIR',
+                            secondSignerTitle: 'Penolong Kanan Pentadbiran',
+                            signatureMode: config.signatureMode || 'both',
+                            hasSecondSigner: config.signatureMode ? config.signatureMode !== 'headmaster-only' : true,
+                          });
+                          showToast('Format 2: Susunan Akademik (Pencapaian Cemerlang) diaktifkan');
+                        }}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 ${
+                          config.paragraphLayout === 'format-akademik'
+                            ? 'bg-emerald-600 text-white shadow-xs'
+                            : 'text-slate-700 hover:bg-slate-200'
+                        }`}
+                        title="2. Format Susunan Akademik (Pencapaian Cemerlang)"
+                      >
+                        <span>🎓</span>
+                        <span className="hidden sm:inline">Format 2: Akademik</span>
+                        <span className="sm:hidden">Fmt 2</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setConfig({
+                            ...config,
+                            paragraphLayout: 'format-ringkas-moden',
+                            certTitle: 'SIJIL PENGHARGAAN',
+                            introText: 'Dianugerahkan kepada',
+                            showDividers: false,
+                            showActivity: true,
+                            showUnitClub: true,
+                            showPositionRole: true,
+                            headmasterName: config.headmasterName || 'NAMA PENGETUA / GURU BESAR',
+                            secondSignerName: config.secondSignerName || 'NAMA PENOLONG KANAN',
+                            secondSignerTitle: 'Penolong Kanan Kokurikulum',
+                            signatureMode: config.signatureMode || 'headmaster-only',
+                            hasSecondSigner: config.signatureMode === 'both',
+                          });
+                          showToast('Format 3: Susunan Ringkas & Moden diaktifkan');
+                        }}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 ${
+                          config.paragraphLayout === 'format-ringkas-moden'
+                            ? 'bg-purple-600 text-white shadow-xs'
+                            : 'text-slate-700 hover:bg-slate-200'
+                        }`}
+                        title="3. Format Susunan Ringkas & Moden (Kokurikulum / Penglibatan)"
+                      >
+                        <span>🌟</span>
+                        <span className="hidden sm:inline">Format 3: Ringkas</span>
+                        <span className="sm:hidden">Fmt 3</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Zoom controls */}
+                  <div className="flex items-center gap-1.5 text-xs text-slate-600">
+                    <button
+                      onClick={() => setZoomScale((prev) => Math.max(0.4, prev - 0.1))}
+                      className="p-1.5 hover:bg-slate-100 rounded-lg border border-slate-200"
+                      title="Kecilkan Pratonton"
+                    >
+                      <ZoomOut className="w-3.5 h-3.5" />
+                    </button>
+                    <span className="font-mono text-xs font-semibold px-1">
+                      {Math.round(zoomScale * 100)}%
+                    </span>
+                    <button
+                      onClick={() => setZoomScale((prev) => Math.min(1.0, prev + 0.1))}
+                      className="p-1.5 hover:bg-slate-100 rounded-lg border border-slate-200"
+                      title="Besarkan Pratonton"
+                    >
+                      <ZoomIn className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => setZoomScale(0.72)}
+                      className="text-[11px] font-semibold text-slate-500 hover:text-slate-800 ml-1 underline"
+                    >
+                      Muat Skrin
+                    </button>
+                  </div>
+
+                  {/* Print & Export Buttons */}
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={triggerPrint}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition shadow-xs"
+                      title="Cetak terus melalui browser (Resolusi Penuh A4)"
+                    >
+                      <Printer className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Cetak Sijil (A4)</span>
+                    </button>
+
+                    <button
+                      onClick={handleExportPDF}
+                      disabled={isExportingPDF}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow-xs disabled:opacity-50"
+                      title="Muat turun sebagai fail PDF"
+                    >
+                      {isExportingPDF ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Download className="w-3.5 h-3.5" />
+                      )}
+                      <span>Eksport PDF</span>
+                    </button>
+
+                    <button
+                      onClick={handleExportPNG}
+                      className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition"
+                      title="Muat turun sebagai Imej PNG"
+                    >
+                      <Share2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                </div>
+
+                {/* Bar Kawalan Cepat: Susunan Logo (2 Logo Di Tengah) & Pilihan Tandatangan (GB / PK / Dua-dua) */}
+                <div className="bg-slate-50/95 px-4 py-2.5 rounded-xl border border-slate-200/90 flex flex-wrap items-center justify-between gap-3 text-xs mb-3 shadow-2xs">
+                  {/* Susunan Logo Atas Sijil */}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-bold text-slate-700 uppercase text-[10px] tracking-wide flex items-center gap-1">
+                      <span>🖼️</span> Susunan Logo:
+                    </span>
+                    <div className="flex items-center bg-white p-0.5 rounded-lg border border-slate-200 shadow-2xs">
+                      <button
+                        onClick={() => {
+                          setConfig({ ...config, logoLayout: 'two-center', showSchoolLogos: true });
+                          showToast('Susunan: 2 Logo Di Tengah (Bersebelahan) diaktifkan');
+                        }}
+                        className={`px-2.5 py-1 rounded text-xs font-bold transition flex items-center gap-1 ${
+                          config.logoLayout === 'two-center'
+                            ? 'bg-blue-600 text-white shadow-2xs'
+                            : 'text-slate-700 hover:bg-slate-100'
+                        }`}
+                        title="Dua logo bersebelahan di tengah (Logo Sekolah & KPM)"
+                      >
+                        <span>⭐</span> 2 Logo Di Tengah
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setConfig({ ...config, logoLayout: 'single-center', showSchoolLogos: true });
+                          showToast('Susunan: 1 Logo Di Tengah diaktifkan');
+                        }}
+                        className={`px-2.5 py-1 rounded text-xs font-bold transition flex items-center gap-1 ${
+                          (config.logoLayout || 'single-center') === 'single-center'
+                            ? 'bg-blue-600 text-white shadow-2xs'
+                            : 'text-slate-700 hover:bg-slate-100'
+                        }`}
+                        title="Satu logo penganjur / sekolah di tengah"
+                      >
+                        1 Logo Tengah
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setConfig({ ...config, logoLayout: 'two-logos', showSchoolLogos: true });
+                          showToast('Susunan: 2 Logo Kiri & Kanan diaktifkan');
+                        }}
+                        className={`px-2.5 py-1 rounded text-xs font-bold transition flex items-center gap-1 ${
+                          config.logoLayout === 'two-logos'
+                            ? 'bg-blue-600 text-white shadow-2xs'
+                            : 'text-slate-700 hover:bg-slate-100'
+                        }`}
+                        title="Dua logo di penjuru kiri dan kanan"
+                      >
+                        Kiri & Kanan
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Pilihan Penandatangan: Guru Besar Sahaja, PK Sahaja, atau Dua-dua */}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-bold text-slate-700 uppercase text-[10px] tracking-wide flex items-center gap-1">
+                      <span>✍️</span> Tandatangan:
+                    </span>
+                    <div className="flex items-center bg-white p-0.5 rounded-lg border border-slate-200 shadow-2xs">
+                      <button
+                        onClick={() => {
+                          setConfig({ ...config, signatureMode: 'both', hasSecondSigner: true });
+                          showToast('Tandatangan: Kedua-duanya (Guru Besar & PK) diaktifkan');
+                        }}
+                        className={`px-2.5 py-1 rounded text-xs font-bold transition flex items-center gap-1 ${
+                          (config.signatureMode === 'both' || (!config.signatureMode && config.hasSecondSigner))
+                            ? 'bg-blue-600 text-white shadow-2xs'
+                            : 'text-slate-700 hover:bg-slate-100'
+                        }`}
+                        title="Tandatangan Guru Besar di kiri & PK di kanan"
+                      >
+                        <span>👥</span> Dua-dua (GB & PK)
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setConfig({ ...config, signatureMode: 'headmaster-only', hasSecondSigner: false });
+                          showToast('Tandatangan: Guru Besar Sahaja diaktifkan');
+                        }}
+                        className={`px-2.5 py-1 rounded text-xs font-bold transition flex items-center gap-1 ${
+                          config.signatureMode === 'headmaster-only'
+                            ? 'bg-blue-600 text-white shadow-2xs'
+                            : 'text-slate-700 hover:bg-slate-100'
+                        }`}
+                        title="Tandatangan Guru Besar / Pengetua sahaja di tengah"
+                      >
+                        <span>👨‍🏫</span> Guru Besar Sahaja
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setConfig({ ...config, signatureMode: 'pk-only', hasSecondSigner: true });
+                          showToast('Tandatangan: PK Sahaja diaktifkan');
+                        }}
+                        className={`px-2.5 py-1 rounded text-xs font-bold transition flex items-center gap-1 ${
+                          config.signatureMode === 'pk-only'
+                            ? 'bg-blue-600 text-white shadow-2xs'
+                            : 'text-slate-700 hover:bg-slate-100'
+                        }`}
+                        title="Tandatangan Penolong Kanan (PK) sahaja di tengah"
+                      >
+                        <span>👩‍🏫</span> PK Sahaja
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Certificate Canvas Area */}
+                <div className="bg-slate-200/80 rounded-2xl p-4 sm:p-6 overflow-x-auto flex justify-center items-start border border-slate-300/80 min-h-[600px] shadow-inner">
+                  <div 
+                    style={{ 
+                      transform: `scale(${zoomScale})`,
+                      transformOrigin: 'top center',
+                      marginBottom: `${(1 - zoomScale) * -280}px`,
+                    }}
+                    className="transition-transform duration-200"
+                  >
+                    <CertificateView
+                      student={currentStudent}
+                      config={config}
+                      containerId="active-certificate"
+                    />
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+        )}
+
+        {/* TAB 2: STUDENT DATABASE TABLE */}
+        {activeTab === 'database' && (
+          <StudentManager
+            students={students}
+            selectedStudent={currentStudent}
+            onSelectStudent={(s) => {
+              setSelectedStudentId(s.id);
+              setActiveTab('preview');
+            }}
+            onEditStudent={(s) => {
+              setStudentToEdit(s);
+              setIsEditModalOpen(true);
+            }}
+            onAddNewStudent={() => {
+              setStudentToEdit(null);
+              setIsEditModalOpen(true);
+            }}
+            onDeleteStudent={handleDeleteStudent}
+            onOpenBatchPrint={(ids) => handleOpenBatch(ids)}
+            onOpenImport={() => setIsImportOpen(true)}
+          />
+        )}
+
+        {/* TAB 3: TEMPLATE & HEADMASTER CUSTOMIZER */}
+        {activeTab === 'settings' && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            <div className="lg:col-span-6 space-y-6">
+              <TemplateCustomizer
+                config={config}
+                onChangeConfig={(newCfg) => {
+                  setConfig(newCfg);
+                  showToast('Format sijil dikemaskini');
+                }}
+              />
+            </div>
+
+            {/* Live preview beside settings */}
+            <div className="lg:col-span-6 sticky top-24">
+              <div className="bg-white rounded-2xl shadow-sm border border-slate-200/90 p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    Pratonton Langsung Templat Sijil
+                  </h3>
+                  <button
+                    onClick={() => setActiveTab('preview')}
+                    className="text-xs font-bold text-blue-600 hover:text-blue-800"
+                  >
+                    Buka Pratonton Penuh →
+                  </button>
+                </div>
+
+                <div className="bg-slate-200/80 rounded-xl p-3 overflow-hidden flex justify-center border border-slate-300">
+                  <div 
+                    style={{ 
+                      transform: 'scale(0.52)',
+                      transformOrigin: 'top center',
+                      marginBottom: '-520px',
+                    }}
+                  >
+                    <CertificateView
+                      student={currentStudent}
+                      config={config}
+                      containerId="preview-mini-cert"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+      </main>
+
+      {/* 3. ISOLATED PRINT-ONLY CONTAINER (Only rendered during window.print()) */}
+      <div className="print-container print-only hidden">
+        {batchSelectedIds.length > 0 && isBatchPrintOpen ? (
+          students
+            .filter((s) => batchSelectedIds.includes(s.id))
+            .map((s) => (
+              <div key={s.id} className="print-certificate-page">
+                <CertificateView
+                  student={s}
+                  config={config}
+                  containerId={`print-cert-${s.id}`}
+                  isPrintMode={true}
+                />
+              </div>
+            ))
+        ) : (
+          <div className="print-certificate-page">
+            <CertificateView
+              student={currentStudent}
+              config={config}
+              containerId="print-single-cert"
+              isPrintMode={true}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* 4. MODALS */}
+      {/* Import Modal */}
+      <ImportModal
+        isOpen={isImportOpen}
+        onClose={() => setIsImportOpen(false)}
+        onImport={handleImportStudents}
+      />
+
+      {/* Student Edit / Add Modal */}
+      <StudentEditModal
+        isOpen={isEditModalOpen}
+        student={studentToEdit}
+        onClose={() => setIsEditModalOpen(false)}
+        onSave={handleSaveStudentFromModal}
+      />
+
+      {/* Batch Print Modal */}
+      <BatchPrintModal
+        isOpen={isBatchPrintOpen}
+        onClose={() => setIsBatchPrintOpen(false)}
+        students={
+          batchSelectedIds.length > 0
+            ? students.filter((s) => batchSelectedIds.includes(s.id))
+            : students
+        }
+        config={config}
+      />
+
+      {/* Footer (No-print) */}
+      <footer className="bg-white border-t border-slate-200 py-6 mt-auto text-center text-xs text-slate-500 no-print">
+        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+          <p>
+            SijilPro © 2026 • Sistem Percetakan Sijil Penghargaan Sekolah (Peringkat Daerah, Negeri, Kebangsaan & Antarabangsa)
+          </p>
+          <p className="font-semibold text-slate-600">
+            {config.schoolName}
+          </p>
+        </div>
+      </footer>
+
+    </div>
+  );
+}

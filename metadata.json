@@ -1,0 +1,6 @@
+{
+  "name": "SijilPro - Sistem Penjanaan Sijil Penghargaan Sekolah",
+  "description": "Aplikasi penjanaan dan percetakan sijil penghargaan rasmi sekolah untuk murid cemerlang peringkat daerah, negeri, kebangsaan dan antarabangsa dengan integrasi Google Sheet, CSV, Excel, templat tersuai dan eksport PDF.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

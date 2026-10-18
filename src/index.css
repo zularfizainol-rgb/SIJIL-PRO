@@ -1,0 +1,75 @@
+@import "tailwindcss";
+
+@layer utilities {
+  .font-cinzel {
+    font-family: 'Cinzel', Georgia, serif;
+  }
+  .font-cinzel-decor {
+    font-family: 'Cinzel Decorative', Georgia, serif;
+  }
+  .font-garamond {
+    font-family: 'Cormorant Garamond', Garamond, Georgia, serif;
+  }
+  .font-marcellus {
+    font-family: 'Marcellus', 'Cinzel', Georgia, serif;
+  }
+  .font-lora {
+    font-family: 'Lora', Georgia, serif;
+  }
+  .font-merriweather {
+    font-family: 'Merriweather', Georgia, serif;
+  }
+  .font-playfair {
+    font-family: 'Playfair Display', Georgia, serif;
+  }
+  .font-montserrat {
+    font-family: 'Montserrat', sans-serif;
+  }
+  .font-calligraphy-royal {
+    font-family: 'Pinyon Script', cursive;
+  }
+  .font-calligraphy-brush {
+    font-family: 'Alex Brush', cursive;
+  }
+  .font-signature {
+    font-family: 'Great Vibes', 'Alex Brush', cursive;
+  }
+  .font-cormorant {
+    font-family: 'Cormorant Garamond', Garamond, Georgia, serif;
+  }
+  .font-greatvibes {
+    font-family: 'Great Vibes', cursive;
+    letter-spacing: 0.04em;
+  }
+}
+
+@media print {
+  html, body {
+    background: #ffffff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-container {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .print-certificate-page {
+    page-break-after: always;
+    break-after: page;
+    box-shadow: none !important;
+    margin: 0 !important;
+  }
+  @page {
+    size: A4 portrait;
+    margin: 0mm;
+  }
+}
