@@ -674,7 +674,7 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Pilihan Penandatangan: Guru Besar Sahaja, PK Sahaja, atau Dua-dua */}
+                  {/* Pilihan Penandatangan: Guru Besar Sahaja, PK Sahaja, Dua-dua, atau Susunan Di Tepi */}
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-bold text-slate-700 uppercase text-[10px] tracking-wide flex items-center gap-1">
                       <span>✍️</span> Tandatangan:
@@ -692,7 +692,22 @@ export default function App() {
                         }`}
                         title="Tandatangan Guru Besar di kiri & PK di kanan"
                       >
-                        <span>👥</span> Dua-dua (GB & PK)
+                        <span>👥</span> Dua-dua
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setConfig({ ...config, signatureMode: 'side-both', signaturePlacement: 'side', hasSecondSigner: true });
+                          showToast('Susunan Tandatangan: Di Tepi Kertas diaktifkan');
+                        }}
+                        className={`px-2.5 py-1 rounded text-xs font-bold transition flex items-center gap-1 ${
+                          config.signatureMode === 'side-both'
+                            ? 'bg-blue-600 text-white shadow-2xs'
+                            : 'text-slate-700 hover:bg-slate-100'
+                        }`}
+                        title="Tandatangan Guru Besar & PK disusun di sebelah tepi kertas"
+                      >
+                        <span>📐</span> Di Tepi ⭐
                       </button>
 
                       <button
@@ -705,9 +720,9 @@ export default function App() {
                             ? 'bg-blue-600 text-white shadow-2xs'
                             : 'text-slate-700 hover:bg-slate-100'
                         }`}
-                        title="Tandatangan Guru Besar / Pengetua sahaja di tengah"
+                        title="Tandatangan Guru Besar / Pengetua sahaja"
                       >
-                        <span>👨‍🏫</span> Guru Besar Sahaja
+                        <span>👨‍🏫</span> GB Sahaja
                       </button>
 
                       <button
@@ -720,9 +735,41 @@ export default function App() {
                             ? 'bg-blue-600 text-white shadow-2xs'
                             : 'text-slate-700 hover:bg-slate-100'
                         }`}
-                        title="Tandatangan Penolong Kanan (PK) sahaja di tengah"
+                        title="Tandatangan Penolong Kanan (PK) sahaja"
                       >
                         <span>👩‍🏫</span> PK Sahaja
+                      </button>
+                    </div>
+
+                    {/* Quick placement toggle: Tengah vs Tepi */}
+                    <div className="flex items-center gap-1 bg-white p-0.5 rounded-lg border border-slate-200 shadow-2xs">
+                      <button
+                        onClick={() => {
+                          setConfig({ ...config, signaturePlacement: 'center' });
+                          showToast('Kedudukan Tandatangan: Di Tengah');
+                        }}
+                        className={`px-2 py-0.5 rounded text-[11px] font-bold transition ${
+                          (config.signaturePlacement || 'center') === 'center' && config.signatureMode !== 'side-both'
+                            ? 'bg-slate-900 text-white shadow-2xs'
+                            : 'text-slate-600 hover:bg-slate-100'
+                        }`}
+                        title="Susun tandatangan di tengah seimbang"
+                      >
+                        Tengah
+                      </button>
+                      <button
+                        onClick={() => {
+                          setConfig({ ...config, signaturePlacement: 'side' });
+                          showToast('Kedudukan Tandatangan: Di Tepi');
+                        }}
+                        className={`px-2 py-0.5 rounded text-[11px] font-bold transition ${
+                          config.signaturePlacement === 'side' || config.signatureMode === 'side-both'
+                            ? 'bg-slate-900 text-white shadow-2xs'
+                            : 'text-slate-600 hover:bg-slate-100'
+                        }`}
+                        title="Susun tandatangan rapat ke tepi kertas"
+                      >
+                        Tepi
                       </button>
                     </div>
                   </div>

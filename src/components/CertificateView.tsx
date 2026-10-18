@@ -102,11 +102,17 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
 
   const studentNameFontClass = getStudentNameFontClass();
 
+  // Buang tanda [ dan ] daripada sebarang teks supaya output sijil bersih dan profesional
+  const cleanText = (val?: string | null): string => {
+    if (!val) return '';
+    return val.replace(/[\[\]]/g, '').trim();
+  };
+
   // Format student name to look breathtaking in calligraphy/script or clean uppercase
   const formatStudentName = (name: string, isScriptMode: boolean) => {
-    if (!name) return 'NAMA PENUH MURID';
+    const rawName = cleanText(name) || 'NAMA PENUH MURID';
     if (isScriptMode) {
-      return name
+      return rawName
         .toLowerCase()
         .split(' ')
         .map(w => {
@@ -115,7 +121,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
         })
         .join(' ');
     }
-    return name.toUpperCase();
+    return rawName.toUpperCase();
   };
 
   // Format level label nicely in Bahasa Melayu without repetition
@@ -464,17 +470,17 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                 {config.introText || 'Dengan ini diperakukan bahawa didokumenkan'}
               </p>
 
-              {/* [NAMA PENUH MURID DENGAN HURUF BESAR] */}
+              {/* NAMA PENUH MURID */}
               <div className="my-1.5 py-0.5 inline-block min-w-[380px] max-w-full">
                 <h2 className={`tracking-wider text-slate-950 ${studentNameFontClass}`}>
                   {formatStudentName(student.name, isScript)}
                 </h2>
               </div>
 
-              {/* [NO. MYKID / NO. KP] */}
+              {/* NO. MYKID / NO. KP (Tanpa kurungan siku) */}
               {config.showStudentIC && (
                 <div className="text-xs md:text-sm font-mono font-semibold text-slate-800 tracking-wider">
-                  <span>[{student.ic || 'NO. MYKID / NO. KP'}]</span>
+                  <span>{cleanText(student.ic) || 'NO. MYKID / NO. KP'}</span>
                 </div>
               )}
 
@@ -483,9 +489,9 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                 dari
               </p>
 
-              {/* [NAMA KELAS / TINGKATAN] */}
+              {/* NAMA KELAS / TINGKATAN */}
               <p className="text-sm md:text-base font-bold text-slate-900 uppercase font-sans tracking-wide">
-                [{student.class || 'NAMA KELAS / TINGKATAN'}]
+                {cleanText(student.class) || 'NAMA KELAS / TINGKATAN'}
               </p>
 
               {/* telah menunjukkan prestasi yang cemerlang dan terpuji dalam program / aspek: */}
@@ -493,23 +499,23 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                 telah menunjukkan prestasi yang cemerlang dan terpuji dalam program / aspek:
               </p>
 
-              {/* [NAMA PROGRAM ATAU JENIS PENGHARGAAN] */}
+              {/* NAMA PROGRAM ATAU JENIS PENGHARGAAN (Tanpa tanda kurungan siku) */}
               <div className="pt-0.5">
                 <p className="text-base md:text-lg font-black text-slate-950 uppercase tracking-wide font-sans max-w-xl mx-auto leading-snug">
-                  [{student.activity || student.achievement || 'KEHADIRAN PENUH / SAHSIAH TERPUJI / KHIDMAT BAKTI PENGAWAS'}]
+                  {cleanText(student.activity || student.achievement) || 'KEHADIRAN PENUH / SAHSIAH TERPUJI / KHIDMAT BAKTI PENGAWAS'}
                 </p>
                 {student.extraInfo && (
                   <p className="text-xs text-slate-500 italic mt-0.5">
-                    ({student.extraInfo})
+                    ({cleanText(student.extraInfo)})
                   </p>
                 )}
               </div>
 
-              {/* bagi tahun [TAHUN] */}
+              {/* bagi tahun TAHUN */}
               <div className="pt-1.5">
                 <p className="text-xs font-serif italic text-slate-600">bagi tahun</p>
                 <p className="text-sm md:text-base font-bold text-slate-950 font-sans tracking-wide mt-0.5">
-                  [{config.eventYear || student.date?.match(/\d{4}/)?.[0] || '2026'}]
+                  {cleanText(config.eventYear || student.date?.match(/\d{4}/)?.[0]) || '2026'}
                 </p>
               </div>
 
@@ -527,17 +533,17 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                 {config.introText || 'Diberikan dengan tulus ikhlas kepada'}
               </p>
 
-              {/* [NAMA PENUH MURID DENGAN HURUF BESAR] */}
+              {/* NAMA PENUH MURID */}
               <div className="my-1.5 py-0.5 inline-block min-w-[380px] max-w-full">
                 <h2 className={`tracking-wider text-slate-950 ${studentNameFontClass}`}>
                   {formatStudentName(student.name, isScript)}
                 </h2>
               </div>
 
-              {/* [NO. MYKID / NO. KP] */}
+              {/* NO. MYKID / NO. KP (Tanpa kurungan siku) */}
               {config.showStudentIC && (
                 <div className="text-xs md:text-sm font-mono font-semibold text-slate-800 tracking-wider">
-                  <span>[{student.ic || 'NO. MYKID / NO. KP'}]</span>
+                  <span>{cleanText(student.ic) || 'NO. MYKID / NO. KP'}</span>
                 </div>
               )}
 
@@ -546,23 +552,23 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                 Atas pencapaian cemerlang dan usaha gigih dalam
               </p>
 
-              {/* [NAMA MATA PELAJARAN / PENCAPAIAN] */}
+              {/* NAMA MATA PELAJARAN / PENCAPAIAN (Tanpa tanda kurungan siku) */}
               <div className="pt-0.5">
                 <p className="text-base md:text-lg font-black text-slate-950 uppercase tracking-wide font-sans max-w-xl mx-auto leading-snug">
-                  [{student.activity || student.achievement || 'PEPERIKSAAN AKHIR TAHUN / SUBJEK MATEMATIK'}]
+                  {cleanText(student.activity || student.achievement) || 'PEPERIKSAAN AKHIR TAHUN / SUBJEK MATEMATIK'}
                 </p>
                 {student.extraInfo && (
                   <p className="text-xs text-slate-500 italic mt-0.5">
-                    ({student.extraInfo})
+                    ({cleanText(student.extraInfo)})
                   </p>
                 )}
               </div>
 
-              {/* Bagi Sesi [TAHUN/SESI] */}
+              {/* Bagi Sesi TAHUN/SESI */}
               <div className="pt-1.5">
                 <p className="text-xs font-serif italic text-slate-600">Bagi Sesi</p>
                 <p className="text-sm md:text-base font-bold text-slate-950 font-sans tracking-wide mt-0.5">
-                  [{config.academicSession || config.eventYear || '2025/2026'}]
+                  {cleanText(config.academicSession || config.eventYear) || '2025/2026'}
                 </p>
               </div>
 
@@ -585,7 +591,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                 {config.introText || 'Dianugerahkan kepada'}
               </p>
 
-              {/* [NAMA PENUH MURID DENGAN HURUF BESAR] */}
+              {/* NAMA PENUH MURID */}
               <div className="my-1.5 py-0.5 inline-block min-w-[380px] max-w-full">
                 <h2 className={`tracking-wider text-slate-950 ${studentNameFontClass}`}>
                   {formatStudentName(student.name, isScript)}
@@ -597,10 +603,10 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                 Atas sumbangan, komitmen dan penglibatan aktif sebagai
               </p>
 
-              {/* [JAWATAN / PERANAN MURID] */}
+              {/* JAWATAN / PERANAN MURID (Tanpa tanda kurungan siku) */}
               <div className="pt-0.5">
                 <p className="text-base md:text-lg font-black text-slate-950 uppercase tracking-wide font-sans max-w-xl mx-auto leading-snug">
-                  [{student.positionRole || student.achievement || 'AHLI JAWATANKUASA / PESERTA / WAKIL SEKOLAH'}]
+                  {cleanText(student.positionRole || student.achievement) || 'AHLI JAWATANKUASA / PESERTA / WAKIL SEKOLAH'}
                 </p>
               </div>
 
@@ -609,23 +615,23 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                 Dalam
               </p>
 
-              {/* [NAMA KELAB / PERSATUAN / AKTIVITI] */}
+              {/* NAMA KELAB / PERSATUAN / AKTIVITI (Tanpa tanda kurungan siku) */}
               <div className="pt-0.5">
                 <p className="text-base md:text-lg font-black text-slate-950 uppercase tracking-wide font-sans max-w-xl mx-auto leading-snug">
-                  [{student.unitClub || student.activity || 'NAMA KELAB / PERSATUAN / AKTIVITI'}]
+                  {cleanText(student.unitClub || student.activity) || 'NAMA KELAB / PERSATUAN / AKTIVITI'}
                 </p>
                 {student.extraInfo && (
                   <p className="text-xs text-slate-500 italic mt-0.5">
-                    ({student.extraInfo})
+                    ({cleanText(student.extraInfo)})
                   </p>
                 )}
               </div>
 
-              {/* Bagi [TAHUN] */}
+              {/* Bagi TAHUN */}
               <div className="pt-1.5">
                 <p className="text-xs font-serif italic text-slate-600">Bagi</p>
                 <p className="text-sm md:text-base font-bold text-slate-950 font-sans tracking-wide mt-0.5">
-                  [{config.eventYear || student.date?.match(/\d{4}/)?.[0] || '2026'}]
+                  {cleanText(config.eventYear || student.date?.match(/\d{4}/)?.[0]) || '2026'}
                 </p>
               </div>
 
@@ -927,55 +933,58 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
           <div className="w-full mt-auto pt-4 shrink-0">
             {/* TIADA GARISAN PEMISAH DI ATAS TANDATANGAN (buangkan garis pemisah atas dan bawah) */}
 
-            {/* LOGIK PILIHAN PENANDATANGAN: Guru Besar Sahaja, PK Sahaja, atau Kedua-duanya */}
+            {/* LOGIK PILIHAN PENANDATANGAN: Guru Besar Sahaja, PK Sahaja, Kedua-duanya, atau Susunan Di Tepi */}
             {(() => {
               const isPKOnly = config.signatureMode === 'pk-only';
               const isHeadmasterOnly = config.signatureMode === 'headmaster-only' || 
                 (!config.signatureMode && config.paragraphLayout === 'format-ringkas-moden' && !config.hasSecondSigner);
-              const isBoth = !isPKOnly && !isHeadmasterOnly;
+              const isSideBoth = config.signatureMode === 'side-both';
+              const isSidePlacement = config.signaturePlacement === 'side' || isSideBoth;
 
               if (isHeadmasterOnly) {
-                /* 1. PILIHAN: TANDATANGAN GURU BESAR / PENGETUA SAHAJA (DI TENGAH) */
+                /* 1. PILIHAN: TANDATANGAN GURU BESAR / PENGETUA SAHAJA (DI TENGAH ATAU DI TEPI KANAN) */
                 return (
-                  <div className="flex flex-col items-center justify-center text-center pb-2">
-                    <div className="h-12 flex items-end justify-center mb-1">
-                      {config.headmasterSignatureUrl ? (
-                        <img 
-                          src={config.headmasterSignatureUrl} 
-                          alt="Tandatangan" 
-                          className="max-h-12 object-contain"
-                        />
-                      ) : config.useDigitalSignature ? (
-                        <div className="font-signature text-3xl text-slate-800 -rotate-3 select-none">
-                          Zulkarnain
-                        </div>
-                      ) : (
-                        <div className="h-8" />
-                      )}
-                    </div>
+                  <div className={`w-full pb-2 flex ${isSidePlacement ? 'justify-end pr-4 sm:pr-8' : 'justify-center items-center text-center'}`}>
+                    <div className="text-center w-72 flex flex-col items-center">
+                      <div className="h-12 flex items-end justify-center mb-1">
+                        {config.headmasterSignatureUrl ? (
+                          <img 
+                            src={config.headmasterSignatureUrl} 
+                            alt="Tandatangan" 
+                            className="max-h-12 object-contain"
+                          />
+                        ) : config.useDigitalSignature ? (
+                          <div className="font-signature text-3xl text-slate-800 -rotate-3 select-none">
+                            Zulkarnain
+                          </div>
+                        ) : (
+                          <div className="h-8" />
+                        )}
+                      </div>
 
-                    {/* Dotted line .................................. */}
-                    <div className="w-72 text-slate-800 font-mono tracking-widest text-xs select-none overflow-hidden text-center pb-0.5">
-                      ...................................................
+                      {/* Dotted line .................................. */}
+                      <div className="w-72 text-slate-800 font-mono tracking-widest text-xs select-none overflow-hidden text-center pb-0.5">
+                        ...................................................
+                      </div>
+                      <p className="text-xs font-bold text-slate-950 uppercase tracking-wide mt-1">
+                        {config.paragraphLayout === 'format-ringkas-moden' ? '(TANDATANGAN GURU BESAR)' : '(TANDATANGAN PENGETUA/GURU BESAR)'}
+                      </p>
+                      <p className="text-xs font-semibold text-slate-800 uppercase mt-0.5">
+                        {cleanText(config.headmasterName) || 'NAMA PENGETUA / GURU BESAR'}
+                      </p>
+                      <p className="text-[11px] font-medium text-slate-600 mt-0.5">
+                        {config.headmasterTitle || 'Pengetua / Guru Besar'}
+                      </p>
+                      <p className="text-[11px] font-bold text-slate-700 mt-1">
+                        Tarikh: {cleanText(student.date) || config.issueDate || '18 OKTOBER 2026'}
+                      </p>
                     </div>
-                    <p className="text-xs font-bold text-slate-950 uppercase tracking-wide mt-1">
-                      {config.paragraphLayout === 'format-ringkas-moden' ? '(TANDATANGAN GURU BESAR)' : '(TANDATANGAN PENGETUA/GURU BESAR)'}
-                    </p>
-                    <p className="text-xs font-semibold text-slate-800 uppercase mt-0.5">
-                      [{config.headmasterName || 'NAMA PENGETUA / GURU BESAR'}]
-                    </p>
-                    <p className="text-[11px] font-medium text-slate-600 mt-0.5">
-                      {config.headmasterTitle || 'Pengetua / Guru Besar'}
-                    </p>
-                    <p className="text-[11px] font-bold text-slate-700 mt-1">
-                      Tarikh: {student.date || config.issueDate || '18 OKTOBER 2026'}
-                    </p>
                   </div>
                 );
               }
 
               if (isPKOnly) {
-                /* 2. PILIHAN: TANDATANGAN PENOLONG KANAN (PK) SAHAJA (DI TENGAH) */
+                /* 2. PILIHAN: TANDATANGAN PENOLONG KANAN (PK) SAHAJA (DI TENGAH ATAU DI TEPI KANAN) */
                 const pkHeaderLabel = 
                   config.paragraphLayout === 'format-rasmi' ? '(TANDATANGAN PK HEM/GURU)' :
                   config.paragraphLayout === 'format-akademik' ? '(TANDATANGAN PK PENTADBIR)' :
@@ -987,46 +996,54 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                   'Penolong Kanan HEM';
 
                 return (
-                  <div className="flex flex-col items-center justify-center text-center pb-2">
-                    <div className="h-12 flex items-end justify-center mb-1">
-                      {config.secondSignerSignatureUrl ? (
-                        <img 
-                          src={config.secondSignerSignatureUrl} 
-                          alt="Tandatangan" 
-                          className="max-h-12 object-contain"
-                        />
-                      ) : config.useDigitalSignature ? (
-                        <div className="font-signature text-2xl text-slate-700 -rotate-2 select-none">
-                          Faizal
-                        </div>
-                      ) : (
-                        <div className="h-8" />
-                      )}
-                    </div>
+                  <div className={`w-full pb-2 flex ${isSidePlacement ? 'justify-end pr-4 sm:pr-8' : 'justify-center items-center text-center'}`}>
+                    <div className="text-center w-72 flex flex-col items-center">
+                      <div className="h-12 flex items-end justify-center mb-1">
+                        {config.secondSignerSignatureUrl ? (
+                          <img 
+                            src={config.secondSignerSignatureUrl} 
+                            alt="Tandatangan" 
+                            className="max-h-12 object-contain"
+                          />
+                        ) : config.useDigitalSignature ? (
+                          <div className="font-signature text-2xl text-slate-700 -rotate-2 select-none">
+                            Faizal
+                          </div>
+                        ) : (
+                          <div className="h-8" />
+                        )}
+                      </div>
 
-                    {/* Dotted line .................................. */}
-                    <div className="w-72 text-slate-800 font-mono tracking-widest text-xs select-none overflow-hidden text-center pb-0.5">
-                      ...................................................
+                      {/* Dotted line .................................. */}
+                      <div className="w-72 text-slate-800 font-mono tracking-widest text-xs select-none overflow-hidden text-center pb-0.5">
+                        ...................................................
+                      </div>
+                      <p className="text-xs font-bold text-slate-950 uppercase tracking-wide mt-1">
+                        {pkHeaderLabel}
+                      </p>
+                      <p className="text-xs font-semibold text-slate-800 uppercase mt-0.5">
+                        {cleanText(config.secondSignerName) || 'NAMA PENOLONG KANAN'}
+                      </p>
+                      <p className="text-[11px] font-medium text-slate-600 mt-0.5">
+                        {config.secondSignerTitle || pkDefaultTitle}
+                      </p>
+                      <p className="text-[11px] font-bold text-slate-700 mt-1">
+                        Tarikh: {cleanText(student.date) || config.issueDate || '18 OKTOBER 2026'}
+                      </p>
                     </div>
-                    <p className="text-xs font-bold text-slate-950 uppercase tracking-wide mt-1">
-                      {pkHeaderLabel}
-                    </p>
-                    <p className="text-xs font-semibold text-slate-800 uppercase mt-0.5">
-                      [{config.secondSignerName || 'NAMA PENOLONG KANAN'}]
-                    </p>
-                    <p className="text-[11px] font-medium text-slate-600 mt-0.5">
-                      {config.secondSignerTitle || pkDefaultTitle}
-                    </p>
-                    <p className="text-[11px] font-bold text-slate-700 mt-1">
-                      Tarikh: {student.date || config.issueDate || '18 OKTOBER 2026'}
-                    </p>
                   </div>
                 );
               }
 
-              /* 3. PILIHAN: KEDUA-DUA TANDATANGAN (GURU BESAR DI KIRI & PK DI KANAN) */
+              /* 3. PILIHAN: KEDUA-DUA TANDATANGAN GURU BESAR & PK (SUSUNAN SEBELAH-MENYEBELAH ATAU DI TEPI KANAN) */
               return (
-                <div className="flex items-start justify-between px-8 pb-2">
+                <div className={`flex items-start pb-2 w-full ${
+                  isSideBoth 
+                    ? 'justify-end gap-6 sm:gap-10 px-4 sm:px-8' 
+                    : isSidePlacement 
+                    ? 'justify-between px-3 sm:px-6' 
+                    : 'justify-between px-8'
+                }`}>
                   {/* Tandatangan Kiri: PENGETUA / GURU BESAR (atau PENGARAH dalam KBS) */}
                   <div className="text-center w-64 flex flex-col items-center">
                     <div className="h-12 flex items-end justify-center mb-1">
@@ -1056,7 +1073,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                           (TANDATANGAN PENGETUA/GURU BESAR)
                         </p>
                         <p className="text-xs font-semibold text-slate-800 uppercase mt-0.5">
-                          [{config.headmasterName || 'NAMA PENGETUA / GURU BESAR'}]
+                          {cleanText(config.headmasterName) || 'NAMA PENGETUA / GURU BESAR'}
                         </p>
                         <p className="text-[11px] font-medium text-slate-600 mt-0.5">
                           {config.headmasterTitle || 'Pengetua / Guru Besar'}
@@ -1068,7 +1085,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                           (TANDATANGAN PENGETUA/GURU BESAR)
                         </p>
                         <p className="text-xs font-semibold text-slate-800 uppercase mt-0.5">
-                          [{config.headmasterName || 'NAMA PENGETUA / GURU BESAR'}]
+                          {cleanText(config.headmasterName) || 'NAMA PENGETUA / GURU BESAR'}
                         </p>
                         <p className="text-[11px] font-medium text-slate-600 mt-0.5">
                           {config.headmasterTitle || 'Pengetua / Guru Besar'}
@@ -1080,7 +1097,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                           (TANDATANGAN GURU BESAR)
                         </p>
                         <p className="text-xs font-semibold text-slate-800 uppercase mt-0.5">
-                          [{config.headmasterName || 'NAMA PENGETUA / GURU BESAR'}]
+                          {cleanText(config.headmasterName) || 'NAMA PENGETUA / GURU BESAR'}
                         </p>
                         <p className="text-[11px] font-medium text-slate-600 mt-0.5">
                           {config.headmasterTitle || 'Pengetua / Guru Besar'}
@@ -1089,7 +1106,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                     ) : (
                       <>
                         <p className="text-xs font-bold text-slate-950 uppercase tracking-wide mt-1">
-                          ({config.secondSignerName || 'NAMA PENGARAH/PENGERUSI'})
+                          ({cleanText(config.secondSignerName) || 'NAMA PENGARAH/PENGERUSI'})
                         </p>
                         <p className="text-[11px] font-semibold text-slate-700 mt-0.5">
                           {config.secondSignerTitle || 'Jawatan'}
@@ -1098,8 +1115,8 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                     )}
                   </div>
 
-                  {/* Cop Mohor di Tengah jika diaktifkan */}
-                  {config.showOfficialSeal && (
+                  {/* Cop Mohor di Tengah jika diaktifkan (Hanya jika susunan seimbang) */}
+                  {config.showOfficialSeal && !isSideBoth && (
                     <div className="flex flex-col items-center justify-center -mt-2">
                       <SchoolOfficialSeal
                         schoolCode={config.schoolCode}
@@ -1139,10 +1156,10 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                           (TANDATANGAN PK HEM/GURU)
                         </p>
                         <p className="text-xs font-semibold text-slate-800 uppercase mt-0.5">
-                          [{config.secondSignerName || 'NAMA PK HEM / GURU'}]
+                          {cleanText(config.secondSignerName) || 'NAMA PK HEM / GURU'}
                         </p>
                         <p className="text-[11px] font-bold text-slate-700 mt-0.5">
-                          Tarikh: {student.date || config.issueDate || '18 OKTOBER 2026'}
+                          Tarikh: {cleanText(student.date) || config.issueDate || '18 OKTOBER 2026'}
                         </p>
                       </>
                     ) : config.paragraphLayout === 'format-akademik' ? (
@@ -1151,10 +1168,10 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                           (TANDATANGAN PK PENTADBIR)
                         </p>
                         <p className="text-xs font-semibold text-slate-800 uppercase mt-0.5">
-                          [{config.secondSignerName || 'NAMA PK PENTADBIR'}]
+                          {cleanText(config.secondSignerName) || 'NAMA PK PENTADBIR'}
                         </p>
                         <p className="text-[11px] font-bold text-slate-700 mt-0.5">
-                          Tarikh: {student.date || config.issueDate || '18 OKTOBER 2026'}
+                          Tarikh: {cleanText(student.date) || config.issueDate || '18 OKTOBER 2026'}
                         </p>
                       </>
                     ) : config.paragraphLayout === 'format-ringkas-moden' ? (
@@ -1163,16 +1180,16 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                           (TANDATANGAN PENOLONG KANAN / GURU)
                         </p>
                         <p className="text-xs font-semibold text-slate-800 uppercase mt-0.5">
-                          [{config.secondSignerName || 'NAMA PENOLONG KANAN'}]
+                          {cleanText(config.secondSignerName) || 'NAMA PENOLONG KANAN'}
                         </p>
                         <p className="text-[11px] font-bold text-slate-700 mt-0.5">
-                          Tarikh: {student.date || config.issueDate || '18 OKTOBER 2026'}
+                          Tarikh: {cleanText(student.date) || config.issueDate || '18 OKTOBER 2026'}
                         </p>
                       </>
                     ) : (
                       <>
                         <p className="text-xs font-bold text-slate-950 uppercase tracking-wide mt-1">
-                          ({config.headmasterName || 'NAMA PENAUNG/TIMBALAN'})
+                          ({cleanText(config.headmasterName) || 'NAMA PENAUNG/TIMBALAN'})
                         </p>
                         <p className="text-[11px] font-semibold text-slate-700 mt-0.5">
                           {config.headmasterTitle || 'Jawatan'}

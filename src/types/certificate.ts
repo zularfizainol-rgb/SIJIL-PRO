@@ -93,7 +93,8 @@ export interface CertificateConfig {
   showDateVenueBlock?: boolean; // Papar blok Pada & Tempat
   signatureLineStyle?: 'dotted' | 'solid' | 'none'; // Garis tandatangan titik-titik (............................)
   showDividers?: boolean; // Garisan pemisah atas dan bawah (pilihan, false untuk elak garisan mengikut arahan)
-  signatureMode?: 'both' | 'headmaster-only' | 'pk-only'; // Pilihan tandatangan: guru besar sahaja, pk sahaja, atau dua2
+  signatureMode?: 'both' | 'headmaster-only' | 'pk-only' | 'side-both'; // Pilihan tandatangan: guru besar sahaja, pk sahaja, dua2, atau susunan di tepi
+  signaturePlacement?: 'center' | 'side'; // Kedudukan tandatangan: Di Tengah atau Di Tepi (Kanan / Tepi Kertas)
   
   // Field Content Toggles (Guru bebas pilih apa yang ingin dipaparkan)
   showStudentIC: boolean; // Papar/Sorok No. IC

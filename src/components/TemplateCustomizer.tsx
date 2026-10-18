@@ -659,14 +659,19 @@ export const TemplateCustomizer: React.FC<TemplateCustomizerProps> = ({
           </p>
         </div>
 
-        {/* 3 Pilihan Utama Penandatangan Mengikut Permintaan Pengguna */}
+        {/* 4 Pilihan Utama Penandatangan Mengikut Permintaan Pengguna (Termasuk Susunan Di Tepi) */}
         <div className="p-3.5 bg-blue-50/70 border border-blue-200 rounded-xl space-y-2.5">
-          <span className="text-xs font-bold text-blue-950 uppercase block">
-            Pilihan Penandatangan (3 Format Utama):
-          </span>
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-blue-950 uppercase block">
+              Pilihan Penandatangan (3 Format Utama):
+            </span>
+            <span className="text-[10px] text-blue-700 font-semibold bg-blue-100/80 px-2 py-0.5 rounded-full">
+              Fungsi Di Tepi Ditambah
+            </span>
+          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            {/* 1. Dua-dua */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+            {/* 1. Dua-dua (Kiri & Kanan) */}
             <button
               type="button"
               onClick={() => update({ signatureMode: 'both', hasSecondSigner: true })}
@@ -683,16 +688,42 @@ export const TemplateCustomizer: React.FC<TemplateCustomizerProps> = ({
                 )}
               </div>
               <div className="mt-2">
-                <h4 className="text-xs font-bold leading-tight">Kedua-duanya (Dua-dua)</h4>
+                <h4 className="text-xs font-bold leading-tight">Kedua-duanya</h4>
                 <p className={`text-[10px] mt-0.5 leading-snug ${
                   (config.signatureMode === 'both' || (!config.signatureMode && config.hasSecondSigner)) ? 'text-blue-100' : 'text-slate-500'
                 }`}>
-                  Guru Besar (Kiri) & PK (Kanan)
+                  Guru Besar & PK
                 </p>
               </div>
             </button>
 
-            {/* 2. Guru Besar Sahaja */}
+            {/* 2. Susunan Di Tepi (Fungsi Baharu yang Diminta Pengguna) */}
+            <button
+              type="button"
+              onClick={() => update({ signatureMode: 'side-both', signaturePlacement: 'side', hasSecondSigner: true })}
+              className={`p-3 rounded-xl border text-left transition flex flex-col justify-between ${
+                config.signatureMode === 'side-both'
+                  ? 'bg-blue-600 text-white border-blue-600 shadow-xs ring-2 ring-blue-500/30'
+                  : 'bg-white text-slate-800 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+              }`}
+            >
+              <div className="flex items-center justify-between w-full">
+                <span className="text-base">📐</span>
+                {config.signatureMode === 'side-both' && (
+                  <Check className="w-3.5 h-3.5 text-white" />
+                )}
+              </div>
+              <div className="mt-2">
+                <h4 className="text-xs font-bold leading-tight">Susunan Di Tepi ⭐</h4>
+                <p className={`text-[10px] mt-0.5 leading-snug ${
+                  config.signatureMode === 'side-both' ? 'text-blue-100' : 'text-slate-500'
+                }`}>
+                  GB & PK Di Tepi Kertas
+                </p>
+              </div>
+            </button>
+
+            {/* 3. Guru Besar Sahaja */}
             <button
               type="button"
               onClick={() => update({ signatureMode: 'headmaster-only', hasSecondSigner: false })}
@@ -713,12 +744,12 @@ export const TemplateCustomizer: React.FC<TemplateCustomizerProps> = ({
                 <p className={`text-[10px] mt-0.5 leading-snug ${
                   config.signatureMode === 'headmaster-only' ? 'text-blue-100' : 'text-slate-500'
                 }`}>
-                  1 Tandatangan di tengah & tarikh
+                  1 Penandatangan & tarikh
                 </p>
               </div>
             </button>
 
-            {/* 3. PK Sahaja */}
+            {/* 4. PK Sahaja */}
             <button
               type="button"
               onClick={() => update({ signatureMode: 'pk-only', hasSecondSigner: true })}
@@ -739,11 +770,52 @@ export const TemplateCustomizer: React.FC<TemplateCustomizerProps> = ({
                 <p className={`text-[10px] mt-0.5 leading-snug ${
                   config.signatureMode === 'pk-only' ? 'text-blue-100' : 'text-slate-500'
                 }`}>
-                  1 Tandatangan PK di tengah & tarikh
+                  1 Tandatangan PK & tarikh
                 </p>
               </div>
             </button>
           </div>
+
+          {/* Suis Penjajaran Kedudukan: Di Tengah vs Di Tepi */}
+          <div className="flex items-center justify-between pt-2 border-t border-blue-200/60 flex-wrap gap-2">
+            <span className="text-[11px] font-bold text-blue-900">
+              Kedudukan Penjajaran Tandatangan:
+            </span>
+            <div className="flex items-center gap-1.5 bg-white p-0.5 rounded-lg border border-blue-200">
+              <button
+                type="button"
+                onClick={() => update({ signaturePlacement: 'center' })}
+                className={`px-3 py-1 rounded-md text-xs font-bold transition flex items-center gap-1 ${
+                  (config.signaturePlacement || 'center') === 'center' && config.signatureMode !== 'side-both'
+                    ? 'bg-blue-600 text-white shadow-2xs'
+                    : 'text-slate-700 hover:bg-slate-100'
+                }`}
+                title="Tandatangan diletakkan di bahagian tengah seimbang"
+              >
+                <span>🔘</span> Di Tengah
+              </button>
+
+              <button
+                type="button"
+                onClick={() => update({ signaturePlacement: 'side' })}
+                className={`px-3 py-1 rounded-md text-xs font-bold transition flex items-center gap-1 ${
+                  config.signaturePlacement === 'side' || config.signatureMode === 'side-both'
+                    ? 'bg-blue-600 text-white shadow-2xs'
+                    : 'text-slate-700 hover:bg-slate-100'
+                }`}
+                title="Tandatangan diletakkan di bahagian tepi (kanan untuk 1 orang, atau tepi kiri & kanan untuk 2 orang)"
+              >
+                <span>📐</span> Di Tepi
+              </button>
+            </div>
+          </div>
+
+          {(config.signaturePlacement === 'side' || config.signatureMode === 'side-both') && (
+            <div className="text-[11px] text-blue-800 bg-white/90 p-2.5 rounded-lg border border-blue-200 flex items-center gap-2">
+              <span className="text-base">✨</span>
+              <span><strong>Mod Tandatangan Di Tepi Aktif:</strong> Tandatangan disusun rapat ke bahagian tepi (sebelah kanan untuk 1 penandatangan, atau di bahagian tepi kertas untuk kedua-dua penandatangan).</span>
+            </div>
+          )}
         </div>
 
         {/* Bahagian 1: Maklumat & Tandatangan Guru Besar (Dipaparkan jika Kedua-dua atau Guru Besar Sahaja) */}

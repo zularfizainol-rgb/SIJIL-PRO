@@ -32,7 +32,8 @@ export const DEFAULT_CONFIG: CertificateConfig = {
   showDateVenueBlock: true,
   signatureLineStyle: 'dotted', // Dotted underline ............................
   showDividers: false, // Buangkan garis pemisah atas dan bawah mengikut arahan pengguna
-  signatureMode: 'both', // 'both' | 'headmaster-only' | 'pk-only'
+  signatureMode: 'both', // 'both' | 'headmaster-only' | 'pk-only' | 'side-both'
+  signaturePlacement: 'center', // 'center' | 'side' (Di Tengah atau Di Tepi)
   
   headmasterName: 'NAMA PENGETUA / GURU BESAR',
   headmasterTitle: 'Pengetua / Guru Besar',
