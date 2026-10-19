@@ -378,22 +378,51 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
               {(() => {
                 const sNameFormatted = formatStudentName(student.name, isScript);
                 const sLevelFormatted = getLevelFormatted(student.level || 'zon');
+                const shouldBold = config.customHighlightVariables !== false; // Lalai: automatik tebalkan
+                const boldFields = config.customBoldFields || {
+                  name: true,
+                  activity: true,
+                  position: true,
+                  achievement: true,
+                  class: true,
+                  unit: true,
+                  ic: false,
+                  date: false,
+                  level: true,
+                  school: true,
+                };
 
-                // Dynamic variable replacement
-                let processed = (config.customParagraphTemplate || '')
-                  .replace(/\{\{?NAMA\}?\}/gi, sNameFormatted)
-                  .replace(/\{\{?IC\}?\}/gi, student.ic || 'NO. KAD PENGENALAN')
-                  .replace(/\{\{?KELAS\}?\}/gi, student.class || 'KELAS')
-                  .replace(/\{\{?UNIT\}?\}/gi, student.unitClub || 'UNIT')
-                  .replace(/\{\{?KELAB\}?\}/gi, student.unitClub || 'KELAB')
-                  .replace(/\{\{?JAWATAN\}?\}/gi, student.positionRole || 'JAWATAN')
-                  .replace(/\{\{?PERANAN\}?\}/gi, student.positionRole || 'PERANAN')
-                  .replace(/\{\{?AKTIVITI\}?\}/gi, student.activity || 'AKTIVITI')
-                  .replace(/\{\{?PROGRAM\}?\}/gi, student.activity || 'PROGRAM')
-                  .replace(/\{\{?PERINGKAT\}?\}/gi, sLevelFormatted)
-                  .replace(/\{\{?PENCAPAIAN\}?\}/gi, student.achievement || 'PENCAPAIAN')
-                  .replace(/\{\{?TARIKH\}?\}/gi, student.date || config.issueDate || 'TARIKH')
-                  .replace(/\{\{?SEKOLAH\}?\}/gi, config.schoolName || 'SEKOLAH');
+                const isFieldBold = (fieldKey: keyof typeof boldFields, fallback = true) => {
+                  if (!shouldBold) return false;
+                  return boldFields[fieldKey] ?? fallback;
+                };
+
+                const replaceVar = (tmpl: string, pattern: RegExp, value: string, fieldBold: boolean) => {
+                  // Jika pengguna sudah apit dengan [TEBAL] atau ** atau <b>, kekalkan tebal
+                  const wrappedRegex = new RegExp(`(?:\\[TEBAL\\]|\\*\\*|<b>|<strong[^>]*>)\\s*(?:${pattern.source})\\s*(?:\\[\\/TEBAL\\]|\\*\\*|<\\/b>|<\\/strong>)`, 'gi');
+                  tmpl = tmpl.replace(wrappedRegex, `[TEBAL]${value}[/TEBAL]`);
+
+                  // Gantikan semua kemunculan biasa mengikut status pilihan tebal
+                  const plainRegex = new RegExp(`(?:${pattern.source})`, 'gi');
+                  const finalVal = fieldBold ? `[TEBAL]${value}[/TEBAL]` : value;
+                  return tmpl.replace(plainRegex, finalVal);
+                };
+
+                // Dynamic variable replacement dengan kawalan tebal (bold) mengikut pilihan pengguna
+                let processed = config.customParagraphTemplate || '';
+                processed = replaceVar(processed, /\[\s*\{\{?NAMA\}?\}\s*\]|\[NAMA(?:\s*PENUH)?(?:\s*MURID)?(?:\s*DENGAN\s*HURUF\s*BESAR)?\]|\{\{?NAMA\}?\}/, sNameFormatted, isFieldBold('name', true));
+                processed = replaceVar(processed, /\[\s*\{\{?AKTIVITI\}?\}\s*\]|\[(?:NAMA\s*)?PROGRAM(?:\s*ATAU\s*JENIS\s*PENGHARGAAN)?\]|\[(?:NAMA\s*)?MATA\s*PELAJARAN(?:\s*\/\s*PENCAPAIAN)?\]|\[AKTIVITI\]|\{\{?AKTIVITI\}?\}|\[PROGRAM\]|\{\{?PROGRAM\}?\}/, cleanText(student.activity || student.achievement) || 'NAMA PROGRAM', isFieldBold('activity', true));
+                processed = replaceVar(processed, /\[\s*\{\{?JAWATAN\}?\}\s*\]|\[JAWATAN(?:\s*\/\s*PERANAN(?:\s*MURID)?)?\]|\{\{?JAWATAN\}?\}|\[PERANAN\]|\{\{?PERANAN\}?\}/, cleanText(student.positionRole) || 'JAWATAN', isFieldBold('position', true));
+                processed = replaceVar(processed, /\[\s*\{\{?PENCAPAIAN\}?\}\s*\]|\[PENCAPAIAN(?:\s*CEMERLANG)?\]|\[PENYERTAAN\s*\/\s*PENCAPAIAN\s*CEMERLANG\]|\{\{?PENCAPAIAN\}?\}/, cleanText(student.achievement) || 'PENCAPAIAN', isFieldBold('achievement', true));
+                processed = replaceVar(processed, /\[\s*\{\{?KELAS\}?\}\s*\]|\[(?:NAMA\s*)?KELAS(?:\s*\/\s*TINGKATAN)?\]|\{\{?KELAS\}?\}|\[TINGKATAN\]|\{\{?TINGKATAN\}?\}/, cleanText(student.class) || 'KELAS', isFieldBold('class', true));
+                processed = replaceVar(processed, /\[\s*\{\{?UNIT\}?\}\s*\]|\[UNIT(?:\s*\/\s*BADAN\s*BERUNIFORM)?\]|\{\{?UNIT\}?\}|\[\s*\{\{?KELAB\}?\}\s*\]|\[(?:NAMA\s*)?KELAB(?:\s*\/\s*PERSATUAN(?:\s*\/\s*AKTIVITI)?)?\]|\{\{?KELAB\}?\}/, cleanText(student.unitClub) || 'UNIT / KELAB', isFieldBold('unit', true));
+                processed = replaceVar(processed, /\[\s*\{\{?IC\}?\}\s*\]|\[(?:NO\.?\s*)?(?:MYKID|KP|K\/P|KAD\s*PENGENALAN)\]|\[NO\.?\s*MYKID\s*\/\s*NO\.?\s*KP\]|\{\{?IC\}?\}/, cleanText(student.ic) || 'NO. KAD PENGENALAN', isFieldBold('ic', false));
+                processed = replaceVar(processed, /\[\s*\{\{?TARIKH\}?\}\s*\]|\[(?:TARIKH|TARIKH\s*MAJLIS)\]|\{\{?TARIKH\}?\}/, cleanText(student.date || config.issueDate) || '18 OKTOBER 2026', isFieldBold('date', false));
+                processed = replaceVar(processed, /\[\s*\{\{?SESI\}?\}\s*\]|\[SESI\]|\{\{?SESI\}?\}/, cleanText(config.academicSession || config.eventYear) || '2025/2026', false);
+                processed = replaceVar(processed, /\[\s*\{\{?TAHUN\}?\}\s*\]|\[TAHUN\]|\{\{?TAHUN\}?\}/, cleanText(config.eventYear) || '2026', false);
+                processed = replaceVar(processed, /\[\s*\{\{?TEMPAT\}?\}\s*\]|\[(?:TEMPAT|LOKASI|DEWAN\s*SEKOLAH\s*\/\s*LOKASI\s*MAJLIS)\]|\{\{?TEMPAT\}?\}|\[LOKASI\]|\{\{?LOKASI\}?\}/, cleanText(student.venue || config.eventVenue) || 'DEWAN SEKOLAH', false);
+                processed = replaceVar(processed, /\[\s*\{\{?PERINGKAT\}?\}\s*\]|\[PERINGKAT\]|\{\{?PERINGKAT\}?\}/, sLevelFormatted, isFieldBold('level', true));
+                processed = replaceVar(processed, /\[\s*\{\{?SEKOLAH\}?\}\s*\]|\[NAMA\s*SEKOLAH\]|\{\{?SEKOLAH\}?\}/, cleanText(config.schoolName) || 'SEKOLAH', isFieldBold('school', true));
 
                 const lines = processed.split('\n');
 
@@ -411,21 +440,64 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                   config.customTextLineHeight === 'relaxed' ? 'leading-loose' : 'leading-relaxed';
 
                 const parseFormatting = (lineText: string) => {
-                  const parts = lineText.split(/(\*\*.*?\*\*|\[TEBAL\].*?\[\/TEBAL\]|\*.*?\*|\[CONDONG\].*?\[\/CONDONG\])/gi);
+                  const tokenRegex = /(\[TEBAL\].*?\[\/TEBAL\]|\*\*.*?\*\*|<b>.*?<\/b>|<strong>.*?<\/strong>|\[B\].*?\[\/B\]|\[CONDONG\].*?\[\/CONDONG\]|\*.*?\*|<i>.*?<\/i>|<em>.*?<\/em>|\[I\].*?\[\/I\])/gi;
+                  const parts = lineText.split(tokenRegex);
+
                   return parts.map((part, pIdx) => {
-                    if (part.startsWith('**') && part.endsWith('**')) {
-                      return <strong key={pIdx} className="font-extrabold text-slate-950">{part.slice(2, -2)}</strong>;
+                    if (!part) return null;
+                    const lower = part.toLowerCase();
+
+                    // Pengendalian Teks Tebal (Bold)
+                    const isBold = 
+                      (lower.startsWith('[tebal]') && lower.endsWith('[/tebal]')) ||
+                      (lower.startsWith('[b]') && lower.endsWith('[/b]')) ||
+                      (part.startsWith('**') && part.endsWith('**')) ||
+                      (lower.startsWith('<b>') && lower.endsWith('</b>')) ||
+                      (lower.startsWith('<strong>') && lower.endsWith('</strong>'));
+
+                    if (isBold) {
+                      let inner = part;
+                      if (lower.startsWith('[tebal]')) inner = part.slice(7, -8);
+                      else if (lower.startsWith('[b]')) inner = part.slice(3, -4);
+                      else if (part.startsWith('**')) inner = part.slice(2, -2);
+                      else if (lower.startsWith('<b>')) inner = part.slice(3, -4);
+                      else if (lower.startsWith('<strong>')) inner = part.slice(8, -9);
+
+                      return (
+                        <strong 
+                          key={pIdx} 
+                          className="font-black text-slate-950 tracking-wide inline-block px-1"
+                          style={{ fontWeight: 900 }}
+                        >
+                          {cleanText(inner)}
+                        </strong>
+                      );
                     }
-                    if (part.startsWith('[TEBAL]') && part.endsWith('[/TEBAL]')) {
-                      return <strong key={pIdx} className="font-extrabold text-slate-950">{part.slice(7, -8)}</strong>;
+
+                    // Pengendalian Teks Condong (Italic)
+                    const isItalic = 
+                      (lower.startsWith('[condong]') && lower.endsWith('[/condong]')) ||
+                      (lower.startsWith('[i]') && lower.endsWith('[/i]')) ||
+                      (part.startsWith('*') && part.endsWith('*')) ||
+                      (lower.startsWith('<i>') && lower.endsWith('</i>')) ||
+                      (lower.startsWith('<em>') && lower.endsWith('</em>'));
+
+                    if (isItalic) {
+                      let inner = part;
+                      if (lower.startsWith('[condong]')) inner = part.slice(9, -10);
+                      else if (lower.startsWith('[i]')) inner = part.slice(3, -4);
+                      else if (part.startsWith('*')) inner = part.slice(1, -1);
+                      else if (lower.startsWith('<i>')) inner = part.slice(3, -4);
+                      else if (lower.startsWith('<em>')) inner = part.slice(4, -5);
+
+                      return (
+                        <em key={pIdx} className="italic text-slate-800 font-serif">
+                          {cleanText(inner)}
+                        </em>
+                      );
                     }
-                    if (part.startsWith('*') && part.endsWith('*')) {
-                      return <em key={pIdx} className="italic text-slate-800">{part.slice(1, -1)}</em>;
-                    }
-                    if (part.startsWith('[CONDONG]') && part.endsWith('[/CONDONG]')) {
-                      return <em key={pIdx} className="italic text-slate-800">{part.slice(9, -10)}</em>;
-                    }
-                    return part;
+
+                    return cleanText(part);
                   });
                 };
 
@@ -437,14 +509,24 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                         return <div key={lIdx} className="h-2" />;
                       }
 
-                      // Check if line is specifically the student's name
-                      const isExactName = trimmed === sNameFormatted || trimmed.toUpperCase() === student.name.toUpperCase();
+                      // Periksa sama ada baris ini ialah nama murid (buang tag format sebelum semakan)
+                      const textWithoutTags = trimmed
+                        .replace(/\[\/?(?:TEBAL|CONDONG|B|I)\]/gi, '')
+                        .replace(/[*_]/g, '')
+                        .replace(/[\[\]]/g, '')
+                        .trim();
+
+                      const isExactName = 
+                        textWithoutTags === sNameFormatted || 
+                        textWithoutTags.toUpperCase() === student.name.toUpperCase() ||
+                        textWithoutTags.toUpperCase() === 'NAMA PENUH MURID DENGAN HURUF BESAR' ||
+                        textWithoutTags.toUpperCase() === 'NAMA PENUH MURID';
 
                       if (isExactName) {
                         return (
-                          <div key={lIdx} className="my-1.5 py-0.5 text-center">
+                          <div key={lIdx} className="my-2 py-0.5 text-center">
                             <div className={`inline-block ${config.customShowUnderline !== false ? 'border-b-2 border-slate-900 pb-0.5' : ''}`}>
-                              <h2 className={`tracking-wider text-slate-950 ${studentNameFontClass}`}>
+                              <h2 className={`tracking-wider text-slate-950 font-black ${studentNameFontClass}`}>
                                 {sNameFormatted}
                               </h2>
                             </div>

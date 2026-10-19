@@ -13,9 +13,10 @@ export const StudentQuickForm: React.FC<StudentQuickFormProps> = ({
   onChange,
 }) => {
   const updateField = (field: keyof Student, value: string) => {
+    const cleanVal = (value || '').replace(/[\[\]]/g, '');
     onChange({
       ...student,
-      [field]: field === 'ic' ? formatIC(value) : value,
+      [field]: field === 'ic' ? formatIC(cleanVal) : cleanVal,
     });
   };
 

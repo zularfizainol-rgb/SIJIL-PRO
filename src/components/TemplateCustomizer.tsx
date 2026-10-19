@@ -19,7 +19,10 @@ import {
   Quote,
   Layers,
   Sparkles as SparklesIcon,
-  CheckSquare
+  CheckSquare,
+  Bold,
+  Italic,
+  Info
 } from 'lucide-react';
 import { DEFAULT_CONFIG, PRESET_AYAT_SIJIL, WordingPreset, PURPOSE_PRESETS, PurposePresetData, CUSTOM_FREEDOM_TEMPLATES, CustomFreedomTemplate } from '../data/defaultData';
 import { FontSizeOption } from '../types/certificate';
@@ -39,9 +42,52 @@ export const TemplateCustomizer: React.FC<TemplateCustomizerProps> = ({
   const leftLogoRef = useRef<HTMLInputElement>(null);
   const rightLogoRef = useRef<HTMLInputElement>(null);
   const centerLogoRef = useRef<HTMLInputElement>(null);
+  const customTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   const update = (patch: Partial<CertificateConfig>) => {
     onChangeConfig({ ...config, ...patch });
+  };
+
+  const wrapSelectedText = (tagStart: string, tagEnd: string, defaultPlaceholder = 'teks') => {
+    const el = customTextareaRef.current;
+    if (!el) {
+      const cur = config.customParagraphTemplate || '';
+      update({ customParagraphTemplate: cur + (cur ? ' ' : '') + tagStart + defaultPlaceholder + tagEnd });
+      return;
+    }
+    const start = el.selectionStart || 0;
+    const end = el.selectionEnd || 0;
+    const cur = config.customParagraphTemplate || '';
+    const selected = cur.substring(start, end);
+    const replacement = selected ? `${tagStart}${selected}${tagEnd}` : `${tagStart}${defaultPlaceholder}${tagEnd}`;
+    const nextVal = cur.substring(0, start) + replacement + cur.substring(end);
+    update({ customParagraphTemplate: nextVal });
+    setTimeout(() => {
+      el.focus();
+      const newCursorPos = selected 
+        ? start + tagStart.length + selected.length + tagEnd.length 
+        : start + tagStart.length + defaultPlaceholder.length;
+      el.setSelectionRange(start + tagStart.length, newCursorPos);
+    }, 40);
+  };
+
+  const insertTagAtCursor = (tag: string) => {
+    const el = customTextareaRef.current;
+    if (!el) {
+      const cur = config.customParagraphTemplate || '';
+      update({ customParagraphTemplate: cur + (cur ? ' ' : '') + tag });
+      return;
+    }
+    const start = el.selectionStart || 0;
+    const end = el.selectionEnd || 0;
+    const cur = config.customParagraphTemplate || '';
+    const nextVal = cur.substring(0, start) + tag + cur.substring(end);
+    update({ customParagraphTemplate: nextVal });
+    setTimeout(() => {
+      el.focus();
+      const newPos = start + tag.length;
+      el.setSelectionRange(newPos, newPos);
+    }, 40);
   };
 
   const handleSelectTemplate = (id: TemplateStyle) => {
@@ -1104,59 +1150,257 @@ export const TemplateCustomizer: React.FC<TemplateCustomizerProps> = ({
               </div>
             </div>
 
-            {/* PAPAN BUTANG TAG PEMBOLEHUBAH DINAMIK */}
-            <div className="space-y-1.5 bg-white/90 p-3 rounded-xl border border-amber-200">
-              <div className="flex items-center justify-between text-[11px] font-bold text-slate-700">
-                <span>📌 Klik Tag untuk Sisip Pembolehubah Murid:</span>
-                <span className="text-[10px] text-slate-400 font-normal">Disisip pada teks karangan</span>
+            {/* KAWALAN PENEGASAN TEBAL (BOLD CONTROL PANEL) UNTUK MOD BEBAS */}
+            <div className="p-3.5 bg-gradient-to-r from-amber-100/90 via-amber-50 to-amber-100/80 border-2 border-amber-300 rounded-xl space-y-3 shadow-2xs">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <span className="w-7 h-7 bg-amber-600 text-white rounded-lg flex items-center justify-center font-black text-sm shadow-xs">
+                    B
+                  </span>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-black text-amber-950 uppercase tracking-wide">
+                        Tebalkan (Bold) Pembolehubah Pilihan di Sijil
+                      </span>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        config.customHighlightVariables !== false
+                          ? 'bg-amber-600 text-white'
+                          : 'bg-slate-200 text-slate-700'
+                      }`}>
+                        {config.customHighlightVariables !== false ? 'AKTIF (TEBAL)' : 'DIMATIKAN'}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-amber-900/80 mt-0.5">
+                      Pilihan di bawah akan dipaparkan dengan huruf tebal (bold) hitam pekat di atas sijil secara automatik.
+                    </p>
+                  </div>
+                </div>
+
+                <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                  <input
+                    type="checkbox"
+                    checked={config.customHighlightVariables !== false}
+                    onChange={(e) => update({ customHighlightVariables: e.target.checked })}
+                    className="sr-only peer"
+                  />
+                  <div className="w-10 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-600"></div>
+                </label>
+              </div>
+
+              {/* KOTAK PILIHAN PEMBOLEHUBAH UNTUK DITEBALKAN */}
+              {config.customHighlightVariables !== false && (
+                <div className="pt-2 border-t border-amber-200/90 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-amber-950 uppercase tracking-wider flex items-center gap-1">
+                      <CheckSquare className="w-3.5 h-3.5 text-amber-600" />
+                      Tandakan Pembolehubah Yang Hendak Ditebalkan:
+                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => update({
+                          customBoldFields: {
+                            name: true,
+                            activity: true,
+                            position: true,
+                            achievement: true,
+                            class: true,
+                            unit: true,
+                            ic: true,
+                            date: true,
+                            level: true,
+                            school: true,
+                          }
+                        })}
+                        className="text-[10px] font-bold text-amber-800 hover:text-amber-950 bg-white/80 px-2 py-0.5 rounded border border-amber-200"
+                      >
+                        Semua Tebal
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => update({
+                          customBoldFields: {
+                            name: true,
+                            activity: true,
+                            position: true,
+                            achievement: true,
+                            class: true,
+                            unit: true,
+                            ic: false,
+                            date: false,
+                            level: true,
+                            school: true,
+                          }
+                        })}
+                        className="text-[10px] font-bold text-amber-800 hover:text-amber-950 bg-white/80 px-2 py-0.5 rounded border border-amber-200"
+                      >
+                        Lalai Guru
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                    {[
+                      { id: 'name', label: 'Nama Murid', tag: '{{NAMA}}', default: true },
+                      { id: 'activity', label: 'Aktiviti / Sukan', tag: '{{AKTIVITI}}', default: true },
+                      { id: 'position', label: 'Jawatan / Peranan', tag: '{{JAWATAN}}', default: true },
+                      { id: 'achievement', label: 'Pencapaian', tag: '{{PENCAPAIAN}}', default: true },
+                      { id: 'class', label: 'Kelas / Tingkatan', tag: '{{KELAS}}', default: true },
+                      { id: 'unit', label: 'Unit / Kelab', tag: '{{UNIT}}', default: true },
+                      { id: 'level', label: 'Peringkat', tag: '{{PERINGKAT}}', default: true },
+                      { id: 'school', label: 'Nama Sekolah', tag: '{{SEKOLAH}}', default: true },
+                      { id: 'ic', label: 'No. IC / MyKid', tag: '{{IC}}', default: false },
+                      { id: 'date', label: 'Tarikh Sijil', tag: '{{TARIKH}}', default: false },
+                    ].map((item) => {
+                      const isBolded = config.customBoldFields?.[item.id as keyof typeof config.customBoldFields] ?? item.default;
+                      return (
+                        <label
+                          key={item.id}
+                          className={`flex items-center gap-2 p-2 rounded-xl border text-xs font-bold cursor-pointer transition select-none ${
+                            isBolded
+                              ? 'bg-amber-600 text-white border-amber-600 shadow-xs'
+                              : 'bg-white text-slate-700 border-amber-200 hover:bg-amber-50'
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isBolded}
+                            onChange={(e) => {
+                              const cur = config.customBoldFields || {
+                                name: true,
+                                activity: true,
+                                position: true,
+                                achievement: true,
+                                class: true,
+                                unit: true,
+                                ic: false,
+                                date: false,
+                                level: true,
+                                school: true,
+                              };
+                              update({
+                                customBoldFields: {
+                                  ...cur,
+                                  [item.id]: e.target.checked,
+                                }
+                              });
+                            }}
+                            className="w-3.5 h-3.5 text-amber-600 rounded accent-amber-600"
+                          />
+                          <div className="flex flex-col min-w-0">
+                            <span className="truncate">{item.label}</span>
+                            <span className={`text-[9px] font-mono ${isBolded ? 'text-amber-100' : 'text-slate-400'}`}>
+                              {item.tag} {isBolded ? '● TEBAL' : ''}
+                            </span>
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* PAPAN BUTANG FORMAT & TAG PEMBOLEHUBAH DINAMIK */}
+            <div className="space-y-2 bg-white/95 p-3.5 rounded-xl border-2 border-amber-200 shadow-2xs">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-amber-100 pb-2">
+                <span className="text-[11px] font-bold text-slate-800 flex items-center gap-1.5">
+                  <BookmarkCheck className="w-3.5 h-3.5 text-amber-600" />
+                  Alat Format & Butang Sisip Pembolehubah:
+                </span>
+                
+                {/* TOOLBAR FORMAT TEKS CEPAT (BOLD, ITALIC) */}
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => wrapSelectedText('[TEBAL]', '[/TEBAL]', 'perkataan tebal')}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-950 font-black text-xs border border-amber-300 rounded-lg transition active:scale-95 shadow-2xs"
+                    title="Sorot teks dan klik ini untuk jadikan Tebal (Bold)"
+                  >
+                    <Bold className="w-3.5 h-3.5" />
+                    <span>[B] Tebalkan</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => wrapSelectedText('[CONDONG]', '[/CONDONG]', 'perkataan condong')}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-50 hover:bg-slate-100 text-slate-800 font-semibold text-xs border border-slate-300 rounded-lg transition active:scale-95 shadow-2xs"
+                    title="Sorot teks dan klik ini untuk jadikan Condong (Italic)"
+                  >
+                    <Italic className="w-3.5 h-3.5" />
+                    <span>[I] Condongkan</span>
+                  </button>
+                </div>
               </div>
               
-              <div className="flex flex-wrap gap-1.5">
+              {/* SENARAI BUTANG TAG SISIP */}
+              <div className="flex flex-wrap gap-1.5 pt-1">
                 {[
-                  { tag: '{{NAMA}}', label: 'Nama Murid', color: 'bg-blue-50 text-blue-700 border-blue-300' },
-                  { tag: '{{IC}}', label: 'No. IC / MyKid', color: 'bg-slate-50 text-slate-700 border-slate-300' },
-                  { tag: '{{KELAS}}', label: 'Kelas', color: 'bg-emerald-50 text-emerald-700 border-emerald-300' },
-                  { tag: '{{JAWATAN}}', label: 'Jawatan Dilantik', color: 'bg-purple-50 text-purple-700 border-purple-300' },
-                  { tag: '{{UNIT}}', label: 'Unit / Kelab', color: 'bg-indigo-50 text-indigo-700 border-indigo-300' },
-                  { tag: '{{AKTIVITI}}', label: 'Nama Program / Sukan', color: 'bg-amber-50 text-amber-800 border-amber-300' },
-                  { tag: '{{PERINGKAT}}', label: 'Peringkat', color: 'bg-orange-50 text-orange-800 border-orange-300' },
-                  { tag: '{{PENCAPAIAN}}', label: 'Pencapaian', color: 'bg-rose-50 text-rose-700 border-rose-300' },
-                  { tag: '{{TARIKH}}', label: 'Tarikh Sijil', color: 'bg-teal-50 text-teal-700 border-teal-300' },
-                  { tag: '{{SEKOLAH}}', label: 'Nama Sekolah', color: 'bg-cyan-50 text-cyan-800 border-cyan-300' },
-                  { tag: '[TEBAL] teks [/TEBAL]', label: 'Teks Tebal', color: 'bg-slate-100 text-slate-900 border-slate-400' },
-                  { tag: '[CONDONG] teks [/CONDONG]', label: 'Teks Condong', color: 'bg-slate-100 text-slate-700 border-slate-400' },
-                ].map((item) => (
-                  <button
-                    key={item.tag}
-                    type="button"
-                    onClick={() => {
-                      const cur = config.customParagraphTemplate || '';
-                      update({ customParagraphTemplate: cur + (cur ? ' ' : '') + item.tag });
-                    }}
-                    className={`px-2.5 py-1 border rounded-lg text-xs font-mono font-bold transition hover:scale-105 active:scale-95 shadow-2xs ${item.color}`}
-                    title={`Sisip ${item.tag} (${item.label})`}
-                  >
-                    + {item.tag} <span className="font-sans font-normal text-[10px] opacity-80">({item.label})</span>
-                  </button>
-                ))}
+                  { tag: '{{NAMA}}', label: 'Nama Murid', boldKey: 'name', color: 'bg-blue-50 text-blue-800 border-blue-300' },
+                  { tag: '{{AKTIVITI}}', label: 'Nama Program / Sukan', boldKey: 'activity', color: 'bg-amber-50 text-amber-900 border-amber-300' },
+                  { tag: '{{JAWATAN}}', label: 'Jawatan Dilantik', boldKey: 'position', color: 'bg-purple-50 text-purple-800 border-purple-300' },
+                  { tag: '{{PENCAPAIAN}}', label: 'Pencapaian', boldKey: 'achievement', color: 'bg-rose-50 text-rose-800 border-rose-300' },
+                  { tag: '{{KELAS}}', label: 'Kelas / Tingkatan', boldKey: 'class', color: 'bg-emerald-50 text-emerald-800 border-emerald-300' },
+                  { tag: '{{UNIT}}', label: 'Unit / Kelab', boldKey: 'unit', color: 'bg-indigo-50 text-indigo-800 border-indigo-300' },
+                  { tag: '{{PERINGKAT}}', label: 'Peringkat', boldKey: 'level', color: 'bg-orange-50 text-orange-800 border-orange-300' },
+                  { tag: '{{SEKOLAH}}', label: 'Nama Sekolah', boldKey: 'school', color: 'bg-cyan-50 text-cyan-800 border-cyan-300' },
+                  { tag: '{{IC}}', label: 'No. IC / MyKid', boldKey: 'ic', color: 'bg-slate-50 text-slate-700 border-slate-300' },
+                  { tag: '{{TARIKH}}', label: 'Tarikh Sijil', boldKey: 'date', color: 'bg-teal-50 text-teal-800 border-teal-300' },
+                ].map((item) => {
+                  const isVarBolded = config.customHighlightVariables !== false && 
+                    (item.boldKey ? (config.customBoldFields?.[item.boldKey as keyof typeof config.customBoldFields] ?? true) : false);
+
+                  return (
+                    <button
+                      key={item.tag}
+                      type="button"
+                      onClick={() => insertTagAtCursor(item.tag)}
+                      className={`px-2.5 py-1.5 border rounded-lg text-xs font-mono font-bold transition hover:scale-105 active:scale-95 shadow-2xs flex items-center gap-1 ${item.color}`}
+                      title={`Sisip ${item.tag} (${item.label})`}
+                    >
+                      <span>+ {item.tag}</span>
+                      <span className="font-sans font-normal text-[10px] opacity-80">({item.label})</span>
+                      {isVarBolded && (
+                        <span className="text-[9px] font-sans font-black bg-amber-600 text-white px-1 rounded">
+                          BOLD
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
-            {/* TEXTAREA EDITOR */}
+            {/* TEXTAREA EDITOR DENGAN REF UNTUK SELECTION */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between text-xs font-bold text-slate-800">
-                <label className="uppercase">Kotak Karang Ayat Sijil Sendiri:</label>
-                <span className="text-[10px] text-slate-400 font-normal">
-                  Sokong baris baru (tekan Enter untuk perenggan baru)
+                <label className="uppercase flex items-center gap-1.5">
+                  <span>✍️ Kotak Karang Ayat Sijil Sendiri:</span>
+                </label>
+                <span className="text-[10px] text-slate-500 font-normal">
+                  Tekan Enter untuk perenggan/baris baru
                 </span>
               </div>
               <textarea
-                rows={8}
+                ref={customTextareaRef}
+                rows={9}
                 value={config.customParagraphTemplate || ''}
                 onChange={(e) => update({ customParagraphTemplate: e.target.value })}
                 placeholder="Contoh:&#10;Dengan ini diperakui bahawa&#10;&#10;{{NAMA}}&#10;No. K/P: {{IC}} | Kelas: {{KELAS}}&#10;&#10;telah menunjukkan prestasi cemerlang dalam:&#10;{{AKTIVITI}}&#10;{{PERINGKAT}}&#10;&#10;dengan kejayaan:&#10;{{PENCAPAIAN}}"
-                className="w-full text-xs font-serif p-3.5 bg-white border-2 border-amber-300 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none leading-relaxed text-slate-900 shadow-inner"
+                className="w-full text-xs font-serif p-3.5 bg-white border-2 border-amber-300 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none leading-relaxed text-slate-950 shadow-inner"
               />
+            </div>
+
+            {/* KOTAK TIP PANDUAN MENEBALKAN TEKS */}
+            <div className="p-3 bg-blue-50/80 border border-blue-200 rounded-xl flex items-start gap-2.5 text-xs text-blue-950">
+              <Info className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <span className="font-bold block">💡 Bagaimana Memastikan Pilihan Anda Bold di Pratonton Sijil?</span>
+                <p className="text-[11px] text-blue-900 leading-relaxed">
+                  1. <strong>Automatik:</strong> Pembolehubah yang ditandakan di atas (Nama, Aktiviti, Jawatan, Pencapaian, Kelas, dll.) akan <strong>automatik ditebalkan (bold)</strong> dalam paparan sijil sebenar.<br/>
+                  2. <strong>Teks Pilihan Bebas:</strong> Untuk menebalkan sebarang ayat lain secara manual, sorot teks dalam kotak di atas dan klik butang <strong>[B] Tebalkan</strong>, atau apit teks dengan <code>[TEBAL]ayat anda[/TEBAL]</code> atau <code>**ayat anda**</code>.
+                </p>
+              </div>
             </div>
 
             {/* KAWALAN PENATAAN VISUAL TEKS BEBAS */}

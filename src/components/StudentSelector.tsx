@@ -121,18 +121,26 @@ export const StudentSelector: React.FC<StudentSelectorProps> = ({
               <div className="truncate">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-bold text-slate-900 truncate">
-                    {selectedStudent.name || 'Pilih Murid dari Senarai'}
+                    {students.length === 0 
+                      ? '📋 Pangkalan Data Kosong (Templat Pratonton)' 
+                      : (selectedStudent.name || 'Pilih Murid dari Senarai')}
                   </span>
-                  {selectedStudent.level && (
+                  {students.length > 0 && selectedStudent.level && (
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${LEVEL_BADGES[selectedStudent.level]?.border || 'border-amber-300'} ${LEVEL_BADGES[selectedStudent.level]?.bg || 'bg-amber-50'} ${LEVEL_BADGES[selectedStudent.level]?.color || 'text-amber-800'} shrink-0`}>
                       {(LEVEL_BADGES[selectedStudent.level]?.label || selectedStudent.level).replace('Peringkat ', '')}
                     </span>
                   )}
                 </div>
                 <div className="flex items-center gap-3 text-xs text-slate-500 mt-0.5 font-mono">
-                  <span>{selectedStudent.ic || 'Tiada No IC'}</span>
-                  <span>•</span>
-                  <span className="font-sans font-medium text-slate-600">{selectedStudent.class || 'Tiada Kelas'}</span>
+                  {students.length === 0 ? (
+                    <span className="font-sans text-blue-600 font-semibold">Klik '+ Tambah Murid' untuk masukkan murid pertama anda</span>
+                  ) : (
+                    <>
+                      <span>{selectedStudent.ic || 'Tiada No IC'}</span>
+                      <span>•</span>
+                      <span className="font-sans font-medium text-slate-600">{selectedStudent.class || 'Tiada Kelas'}</span>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -263,22 +271,24 @@ export const StudentSelector: React.FC<StudentSelectorProps> = ({
 
         {/* Right: Quick Action Buttons for Current Student */}
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => onEditStudent(selectedStudent)}
-            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition"
-            title="Edit maklumat murid ini"
-          >
-            <Edit3 className="w-3.5 h-3.5 text-slate-600" />
-            <span>Kemaskini Murid</span>
-          </button>
+          {students.length > 0 && (
+            <button
+              onClick={() => onEditStudent(selectedStudent)}
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition"
+              title="Edit maklumat murid ini"
+            >
+              <Edit3 className="w-3.5 h-3.5 text-slate-600" />
+              <span>Kemaskini Murid</span>
+            </button>
+          )}
 
           <button
             onClick={onAddNewStudent}
-            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-xl transition"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition shadow-xs"
             title="Tambah rekod murid baharu"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Tambah Murid</span>
+            <span>+ Tambah Murid Baharu</span>
           </button>
         </div>
 

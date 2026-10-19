@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="ms">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SijilPro - Memuatkan...</title>
+    <script>
+      // Redirect GitHub Pages sub-routes back to root SPA
+      var segment = window.location.pathname.split('/').filter(Boolean);
+      var repo = segment.length > 0 ? '/' + segment[0] + '/' : '/';
+      window.location.replace(repo);
+    </script>
+  </head>
+  <body style="font-family: sans-serif; text-align: center; padding: 40px; color: #334155;">
+    <h2>Memuatkan SijilPro...</h2>
+    <p>Sila tunggu sebentar sementara sistem memuatkan...</p>
+    <a href="./" style="color: #2563eb; font-weight: bold;">Klik di sini jika tidak beralih secara automatik</a>
+  </body>
+</html>

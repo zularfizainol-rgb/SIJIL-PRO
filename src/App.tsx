@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Student, CertificateConfig, AchievementLevel } from './types/certificate';
-import { DEFAULT_CONFIG, SAMPLE_STUDENTS, LEVEL_BADGES } from './data/defaultData';
+import { DEFAULT_CONFIG, SAMPLE_STUDENTS, EMPTY_STUDENT_PREVIEW, LEVEL_BADGES } from './data/defaultData';
 import { CertificateView } from './components/CertificateView';
 import { StudentSelector } from './components/StudentSelector';
 import { TemplateCustomizer } from './components/TemplateCustomizer';
@@ -26,22 +26,36 @@ import {
   School,
   Share2,
   Loader2,
-  Layers
+  Layers,
+  HelpCircle,
+  Plus,
+  Trash2,
+  ExternalLink
 } from 'lucide-react';
 
 export default function App() {
-  // State for students with localStorage persistence
+  // State for students with localStorage persistence - Padamkan data contoh automatik setelah di-deploy!
   const [students, setStudents] = useState<Student[]>(() => {
     try {
       const saved = localStorage.getItem('sijilpro_students');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // Semak jika dalam simpanan hanya ada data contoh dummy lama
+          const isOnlyDefaultSample = parsed.every(s => 
+            typeof s.id === 'string' && (s.id.startsWith('std-') && !s.id.includes('import') && !s.id.includes('paste')) &&
+            ['MUHAMMAD AMIRUL BIN ROSLAN', 'MUHAMMAD DANISH RAYYAN BIN KHAIRUL', 'NUR FARHANA BALQIS BINTI MOHD FAIZAL', 'AMIRUL SYAHMI BIN AZHAR', 'SITI SARAH BINTI KAMARUL'].includes(s.name)
+          );
+          if (!isOnlyDefaultSample) {
+            return parsed;
+          }
+        }
       }
     } catch (e) {
       console.error('Failed to load students from localStorage:', e);
     }
-    return SAMPLE_STUDENTS;
+    // Lalai: Kosongkan data contoh murid secara automatik supaya sistem bersih untuk kegunaan sekolah
+    return [];
   });
 
   // State for certificate configuration
@@ -57,7 +71,7 @@ export default function App() {
 
   // Currently selected student
   const [selectedStudentId, setSelectedStudentId] = useState<string>(() => {
-    return students[0]?.id || 'std-1';
+    return students[0]?.id || 'template-preview';
   });
 
   // Active view tab: 'preview' | 'database' | 'settings'
@@ -69,6 +83,7 @@ export default function App() {
   const [studentToEdit, setStudentToEdit] = useState<Student | null>(null);
   const [isBatchPrintOpen, setIsBatchPrintOpen] = useState(false);
   const [batchSelectedIds, setBatchSelectedIds] = useState<string[]>([]);
+  const [isDeployHelpOpen, setIsDeployHelpOpen] = useState(false);
 
   // Preview zoom scale
   const [zoomScale, setZoomScale] = useState<number>(0.72);
@@ -92,8 +107,27 @@ export default function App() {
     }
   }, [config]);
 
-  // Current active student
-  const currentStudent = students.find((s) => s.id === selectedStudentId) || students[0] || SAMPLE_STUDENTS[0];
+  // Current active student (Guna EMPTY_STUDENT_PREVIEW jika senarai murid kosong - Tiada tanda kurungan siku [ ])
+  const currentStudent = students.find((s) => s.id === selectedStudentId) || students[0] || EMPTY_STUDENT_PREVIEW;
+
+  // Padamkan semua data murid dan kosongkan pangkalan data
+  const handleClearAllStudents = () => {
+    setStudents([]);
+    setSelectedStudentId('template-preview');
+    try {
+      localStorage.setItem('sijilpro_students', JSON.stringify([]));
+    } catch (e) {
+      console.error(e);
+    }
+    showToast('Semua data murid berjaya dipadamkan. Pangkalan data kini bersih.');
+  };
+
+  // Muat data contoh 5 murid untuk tujuan ujian sijil jika dikehendaki guru
+  const handleLoadSampleData = () => {
+    setStudents(SAMPLE_STUDENTS);
+    setSelectedStudentId(SAMPLE_STUDENTS[0].id);
+    showToast('5 data murid contoh dimuatkan untuk tujuan ujian');
+  };
 
   // Helper for flash toast
   const showToast = (msg: string) => {
@@ -249,6 +283,15 @@ export default function App() {
                 <Printer className="w-3.5 h-3.5 text-amber-400" />
                 <span className="hidden md:inline">Cetak Berkelompok ({students.length})</span>
                 <span className="md:hidden">Cetak Semua</span>
+              </button>
+
+              <button
+                onClick={() => setIsDeployHelpOpen(true)}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-800/90 hover:bg-slate-700 border border-slate-700 text-sky-300 rounded-xl text-xs font-semibold transition"
+                title="Panduan penyelesaian jika GitHub Pages memaparkan 'Page Not Exist' atau 404"
+              >
+                <HelpCircle className="w-3.5 h-3.5 text-sky-400" />
+                <span className="hidden lg:inline">Bantuan GitHub Pages</span>
               </button>
             </div>
 
@@ -775,6 +818,51 @@ export default function App() {
                   </div>
                 </div>
 
+                {/* Banner Panduan Jika Pangkalan Data Murid Kosong (Lalai Selepas Deploy) */}
+                {students.length === 0 && (
+                  <div className="bg-amber-50/95 border border-amber-300 rounded-xl p-3.5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-xs mb-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="p-2 bg-amber-100 text-amber-800 rounded-lg text-lg shrink-0">
+                        📋
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-amber-950 text-xs">
+                          Pangkalan Data Murid Kosong & Bersih (Sedia Digunakan Guru)
+                        </h4>
+                        <p className="text-[11px] text-amber-800 mt-0.5 leading-snug">
+                          Data contoh murid telah dipadamkan. Sijil di bawah memaparkan templat panduan. Sila tambah murid sebenar sekolah anda atau klik "Muat Data Contoh" jika ingin menguji dahulu.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                      <button
+                        onClick={() => setIsImportOpen(true)}
+                        className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-2xs"
+                      >
+                        <FileSpreadsheet className="w-3.5 h-3.5" />
+                        <span>Import Excel</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setStudentToEdit(null);
+                          setIsEditModalOpen(true);
+                        }}
+                        className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-2xs"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>+ Tambah Murid</span>
+                      </button>
+                      <button
+                        onClick={handleLoadSampleData}
+                        className="px-2.5 py-1.5 bg-white border border-amber-300 hover:bg-amber-100 text-amber-900 rounded-lg text-[11px] font-semibold transition"
+                        title="Muat 5 rekod murid contoh untuk ujian percetakan sijil"
+                      >
+                        🧪 Muat Data Contoh
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 {/* Certificate Canvas Area */}
                 <div className="bg-slate-200/80 rounded-2xl p-4 sm:p-6 overflow-x-auto flex justify-center items-start border border-slate-300/80 min-h-[600px] shadow-inner">
                   <div 
@@ -820,6 +908,8 @@ export default function App() {
             onDeleteStudent={handleDeleteStudent}
             onOpenBatchPrint={(ids) => handleOpenBatch(ids)}
             onOpenImport={() => setIsImportOpen(true)}
+            onClearAllStudents={handleClearAllStudents}
+            onLoadSampleData={handleLoadSampleData}
           />
         )}
 
@@ -927,6 +1017,83 @@ export default function App() {
         }
         config={config}
       />
+
+      {/* Modal Bantuan & Panduan Deploy GitHub Pages */}
+      {isDeployHelpOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs no-print">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-200">
+            <div className="bg-slate-900 text-white p-5 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <HelpCircle className="w-5 h-5 text-sky-400" />
+                <h3 className="text-base font-bold">Panduan Deploy ke GitHub Pages</h3>
+              </div>
+              <button
+                onClick={() => setIsDeployHelpOpen(false)}
+                className="text-slate-400 hover:text-white p-1 rounded-lg"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4 max-h-[75vh] overflow-y-auto text-xs text-slate-700 leading-relaxed">
+              <div className="p-3 bg-sky-50 border border-sky-200 rounded-xl text-sky-950 font-medium">
+                💡 <strong>Mengapa timbul "Page Not Exist" (404) di GitHub Pages?</strong>
+                <p className="mt-1 text-[11px] text-sky-900">
+                  Secara lalai di GitHub, tetapan Pages mungkin ditetapkan kepada <em>"Deploy from a branch"</em> bukannya <em>"GitHub Actions"</em>. Ikuti 3 langkah mudah ini untuk mengaktifkannya:
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-start gap-2.5">
+                  <span className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0">1</span>
+                  <div>
+                    <strong className="text-slate-900 block text-xs">Buka Tetapan Repositori GitHub</strong>
+                    <p className="text-[11px] text-slate-600">Pergi ke repositori anda di GitHub, klik tab <strong>Settings</strong> di bahagian atas menu.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2.5">
+                  <span className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0">2</span>
+                  <div>
+                    <strong className="text-slate-900 block text-xs">Pilih "Pages" & Tukar Sumber ke GitHub Actions</strong>
+                    <p className="text-[11px] text-slate-600">
+                      Di bar sisi kiri, klik <strong>Pages</strong>. Di bawah seksyen <em>"Build and deployment"</em> ➔ <strong>Source</strong>, tukar pilihan daripada <em>"Deploy from a branch"</em> kepada <strong className="text-blue-700">GitHub Actions</strong>.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2.5">
+                  <span className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0">3</span>
+                  <div>
+                    <strong className="text-slate-900 block text-xs">Tunggu Workflow "Deploy to GitHub Pages" Selesai</strong>
+                    <p className="text-[11px] text-slate-600">
+                      Klik tab <strong>Actions</strong> di GitHub untuk melihat status deploy. Selepas tanda semak hijau siap, pautan laman rasmi anda akan aktif di <code>https://&lt;nama-github&gt;.github.io/&lt;nama-repo&gt;/</code>.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-950 text-[11px]">
+                ✅ <strong>Konfigurasi Sistem Telah Siap:</strong>
+                <ul className="list-disc pl-4 mt-1 space-y-0.5 text-emerald-900">
+                  <li>Laluan relatif <code>base: './'</code> telah dikonfigurasikan dalam <code>vite.config.ts</code>.</li>
+                  <li>Alur kerja automatik <code>.github/workflows/deploy.yml</code> telah sedia ada.</li>
+                  <li>Halaman sokongan SPA <code>404.html</code> disertakan untuk mengelakkan sebarang ralat pautan.</li>
+                </ul>
+              </div>
+
+              <div className="pt-2 flex justify-end">
+                <button
+                  onClick={() => setIsDeployHelpOpen(false)}
+                  className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold text-xs transition"
+                >
+                  Faham & Tutup
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Footer (No-print) */}
       <footer className="bg-white border-t border-slate-200 py-6 mt-auto text-center text-xs text-slate-500 no-print">

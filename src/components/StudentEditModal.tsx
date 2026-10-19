@@ -54,12 +54,21 @@ export const StudentEditModal: React.FC<StudentEditModalProps> = ({
     e.preventDefault();
     if (!formData.name.trim()) return;
 
+    const strip = (s?: string) => (s || '').replace(/[\[\]]/g, '').trim();
+
     onSave({
       ...formData,
-      name: formData.name.toUpperCase().trim(),
-      class: formData.class.toUpperCase().trim(),
-      activity: formData.activity.toUpperCase().trim(),
-      achievement: formData.achievement.toUpperCase().trim(),
+      name: strip(formData.name).toUpperCase(),
+      ic: strip(formData.ic),
+      class: strip(formData.class).toUpperCase(),
+      unitClub: formData.unitClub ? strip(formData.unitClub).toUpperCase() : undefined,
+      positionRole: formData.positionRole ? strip(formData.positionRole).toUpperCase() : undefined,
+      activity: strip(formData.activity).toUpperCase(),
+      achievement: strip(formData.achievement).toUpperCase(),
+      date: strip(formData.date),
+      venue: strip(formData.venue).toUpperCase(),
+      certNumber: strip(formData.certNumber),
+      extraInfo: strip(formData.extraInfo),
     });
     onClose();
   };

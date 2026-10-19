@@ -26,6 +26,8 @@ interface StudentManagerProps {
   onDeleteStudent: (id: string) => void;
   onOpenBatchPrint: (selectedIds: string[]) => void;
   onOpenImport: () => void;
+  onClearAllStudents?: () => void;
+  onLoadSampleData?: () => void;
 }
 
 export const StudentManager: React.FC<StudentManagerProps> = ({
@@ -37,6 +39,8 @@ export const StudentManager: React.FC<StudentManagerProps> = ({
   onDeleteStudent,
   onOpenBatchPrint,
   onOpenImport,
+  onClearAllStudents,
+  onLoadSampleData,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [levelFilter, setLevelFilter] = useState<'all' | AchievementLevel>('all');
@@ -110,7 +114,7 @@ export const StudentManager: React.FC<StudentManagerProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={onOpenImport}
             className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-bold text-slate-700 transition"
@@ -119,14 +123,42 @@ export const StudentManager: React.FC<StudentManagerProps> = ({
             <span>Import Excel / Sheet</span>
           </button>
 
-          <button
-            onClick={exportCurrentListToExcel}
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-bold text-slate-700 transition"
-            title="Eksport ke fail Excel"
-          >
-            <Download className="w-3.5 h-3.5 text-slate-600" />
-            <span className="hidden md:inline">Eksport Excel</span>
-          </button>
+          {students.length > 0 && (
+            <button
+              onClick={exportCurrentListToExcel}
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-bold text-slate-700 transition"
+              title="Eksport ke fail Excel"
+            >
+              <Download className="w-3.5 h-3.5 text-slate-600" />
+              <span className="hidden md:inline">Eksport Excel</span>
+            </button>
+          )}
+
+          {students.length > 0 && onClearAllStudents && (
+            <button
+              onClick={() => {
+                if (window.confirm('Adakah anda pasti untuk memadam SEMUA rekod murid dalam pangkalan data?')) {
+                  onClearAllStudents();
+                }
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-xl text-xs font-bold transition"
+              title="Padam semua data murid untuk mulakan sesi baharu"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Kosongkan Semua</span>
+            </button>
+          )}
+
+          {students.length === 0 && onLoadSampleData && (
+            <button
+              onClick={onLoadSampleData}
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 rounded-xl text-xs font-bold transition"
+              title="Muat 5 data murid contoh untuk ujian sijil"
+            >
+              <span>🧪</span>
+              <span>Muat Data Contoh</span>
+            </button>
+          )}
 
           <button
             onClick={onAddNewStudent}
@@ -229,8 +261,46 @@ export const StudentManager: React.FC<StudentManagerProps> = ({
           <tbody className="divide-y divide-slate-100">
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={8} className="p-8 text-center text-slate-500">
-                  Tiada rekod murid yang sepadan dengan kriteria carian.
+                <td colSpan={8} className="p-10 text-center">
+                  <div className="max-w-md mx-auto space-y-3">
+                    <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto text-xl">
+                      📋
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-900">
+                        {students.length === 0 ? 'Pangkalan Data Murid Bersih & Kosong' : 'Tiada Rekod Dijumpai'}
+                      </h4>
+                      <p className="text-xs text-slate-500 mt-1">
+                        {students.length === 0 
+                          ? 'Sistem kini sedia untuk kegunaan rasmi sekolah anda. Masukkan murid baharu atau import fail Excel/CSV untuk menjana sijil.' 
+                          : `Tiada rekod murid yang sepadan dengan carian "${searchQuery}".`}
+                      </p>
+                    </div>
+                    {students.length === 0 && (
+                      <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+                        <button
+                          onClick={onOpenImport}
+                          className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5"
+                        >
+                          <FileSpreadsheet className="w-4 h-4" /> Import Excel / CSV
+                        </button>
+                        <button
+                          onClick={onAddNewStudent}
+                          className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5"
+                        >
+                          <Plus className="w-4 h-4" /> + Tambah Murid Manual
+                        </button>
+                        {onLoadSampleData && (
+                          <button
+                            onClick={onLoadSampleData}
+                            className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition"
+                          >
+                            🧪 Muat Data Contoh
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </td>
               </tr>
             ) : (

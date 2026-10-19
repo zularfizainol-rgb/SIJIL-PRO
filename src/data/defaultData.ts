@@ -20,8 +20,7 @@ export const DEFAULT_CONFIG: CertificateConfig = {
   bodyLeadText: 'telah menunjukkan prestasi yang cemerlang dan terpuji dalam program / aspek:',
   atLevelText: 'PERINGKAT',
   closingText: 'Semoga kejayaan ini menjadi pendorong untuk terus cemerlang pada masa hadapan.',
-  useCustomWording: false,
-  customParagraphTemplate: 'Dengan ini diperakukan bahawa didokumenkan\n\n{{NAMA}}\n[{{IC}}]\n\ndari\n\n[{{KELAS}}]\n\ntelah menunjukkan prestasi yang cemerlang dan terpuji dalam program / aspek:\n\n[{{AKTIVITI}}]\n\nbagi tahun\n[{{TARIKH}}]',
+  customParagraphTemplate: 'Dengan ini diperakukan bahawa didokumenkan\n\n{{NAMA}}\n{{IC}}\n\ndari\n\n{{KELAS}}\n\ntelah menunjukkan prestasi yang cemerlang dan terpuji dalam program / aspek:\n\n{{AKTIVITI}}\n\nbagi tahun\n{{TARIKH}}',
   
   // Ruang & Frasa Khas 3 Format Sijil Baharu
   eventYear: '2026',
@@ -80,6 +79,19 @@ export const DEFAULT_CONFIG: CertificateConfig = {
   customTextFontSize: 'md',
   customTextLineHeight: 'relaxed',
   customHighlightName: true,
+  customHighlightVariables: true,
+  customBoldFields: {
+    name: true,
+    activity: true,
+    position: true,
+    achievement: true,
+    class: true,
+    unit: true,
+    ic: false,
+    date: false,
+    level: true,
+    school: true,
+  },
   customShowUnderline: true,
 
   accentColor: '#1e3a8a',
@@ -88,6 +100,23 @@ export const DEFAULT_CONFIG: CertificateConfig = {
   titleFontSize: 'lg',
   studentNameFontSize: 'lg',
   borderStyle: 'ornate',
+};
+
+// Templat Murid Kosong (Untuk pratonton bila tiada rekod dalam sistem - Tiada tanda kurungan siku [ ])
+export const EMPTY_STUDENT_PREVIEW: Student = {
+  id: 'template-preview',
+  name: 'NAMA PENUH MURID DENGAN HURUF BESAR',
+  ic: 'NO. MYKID / NO. KP',
+  class: 'NAMA KELAS / TINGKATAN',
+  unitClub: 'NAMA KELAB / PERSATUAN / AKTIVITI',
+  positionRole: 'JAWATAN / PERANAN MURID',
+  activity: 'NAMA PROGRAM ATAU JENIS PENGHARGAAN',
+  level: 'sekolah',
+  achievement: 'PENYERTAAN / PENCAPAIAN CEMERLANG',
+  venue: 'DEWAN SEKOLAH / LOKASI MAJLIS',
+  date: 'TARIKH MAJLIS',
+  certNumber: 'SR/2026/001',
+  extraInfo: '',
 };
 
 export const SAMPLE_STUDENTS: Student[] = [
@@ -249,22 +278,22 @@ export const CUSTOM_FREEDOM_TEMPLATES: CustomFreedomTemplate[] = [
     icon: '📜',
     certTitle: 'SIJIL PENGHARGAAN',
     certSubtitle: '',
-    description: 'Dengan ini diperakukan bahawa didokumenkan [NAMA] [IC] dari [KELAS] telah menunjukkan prestasi yang cemerlang dan terpuji...',
+    description: 'Dengan ini diperakukan bahawa didokumenkan NAMA, IC dari KELAS telah menunjukkan prestasi yang cemerlang dan terpuji...',
     templateText: `Dengan ini diperakukan bahawa didokumenkan
 
 {{NAMA}}
-[{{IC}}]
+{{IC}}
 
 dari
 
-[{{KELAS}}]
+{{KELAS}}
 
 telah menunjukkan prestasi yang cemerlang dan terpuji dalam program / aspek:
 
-[{{AKTIVITI}}]
+{{AKTIVITI}}
 
 bagi tahun
-[{{TARIKH}}]`,
+{{TARIKH}}`,
   },
   {
     id: 'format-2-akademik',
@@ -273,18 +302,18 @@ bagi tahun
     icon: '🎓',
     certTitle: 'SIJIL PENGHARGAAN',
     certSubtitle: '',
-    description: 'Diberikan dengan tulus ikhlas kepada [NAMA] [IC] atas pencapaian cemerlang dan usaha gigih dalam [SUBJEK]...',
+    description: 'Diberikan dengan tulus ikhlas kepada NAMA, IC atas pencapaian cemerlang dan usaha gigih dalam MATA PELAJARAN / PENCAPAIAN...',
     templateText: `Diberikan dengan tulus ikhlas kepada
 
 {{NAMA}}
-[{{IC}}]
+{{IC}}
 
 Atas pencapaian cemerlang dan usaha gigih dalam
 
-[{{AKTIVITI}}]
+{{AKTIVITI}}
 
 Bagi Sesi
-[{{TARIKH}}]
+{{TARIKH}}
 
 Semoga kejayaan ini menjadi pendorong untuk terus cemerlang pada masa hadapan.`,
   },
@@ -295,21 +324,21 @@ Semoga kejayaan ini menjadi pendorong untuk terus cemerlang pada masa hadapan.`,
     icon: '🌟',
     certTitle: 'SIJIL PENGHARGAAN',
     certSubtitle: '',
-    description: 'Dianugerahkan kepada [NAMA] atas sumbangan, komitmen dan penglibatan aktif sebagai [JAWATAN] dalam [KELAB]...',
+    description: 'Dianugerahkan kepada NAMA atas sumbangan, komitmen dan penglibatan aktif sebagai JAWATAN dalam KELAB...',
     templateText: `Dianugerahkan kepada
 
 {{NAMA}}
 
 Atas sumbangan, komitmen dan penglibatan aktif sebagai
 
-[{{JAWATAN}}]
+{{JAWATAN}}
 
 Dalam
 
-[{{KELAB}}]
+{{KELAB}}
 
 Bagi
-[{{TARIKH}}]`,
+{{TARIKH}}`,
   },
   {
     id: 'kbs-kepimpinan',

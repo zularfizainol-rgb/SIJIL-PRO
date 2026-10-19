@@ -59,26 +59,28 @@ export function mapRowsToStudents(rows: RawRow[], basePrefix = 'SKAK/2026/'): St
       return '';
     };
 
-    const name = findValue(['nama', 'murid', 'student', 'name']) || `MURID ${index + 1}`;
-    const icRaw = findValue(['ic', 'pengenalan', 'k/p', 'kp', 'mykid', 'identity']);
-    const studentClass = findValue(['kelas', 'class', 'tingkatan', 'tahun']) || '6 CEMERLANG';
+    const stripBrackets = (val: string): string => val.replace(/[\[\]]/g, '').trim();
+
+    const name = stripBrackets(findValue(['nama', 'murid', 'student', 'name']) || `MURID ${index + 1}`);
+    const icRaw = stripBrackets(findValue(['ic', 'pengenalan', 'k/p', 'kp', 'mykid', 'identity']));
+    const studentClass = stripBrackets(findValue(['kelas', 'class', 'tingkatan', 'tahun']) || '6 CEMERLANG');
     const unitClub = findValue(['unit', 'kelab', 'persatuan', 'badan', 'uniform', 'rumah', 'unit/kelab']);
     const positionRole = findValue(['jawatan', 'peranan', 'role', 'position', 'lantikan']);
-    const activity = findValue(['aktiviti', 'pertandingan', 'kejohanan', 'acara', 'activity', 'sukan', 'program']) || 'KEJOHANAN MSSD KERAMAT';
+    const activity = stripBrackets(findValue(['aktiviti', 'pertandingan', 'kejohanan', 'acara', 'activity', 'sukan', 'program']) || 'KEJOHANAN MSSD KERAMAT');
     const levelRaw = findValue(['peringkat', 'level', 'zon', 'kategori']);
-    const achievement = findValue(['pencapaian', 'kedudukan', 'kejayaan', 'tempat', 'johan', 'anugerah']) || 'PENYERTAAN CEMERLANG';
-    const date = findValue(['tarikh', 'date', 'hari']) || '15 OKTOBER 2026';
-    const certNumber = findValue(['no siri', 'rujukan', 'cert', 'id']) || `${basePrefix}${String(index + 1).padStart(3, '0')}`;
-    const extraInfo = findValue(['catatan', 'kategori', 'extra', 'nota', 'wakil']);
-    const customSentence = findValue(['ayat', 'ucapan', 'sentence', 'penghargaan']);
+    const achievement = stripBrackets(findValue(['pencapaian', 'kedudukan', 'kejayaan', 'tempat', 'johan', 'anugerah']) || 'PENYERTAAN CEMERLANG');
+    const date = stripBrackets(findValue(['tarikh', 'date', 'hari']) || '15 OKTOBER 2026');
+    const certNumber = stripBrackets(findValue(['no siri', 'rujukan', 'cert', 'id']) || `${basePrefix}${String(index + 1).padStart(3, '0')}`);
+    const extraInfo = stripBrackets(findValue(['catatan', 'kategori', 'extra', 'nota', 'wakil']));
+    const customSentence = stripBrackets(findValue(['ayat', 'ucapan', 'sentence', 'penghargaan']));
 
     return {
       id: `std-import-${Date.now()}-${index}-${Math.random().toString(36).slice(2, 6)}`,
       name: name.toUpperCase(),
       ic: formatIC(icRaw),
       class: studentClass.toUpperCase(),
-      unitClub: unitClub ? unitClub.toUpperCase() : undefined,
-      positionRole: positionRole ? positionRole.toUpperCase() : undefined,
+      unitClub: unitClub ? stripBrackets(unitClub).toUpperCase() : undefined,
+      positionRole: positionRole ? stripBrackets(positionRole).toUpperCase() : undefined,
       activity: activity.toUpperCase(),
       level: detectLevel(levelRaw),
       achievement: achievement.toUpperCase(),
@@ -120,19 +122,18 @@ export function parsePastedData(text: string): Student[] {
     const mapped: Student[] = [];
     for (let i = startIdx; i < rows.length; i++) {
       const cols = rows[i];
-      if (!cols || cols.length === 0 || !cols[0]?.trim()) continue;
-
+      const strip = (s?: string) => (s || '').replace(/[\[\]]/g, '').trim();
       mapped.push({
         id: `std-paste-${Date.now()}-${i}`,
-        name: (cols[0] || '').trim().toUpperCase(),
-        ic: formatIC(cols[1]),
-        class: (cols[2] || '6 CEMERLANG').trim().toUpperCase(),
-        activity: (cols[3] || 'KEJOHANAN MSSD').trim().toUpperCase(),
-        level: detectLevel(cols[4] || 'zon'),
-        achievement: (cols[5] || 'JOHAN').trim().toUpperCase(),
-        date: (cols[6] || '15 OKTOBER 2026').trim(),
+        name: strip(cols[0]).toUpperCase(),
+        ic: formatIC(strip(cols[1])),
+        class: strip(cols[2] || '6 CEMERLANG').toUpperCase(),
+        activity: strip(cols[3] || 'KEJOHANAN MSSD').toUpperCase(),
+        level: detectLevel(strip(cols[4]) || 'zon'),
+        achievement: strip(cols[5] || 'JOHAN').toUpperCase(),
+        date: strip(cols[6] || '15 OKTOBER 2026'),
         certNumber: `SKAK/2026/${String(mapped.length + 1).padStart(3, '0')}`,
-        extraInfo: (cols[7] || '').trim(),
+        extraInfo: strip(cols[7]),
       });
     }
     return mapped;

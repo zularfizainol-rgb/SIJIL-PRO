@@ -116,6 +116,19 @@ export interface CertificateConfig {
   customTextFontSize?: 'sm' | 'md' | 'lg' | 'xl'; // Saiz fon perenggan bebas
   customTextLineHeight?: 'tight' | 'normal' | 'relaxed'; // Jarak baris perenggan bebas
   customHighlightName?: boolean; // Togel penegasan nama murid dalam teks karangan bebas
+  customHighlightVariables?: boolean; // Togel tebalkan automatik pembolehubah penting (nama, aktiviti, jawatan, pencapaian, kelas, dll.)
+  customBoldFields?: {
+    name?: boolean;
+    activity?: boolean;
+    position?: boolean;
+    achievement?: boolean;
+    class?: boolean;
+    unit?: boolean;
+    ic?: boolean;
+    date?: boolean;
+    level?: boolean;
+    school?: boolean;
+  };
   customShowUnderline?: boolean; // Togel garis bawah bagi nama murid dalam mod karangan bebas
   
   // Signatures & Stamp
