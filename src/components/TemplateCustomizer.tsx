@@ -1695,12 +1695,57 @@ export const TemplateCustomizer: React.FC<TemplateCustomizerProps> = ({
                 </span>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-600 uppercase mb-0.5">
-                      Tahun / Sesi Sijil:
-                    </label>
+                  {/* KOTAK 1: TAHUN / SESI PERSEKOLAHAN (Berasingan) */}
+                  <div className="p-2.5 bg-white rounded-xl border border-slate-200 shadow-2xs space-y-1.5">
+                    <div className="flex items-center justify-between mb-0.5">
+                      <label className="block text-[10px] font-bold text-slate-700 uppercase flex items-center gap-1">
+                        <span>🗓️</span> Tahun / Sesi:
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => update({ showSessionYear: config.showSessionYear === false ? true : false })}
+                        className={`text-[9px] font-bold px-1.5 py-0.5 rounded transition ${
+                          config.showSessionYear !== false
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-slate-300 text-slate-800'
+                        }`}
+                        title="Klik untuk papar atau sembunyikan Tahun / Sesi di sijil"
+                      >
+                        {config.showSessionYear !== false ? '✓ Dipapar' : '✕ Sembunyi'}
+                      </button>
+                    </div>
+
+                    {/* Pilihan Pantas Sesi */}
+                    <div className="flex items-center gap-1 overflow-x-auto pb-0.5">
+                      {['2026', '2025/2026', '2026/2027'].map((val) => {
+                        const currentVal = config.paragraphLayout === 'format-akademik' ? config.academicSession : config.eventYear;
+                        const isMatch = currentVal === val;
+                        return (
+                          <button
+                            key={val}
+                            type="button"
+                            onClick={() => {
+                              if (config.paragraphLayout === 'format-akademik') {
+                                update({ academicSession: val, showSessionYear: true });
+                              } else {
+                                update({ eventYear: val, showSessionYear: true });
+                              }
+                            }}
+                            className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition border ${
+                              isMatch && config.showSessionYear !== false
+                                ? 'bg-blue-50 text-blue-700 border-blue-300'
+                                : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                            }`}
+                          >
+                            {val}
+                          </button>
+                        );
+                      })}
+                    </div>
+
                     <input
                       type="text"
+                      disabled={config.showSessionYear === false}
                       value={config.paragraphLayout === 'format-akademik' ? (config.academicSession || '2025/2026') : (config.eventYear || '2026')}
                       onChange={(e) => {
                         if (config.paragraphLayout === 'format-akademik') {
@@ -1709,15 +1754,20 @@ export const TemplateCustomizer: React.FC<TemplateCustomizerProps> = ({
                           update({ eventYear: e.target.value });
                         }
                       }}
-                      className="w-full text-xs font-bold p-2 border border-slate-300 rounded-lg focus:ring-1 focus:ring-blue-500"
+                      className={`w-full text-xs font-bold p-1.5 border rounded-lg focus:ring-1 focus:ring-blue-500 transition ${
+                        config.showSessionYear === false
+                          ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
+                          : 'bg-white border-slate-300'
+                      }`}
                       placeholder={config.paragraphLayout === 'format-akademik' ? '2025/2026' : '2026'}
                     />
                   </div>
 
-                  <div>
+                  {/* KOTAK 2: TARIKH SIJIL / TANDATANGAN (Berasingan) */}
+                  <div className="p-2.5 bg-white rounded-xl border border-slate-200 shadow-2xs space-y-1.5">
                     <div className="flex items-center justify-between mb-0.5">
-                      <label className="block text-[10px] font-bold text-slate-600 uppercase">
-                        Tarikh Majlis (Di Sijil):
+                      <label className="block text-[10px] font-bold text-slate-700 uppercase flex items-center gap-1">
+                        <span>📅</span> Tarikh Sijil:
                       </label>
                       <button
                         type="button"
@@ -1727,17 +1777,35 @@ export const TemplateCustomizer: React.FC<TemplateCustomizerProps> = ({
                             ? 'bg-blue-600 text-white'
                             : 'bg-slate-300 text-slate-800'
                         }`}
-                        title="Klik untuk papar atau sembunyikan tarikh di sijil"
+                        title="Klik untuk papar atau sembunyikan tarikh hari/bulan/tahun di sijil"
                       >
-                        {config.showEventDate !== false ? '✓ Dipaparkan' : '✕ Disembunyi'}
+                        {config.showEventDate !== false ? '✓ Dipapar' : '✕ Sembunyi'}
                       </button>
                     </div>
+
+                    <div className="flex items-center gap-1 overflow-x-auto pb-0.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const today = new Intl.DateTimeFormat('ms-MY', {
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric'
+                          }).format(new Date()).toUpperCase();
+                          update({ issueDate: today, showEventDate: true });
+                        }}
+                        className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 transition truncate"
+                      >
+                        Hari Ini
+                      </button>
+                    </div>
+
                     <input
                       type="text"
                       disabled={config.showEventDate === false}
                       value={config.issueDate || '18 OKTOBER 2026'}
                       onChange={(e) => update({ issueDate: e.target.value })}
-                      className={`w-full text-xs font-bold uppercase p-2 border rounded-lg focus:ring-1 focus:ring-blue-500 transition ${
+                      className={`w-full text-xs font-bold uppercase p-1.5 border rounded-lg focus:ring-1 focus:ring-blue-500 transition ${
                         config.showEventDate === false 
                           ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed' 
                           : 'bg-white border-slate-300'
@@ -2244,7 +2312,17 @@ export const TemplateCustomizer: React.FC<TemplateCustomizerProps> = ({
                 onChange={(e) => update({ showEventDate: e.target.checked })}
                 className="w-4 h-4 text-blue-600 rounded"
               />
-              <span className="font-bold text-blue-900">Tarikh Majlis / Sesi Sijil</span>
+              <span className="font-bold text-blue-900">Tarikh Sijil (Hari/Bulan/Tahun)</span>
+            </label>
+
+            <label className="flex items-center gap-2 cursor-pointer p-2 bg-white rounded-lg border border-purple-200 hover:bg-purple-50/50">
+              <input
+                type="checkbox"
+                checked={config.showSessionYear !== false}
+                onChange={(e) => update({ showSessionYear: e.target.checked })}
+                className="w-4 h-4 text-purple-600 rounded"
+              />
+              <span className="font-bold text-purple-900">Tahun / Sesi Persekolahan</span>
             </label>
           </div>
 

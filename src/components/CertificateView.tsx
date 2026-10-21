@@ -434,8 +434,8 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                 processed = replaceVar(processed, /\[\s*\{\{?UNIT\}?\}\s*\]|\[UNIT(?:\s*\/\s*BADAN\s*BERUNIFORM)?\]|\{\{?UNIT\}?\}|\[\s*\{\{?KELAB\}?\}\s*\]|\[(?:NAMA\s*)?KELAB(?:\s*\/\s*PERSATUAN(?:\s*\/\s*AKTIVITI)?)?\]|\{\{?KELAB\}?\}/, cleanText(student.unitClub) || 'UNIT / KELAB', isFieldBold('unit', true));
                 processed = replaceVar(processed, /\[\s*\{\{?IC\}?\}\s*\]|\[(?:NO\.?\s*)?(?:MYKID|KP|K\/P|KAD\s*PENGENALAN)\]|\[NO\.?\s*MYKID\s*\/\s*NO\.?\s*KP\]|\{\{?IC\}?\}/, cleanText(student.ic) || 'NO. KAD PENGENALAN', isFieldBold('ic', false));
                 const dateVal = config.showEventDate !== false ? (cleanText(student.date || config.issueDate) || '18 OKTOBER 2026') : '';
-                const sessionVal = config.showEventDate !== false ? (cleanText(config.academicSession || config.eventYear) || '2025/2026') : '';
-                const yearVal = config.showEventDate !== false ? (cleanText(config.eventYear) || '2026') : '';
+                const sessionVal = config.showSessionYear !== false ? (cleanText(config.academicSession || config.eventYear) || '2025/2026') : '';
+                const yearVal = config.showSessionYear !== false ? (cleanText(config.eventYear) || '2026') : '';
 
                 processed = replaceVar(processed, /\[\s*\{\{?TARIKH\}?\}\s*\]|\[(?:TARIKH|TARIKH\s*MAJLIS)\]|\{\{?TARIKH\}?\}/, dateVal, isFieldBold('date', false));
                 processed = replaceVar(processed, /\[\s*\{\{?SESI\}?\}\s*\]|\[SESI\]|\{\{?SESI\}?\}/, sessionVal, false);
@@ -613,8 +613,8 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                 )}
               </div>
 
-              {/* bagi tahun TAHUN (Pilihan Guru untuk papar atau sorok) */}
-              {config.showEventDate !== false && (
+              {/* bagi tahun TAHUN (Pilihan Guru untuk papar atau sorok berasingan daripada tarikh) */}
+              {config.showSessionYear !== false && (
                 <div className="pt-1.5">
                   <p className="text-xs font-serif italic text-slate-600">bagi tahun</p>
                   <p className="text-sm md:text-base font-bold text-slate-950 font-sans tracking-wide mt-0.5">
@@ -668,8 +668,8 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                 )}
               </div>
 
-              {/* Bagi Sesi TAHUN/SESI (Pilihan Guru untuk papar atau sorok) */}
-              {config.showEventDate !== false && (
+              {/* Bagi Sesi TAHUN/SESI (Pilihan Guru untuk papar atau sorok berasingan daripada tarikh) */}
+              {config.showSessionYear !== false && (
                 <div className="pt-1.5">
                   <p className="text-xs font-serif italic text-slate-600">Bagi Sesi</p>
                   <p className="text-sm md:text-base font-bold text-slate-950 font-sans tracking-wide mt-0.5">
@@ -733,8 +733,8 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                 )}
               </div>
 
-              {/* Bagi TAHUN (Pilihan Guru untuk papar atau sorok) */}
-              {config.showEventDate !== false && (
+              {/* Bagi TAHUN (Pilihan Guru untuk papar atau sorok berasingan daripada tarikh) */}
+              {config.showSessionYear !== false && (
                 <div className="pt-1.5">
                   <p className="text-xs font-serif italic text-slate-600">Bagi</p>
                   <p className="text-sm md:text-base font-bold text-slate-950 font-sans tracking-wide mt-0.5">

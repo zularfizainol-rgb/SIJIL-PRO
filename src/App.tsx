@@ -914,23 +914,23 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Pilihan Tarikh Majlis: Papar vs Sembunyi (Permintaan Pengguna) */}
+                  {/* Kawalan 1: Pilihan Tarikh Sijil (Papar vs Sembunyi Berasingan) */}
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-bold text-slate-700 uppercase text-[10px] tracking-wide flex items-center gap-1">
-                      <span>📅</span> Tarikh Majlis:
+                      <span>📅</span> Tarikh Sijil:
                     </span>
                     <div className="flex items-center bg-white p-0.5 rounded-lg border border-slate-200 shadow-2xs">
                       <button
                         onClick={() => {
                           setConfig({ ...config, showEventDate: true });
-                          showToast('Tarikh Majlis: Dipaparkan di sijil');
+                          showToast('Tarikh Sijil: Dipaparkan di sijil');
                         }}
                         className={`px-2.5 py-1 rounded text-xs font-bold transition flex items-center gap-1 ${
                           config.showEventDate !== false
                             ? 'bg-blue-600 text-white shadow-2xs'
                             : 'text-slate-700 hover:bg-slate-100'
                         }`}
-                        title="Paparkan tarikh majlis / sesi pada sijil dan tanda tangan"
+                        title="Paparkan tarikh sijil (hari/bulan/tahun) pada sijil & tandatangan"
                       >
                         <span>✓</span> Papar Tarikh
                       </button>
@@ -938,17 +938,99 @@ export default function App() {
                       <button
                         onClick={() => {
                           setConfig({ ...config, showEventDate: false });
-                          showToast('Tarikh Majlis: Disembunyikan daripada sijil');
+                          showToast('Tarikh Sijil: Disembunyikan daripada sijil');
                         }}
                         className={`px-2.5 py-1 rounded text-xs font-bold transition flex items-center gap-1 ${
                           config.showEventDate === false
                             ? 'bg-blue-600 text-white shadow-2xs'
                             : 'text-slate-700 hover:bg-slate-100'
                         }`}
-                        title="Sembunyikan tarikh majlis daripada sijil"
+                        title="Sembunyikan tarikh sijil daripada sijil"
                       >
-                        <span>✕</span> Sembunyi Tarikh
+                        <span>✕</span> Sembunyi
                       </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const val = prompt('Masukkan tarikh sijil yang dikehendaki (contoh: 18 OKTOBER 2026):', config.issueDate || '18 OKTOBER 2026');
+                          if (val && val.trim()) {
+                            setConfig({ ...config, issueDate: val.trim().toUpperCase(), showEventDate: true });
+                            showToast(`Tarikh Sijil dikemaskini: ${val.trim().toUpperCase()}`);
+                          }
+                        }}
+                        className="px-2 py-1 text-[11px] font-semibold text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition"
+                        title="Ubah teks tarikh sijil"
+                      >
+                        ✏️ Ubah
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Kawalan 2: Pilihan Tahun / Sesi Persekolahan (Papar vs Sembunyi Berasingan) */}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-bold text-slate-700 uppercase text-[10px] tracking-wide flex items-center gap-1">
+                      <span>🗓️</span> Tahun/Sesi:
+                    </span>
+                    <div className="flex items-center bg-white p-0.5 rounded-lg border border-slate-200 shadow-2xs">
+                      <button
+                        onClick={() => {
+                          setConfig({ ...config, showSessionYear: true });
+                          showToast('Tahun/Sesi: Dipaparkan di sijil');
+                        }}
+                        className={`px-2.5 py-1 rounded text-xs font-bold transition flex items-center gap-1 ${
+                          config.showSessionYear !== false
+                            ? 'bg-purple-600 text-white shadow-2xs'
+                            : 'text-slate-700 hover:bg-slate-100'
+                        }`}
+                        title="Paparkan tahun atau sesi persekolahan di sijil"
+                      >
+                        <span>✓</span> Papar Sesi
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setConfig({ ...config, showSessionYear: false });
+                          showToast('Tahun/Sesi: Disembunyikan daripada sijil');
+                        }}
+                        className={`px-2.5 py-1 rounded text-xs font-bold transition flex items-center gap-1 ${
+                          config.showSessionYear === false
+                            ? 'bg-purple-600 text-white shadow-2xs'
+                            : 'text-slate-700 hover:bg-slate-100'
+                        }`}
+                        title="Sembunyikan tahun atau sesi daripada sijil"
+                      >
+                        <span>✕</span> Sembunyi
+                      </button>
+
+                      {/* Pilihan Cepat Nilai Sesi */}
+                      <div className="flex items-center pl-1 border-l border-slate-200 gap-0.5">
+                        {['2026', '2025/2026', '2026/2027'].map((sesi) => {
+                          const currentVal = config.paragraphLayout === 'format-akademik' ? config.academicSession : config.eventYear;
+                          const isSel = currentVal === sesi;
+                          return (
+                            <button
+                              key={sesi}
+                              type="button"
+                              onClick={() => {
+                                if (config.paragraphLayout === 'format-akademik') {
+                                  setConfig({ ...config, academicSession: sesi, showSessionYear: true });
+                                } else {
+                                  setConfig({ ...config, eventYear: sesi, showSessionYear: true });
+                                }
+                                showToast(`Tahun/Sesi ditukar kepada ${sesi}`);
+                              }}
+                              className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition ${
+                                isSel && config.showSessionYear !== false
+                                  ? 'bg-purple-100 text-purple-800'
+                                  : 'text-slate-600 hover:bg-slate-100'
+                              }`}
+                            >
+                              {sesi}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
                 </div>

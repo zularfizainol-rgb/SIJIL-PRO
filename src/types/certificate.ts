@@ -104,7 +104,8 @@ export interface CertificateConfig {
   showActivity: boolean; // Papar/Sorok Nama Program/Pertandingan
   showLevel: boolean; // Papar/Sorok Peringkat (Boleh ditutup untuk sijil lantikan peringkat sekolah)
   showAchievement: boolean; // Papar/Sorok Pencapaian
-  showEventDate?: boolean; // Togel Pilihan Guru: Papar atau Sorokkan Tarikh Majlis / Sesi di Sijil
+  showEventDate?: boolean; // Togel Pilihan Guru: Papar atau Sorokkan Tarikh Sijil (Hari/Bulan/Tahun)
+  showSessionYear?: boolean; // Togel Pilihan Guru: Papar atau Sorokkan Tahun / Sesi Persekolahan (Berasingan)
   unitClubLabel: string; // "UNIT / KELAB:" atau "BADAN BERUNIFORM:"
   positionRoleLabel: string; // "JAWATAN:" atau "PERANAN:"
   achievementLabel: string; // "PENCAPAIAN:" atau "STATUS:"

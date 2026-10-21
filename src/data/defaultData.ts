@@ -67,7 +67,8 @@ export const DEFAULT_CONFIG: CertificateConfig = {
   showActivity: true,
   showLevel: true,
   showAchievement: true,
-  showEventDate: true, // Guru boleh pilih untuk memaparkan atau menyembunyikan tarikh majlis
+  showEventDate: true, // Guru boleh pilih untuk memaparkan atau menyembunyikan tarikh sijil
+  showSessionYear: true, // Guru boleh pilih berasingan untuk memaparkan atau menyembunyikan tahun / sesi persekolahan
   unitClubLabel: 'UNIT / KELAB:',
   positionRoleLabel: 'JAWATAN DILANTIK:',
   achievementLabel: 'PENCAPAIAN:',

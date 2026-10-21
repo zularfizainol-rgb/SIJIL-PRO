@@ -378,21 +378,21 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="p-4 bg-white border border-slate-200 rounded-xl space-y-2 shadow-2xs">
                   <h4 className="font-bold text-slate-900 text-xs uppercase flex items-center gap-1.5">
-                    <span>📅</span> Menghidupkan / Mematikan Tarikh Majlis
+                    <span>📅</span> Pemisahan Fungsi: Tarikh Sijil & Tahun / Sesi
                   </h4>
                   <p className="text-[11px] text-slate-600">
-                    Terdapat 2 tempat pantas untuk guru memilih:
+                    Fungsi Tarikh Sijil dan Tahun/Sesi kini <strong>diasingkan sepenuhnya</strong> agar guru bebas memilih:
                   </p>
                   <ul className="list-disc pl-4 space-y-1.5 text-[11px] text-slate-700">
                     <li>
-                      <strong>Di Bar Toolbar Pratonton Utama:</strong> Klik butang <strong>"📅 Tarikh: Dipaparkan / Disembunyikan"</strong> untuk suis serta-merta tanpa perlu buka tetapan.
+                      <strong>1. Tarikh Sijil (Hari/Bulan/Tahun):</strong> Kawal paparan tarikh penuh (contoh: <em>18 OKTOBER 2026</em>) di bahagian bawah tandatangan pentadbir atau tarikh acara. Boleh dipaparkan atau disembunyikan secara berasingan.
                     </li>
                     <li>
-                      <strong>Di Tab Format Sijil:</strong> Tandakan atau nyah-tandakan kotak semak <em>"Tarikh Majlis / Sesi Sijil"</em> di bawah senarai elemen sijil.
+                      <strong>2. Tahun / Sesi Persekolahan:</strong> Kawal paparan tahun atau sesi persekolahan (contoh: <em>2026</em> atau <em>2025/2026</em>) dalam ayat penghargaan.
                     </li>
                   </ul>
                   <p className="text-[10px] text-emerald-800 bg-emerald-50 p-2 rounded-lg border border-emerald-200 mt-1">
-                    ✓ Apabila tarikh dimatikan, perkataan <em>"bagi tahun 2026"</em> / <em>"Bagi Sesi"</em> dan baris <em>"Tarikh: 18 OKTOBER 2026"</em> di bawah tandatangan akan disembunyikan secara bersih.
+                    ✓ Guru boleh memaparkan Tahun/Sesi tanpa perlu memaparkan tarikh hari/bulan, atau sebaliknya dengan butang pantas di atas kanvas sijil.
                   </p>
                 </div>
 
