@@ -170,39 +170,54 @@ export const StudentQuickForm: React.FC<StudentQuickFormProps> = ({
           />
         </div>
 
-        {/* Tarikh & No Siri */}
-        <details className="text-xs text-slate-500 rounded-xl border border-slate-200 bg-slate-50/50 p-2">
-          <summary className="cursor-pointer font-semibold text-[11px] text-slate-600 hover:text-slate-900 select-none">
-            Maklumat Rujukan (Tarikh Sijil & No. Siri)
-          </summary>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+        {/* Tarikh Sijil & No Siri */}
+        <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
-                Tarikh Sijil:
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-[11px] font-bold text-slate-700 uppercase flex items-center gap-1">
+                  <Calendar className="w-3.5 h-3.5 text-blue-500" />
+                  Tarikh Sijil:
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const today = new Intl.DateTimeFormat('ms-MY', {
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric'
+                    }).format(new Date()).toUpperCase();
+                    updateField('date', today);
+                  }}
+                  className="text-[10px] font-bold text-blue-600 hover:text-blue-800"
+                >
+                  Hari Ini
+                </button>
+              </div>
               <input
                 type="text"
-                value={student.date}
+                value={student.date || ''}
                 onChange={(e) => updateField('date', e.target.value.toUpperCase())}
                 placeholder="18 OKTOBER 2026"
-                className="w-full text-xs p-2 bg-white border border-slate-300 rounded-lg outline-none"
+                className="w-full text-xs font-bold uppercase p-2 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+              <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1 flex items-center gap-1">
+                <Hash className="w-3.5 h-3.5 text-slate-400" />
                 No. Siri Sijil (Pilihan):
               </label>
               <input
                 type="text"
-                value={student.certNumber}
+                value={student.certNumber || ''}
                 onChange={(e) => updateField('certNumber', e.target.value)}
                 placeholder="JBS/SEL/2026/001"
-                className="w-full text-xs font-mono p-2 bg-white border border-slate-300 rounded-lg outline-none"
+                className="w-full text-xs font-mono p-2 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
               />
             </div>
           </div>
-        </details>
+        </div>
 
         {/* Catatan Tambahan */}
         <div>

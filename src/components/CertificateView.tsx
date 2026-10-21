@@ -108,6 +108,9 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
     return val.replace(/[\[\]]/g, '').trim();
   };
 
+  // Tarikh sijil rasmi yang dinamik - sentiasa mengutamakan tarikh yang disunting (config.issueDate atau student.date)
+  const certDate = cleanText(config.issueDate) || cleanText(student.date) || '18 OKTOBER 2026';
+
   // Format student name to look breathtaking in calligraphy/script or clean uppercase
   const formatStudentName = (name: string, isScriptMode: boolean) => {
     const rawName = cleanText(name) || 'NAMA PENUH MURID';
@@ -433,7 +436,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                 processed = replaceVar(processed, /\[\s*\{\{?KELAS\}?\}\s*\]|\[(?:NAMA\s*)?KELAS(?:\s*\/\s*TINGKATAN)?\]|\{\{?KELAS\}?\}|\[TINGKATAN\]|\{\{?TINGKATAN\}?\}/, cleanText(student.class) || 'KELAS', isFieldBold('class', true));
                 processed = replaceVar(processed, /\[\s*\{\{?UNIT\}?\}\s*\]|\[UNIT(?:\s*\/\s*BADAN\s*BERUNIFORM)?\]|\{\{?UNIT\}?\}|\[\s*\{\{?KELAB\}?\}\s*\]|\[(?:NAMA\s*)?KELAB(?:\s*\/\s*PERSATUAN(?:\s*\/\s*AKTIVITI)?)?\]|\{\{?KELAB\}?\}/, cleanText(student.unitClub) || 'UNIT / KELAB', isFieldBold('unit', true));
                 processed = replaceVar(processed, /\[\s*\{\{?IC\}?\}\s*\]|\[(?:NO\.?\s*)?(?:MYKID|KP|K\/P|KAD\s*PENGENALAN)\]|\[NO\.?\s*MYKID\s*\/\s*NO\.?\s*KP\]|\{\{?IC\}?\}/, cleanText(student.ic) || 'NO. KAD PENGENALAN', isFieldBold('ic', false));
-                const dateVal = config.showEventDate !== false ? (cleanText(student.date || config.issueDate) || '18 OKTOBER 2026') : '';
+                const dateVal = config.showEventDate !== false ? certDate : '';
                 const sessionVal = config.showSessionYear !== false ? (cleanText(config.academicSession || config.eventYear) || '2025/2026') : '';
                 const yearVal = config.showSessionYear !== false ? (cleanText(config.eventYear) || '2026') : '';
 
@@ -812,7 +815,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                     <div>
                       <p className="text-xs font-serif italic text-slate-600">Pada:</p>
                       <p className="text-sm md:text-base font-bold text-slate-950 font-sans tracking-wide">
-                        {student.date || config.issueDate || '18 OKTOBER 2026'}
+                        {certDate}
                       </p>
                     </div>
                   )}
@@ -1087,7 +1090,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                       </p>
                       {config.showEventDate !== false && (
                         <p className="text-[11px] font-bold text-slate-700 mt-1">
-                          Tarikh: {cleanText(student.date) || config.issueDate || '18 OKTOBER 2026'}
+                          Tarikh: {certDate}
                         </p>
                       )}
                     </div>
@@ -1141,7 +1144,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                       </p>
                       {config.showEventDate !== false && (
                         <p className="text-[11px] font-bold text-slate-700 mt-1">
-                          Tarikh: {cleanText(student.date) || config.issueDate || '18 OKTOBER 2026'}
+                          Tarikh: {certDate}
                         </p>
                       )}
                     </div>
@@ -1274,7 +1277,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                         </p>
                         {config.showEventDate !== false && (
                           <p className="text-[11px] font-bold text-slate-700 mt-0.5">
-                            Tarikh: {cleanText(student.date) || config.issueDate || '18 OKTOBER 2026'}
+                            Tarikh: {certDate}
                           </p>
                         )}
                       </>
@@ -1288,7 +1291,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                         </p>
                         {config.showEventDate !== false && (
                           <p className="text-[11px] font-bold text-slate-700 mt-0.5">
-                            Tarikh: {cleanText(student.date) || config.issueDate || '18 OKTOBER 2026'}
+                            Tarikh: {certDate}
                           </p>
                         )}
                       </>
@@ -1302,7 +1305,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                         </p>
                         {config.showEventDate !== false && (
                           <p className="text-[11px] font-bold text-slate-700 mt-0.5">
-                            Tarikh: {cleanText(student.date) || config.issueDate || '18 OKTOBER 2026'}
+                            Tarikh: {certDate}
                           </p>
                         )}
                       </>
@@ -1377,7 +1380,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                 <div className="text-center pb-2">
                   {config.showCertDate && config.showEventDate !== false && (
                     <p className="text-[11px] font-semibold text-slate-700">
-                      TARIKH: <span className="font-bold text-slate-900">{student.date || config.issueDate || '15 OKTOBER 2026'}</span>
+                      TARIKH: <span className="font-bold text-slate-900">{certDate}</span>
                     </p>
                   )}
                   {config.showCertNumber && (

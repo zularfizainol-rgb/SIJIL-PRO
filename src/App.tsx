@@ -158,7 +158,25 @@ export default function App() {
 
   const handleUpdateStudent = (updated: Student) => {
     setStudents((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
+    // Jika tarikh murid ini diubah, selaraskan terus ke tarikh sijil (config.issueDate)
+    if (updated.date && updated.date !== config.issueDate) {
+      setConfig((prev) => ({ ...prev, issueDate: updated.date, showEventDate: true }));
+    }
     showToast('Maklumat murid dikemaskini');
+  };
+
+  // Pengemaskinian tarikh sijil menyeluruh (Global sync ke config dan semua murid dalam memori)
+  const handleUpdateCertificateDate = (newDateRaw: string) => {
+    const newDate = newDateRaw.trim().toUpperCase();
+    if (!newDate) return;
+    setConfig((prev) => ({ ...prev, issueDate: newDate, showEventDate: true }));
+    setStudents((prev) =>
+      prev.map((s) => ({
+        ...s,
+        date: newDate,
+      }))
+    );
+    showToast(`Tarikh Sijil dikemaskini: ${newDate}`);
   };
 
   const handleSaveStudentFromModal = (student: Student) => {
@@ -170,6 +188,9 @@ export default function App() {
         return [student, ...prev];
       }
     });
+    if (student.date && student.date !== config.issueDate) {
+      setConfig((prev) => ({ ...prev, issueDate: student.date, showEventDate: true }));
+    }
     setSelectedStudentId(student.id);
     showToast(studentToEdit ? 'Murid berjaya dikemaskini' : 'Murid berjaya ditambah');
   };
@@ -914,12 +935,12 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Kawalan 1: Pilihan Tarikh Sijil (Papar vs Sembunyi Berasingan) */}
+                  {/* Kawalan 1: Pilihan Tarikh Sijil (Papar vs Sembunyi Berasingan & Edit Tarikh Terus) */}
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-bold text-slate-700 uppercase text-[10px] tracking-wide flex items-center gap-1">
                       <span>📅</span> Tarikh Sijil:
                     </span>
-                    <div className="flex items-center bg-white p-0.5 rounded-lg border border-slate-200 shadow-2xs">
+                    <div className="flex items-center bg-white p-0.5 rounded-lg border border-slate-200 shadow-2xs gap-0.5">
                       <button
                         onClick={() => {
                           setConfig({ ...config, showEventDate: true });
@@ -950,20 +971,48 @@ export default function App() {
                         <span>✕</span> Sembunyi
                       </button>
 
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const val = prompt('Masukkan tarikh sijil yang dikehendaki (contoh: 18 OKTOBER 2026):', config.issueDate || '18 OKTOBER 2026');
-                          if (val && val.trim()) {
-                            setConfig({ ...config, issueDate: val.trim().toUpperCase(), showEventDate: true });
-                            showToast(`Tarikh Sijil dikemaskini: ${val.trim().toUpperCase()}`);
-                          }
-                        }}
-                        className="px-2 py-1 text-[11px] font-semibold text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition"
-                        title="Ubah teks tarikh sijil"
-                      >
-                        ✏️ Ubah
-                      </button>
+                      {/* Kotak Suntingan Tarikh Sijil Terus & Butang Hari Ini */}
+                      <div className="flex items-center pl-1 border-l border-slate-200 gap-1">
+                        <input
+                          type="text"
+                          value={config.issueDate || currentStudent.date || '18 OKTOBER 2026'}
+                          onChange={(e) => handleUpdateCertificateDate(e.target.value)}
+                          placeholder="18 OKTOBER 2026"
+                          className="w-36 sm:w-44 px-2 py-0.5 text-xs font-bold uppercase bg-slate-50 border border-slate-200 rounded focus:bg-white focus:ring-1 focus:ring-blue-500 outline-none text-slate-900"
+                          title="Taip terus tarikh sijil di sini (contoh: 20 OKTOBER 2026)"
+                        />
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const today = new Intl.DateTimeFormat('ms-MY', {
+                              day: 'numeric',
+                              month: 'long',
+                              year: 'numeric'
+                            }).format(new Date()).toUpperCase();
+                            handleUpdateCertificateDate(today);
+                          }}
+                          className="px-1.5 py-1 text-[10px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded transition whitespace-nowrap"
+                          title="Gunakan tarikh hari ini secara automatik"
+                        >
+                          Hari Ini
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const currentVal = config.issueDate || currentStudent.date || '18 OKTOBER 2026';
+                            const val = prompt('Masukkan tarikh sijil yang dikehendaki (contoh: 20 OKTOBER 2026):', currentVal);
+                            if (val && val.trim()) {
+                              handleUpdateCertificateDate(val);
+                            }
+                          }}
+                          className="px-2 py-1 text-[11px] font-bold text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition"
+                          title="Ubah teks tarikh sijil melalui kotak teks"
+                        >
+                          ✏️ Ubah
+                        </button>
+                      </div>
                     </div>
                   </div>
 
@@ -1137,6 +1186,10 @@ export default function App() {
               <TemplateCustomizer
                 config={config}
                 onChangeConfig={(newCfg) => {
+                  if (newCfg.issueDate && newCfg.issueDate !== config.issueDate) {
+                    const formattedDate = newCfg.issueDate.toUpperCase();
+                    setStudents((prev) => prev.map((s) => ({ ...s, date: formattedDate })));
+                  }
                   setConfig(newCfg);
                   showToast('Format sijil dikemaskini');
                 }}
