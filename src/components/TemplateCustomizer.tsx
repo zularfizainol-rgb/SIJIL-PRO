@@ -1715,14 +1715,33 @@ export const TemplateCustomizer: React.FC<TemplateCustomizerProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-600 uppercase mb-0.5">
-                      Tarikh Majlis (Pada Tandatangan):
-                    </label>
+                    <div className="flex items-center justify-between mb-0.5">
+                      <label className="block text-[10px] font-bold text-slate-600 uppercase">
+                        Tarikh Majlis (Di Sijil):
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => update({ showEventDate: config.showEventDate === false ? true : false })}
+                        className={`text-[9px] font-bold px-1.5 py-0.5 rounded transition ${
+                          config.showEventDate !== false
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-slate-300 text-slate-800'
+                        }`}
+                        title="Klik untuk papar atau sembunyikan tarikh di sijil"
+                      >
+                        {config.showEventDate !== false ? '✓ Dipaparkan' : '✕ Disembunyi'}
+                      </button>
+                    </div>
                     <input
                       type="text"
+                      disabled={config.showEventDate === false}
                       value={config.issueDate || '18 OKTOBER 2026'}
                       onChange={(e) => update({ issueDate: e.target.value })}
-                      className="w-full text-xs font-bold uppercase p-2 border border-slate-300 rounded-lg focus:ring-1 focus:ring-blue-500"
+                      className={`w-full text-xs font-bold uppercase p-2 border rounded-lg focus:ring-1 focus:ring-blue-500 transition ${
+                        config.showEventDate === false 
+                          ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed' 
+                          : 'bg-white border-slate-300'
+                      }`}
                       placeholder="18 OKTOBER 2026"
                     />
                   </div>
@@ -2181,6 +2200,16 @@ export const TemplateCustomizer: React.FC<TemplateCustomizerProps> = ({
                 className="w-4 h-4 text-blue-600 rounded"
               />
               <span className="font-medium text-slate-800">Pencapaian / Keputusan</span>
+            </label>
+
+            <label className="flex items-center gap-2 cursor-pointer p-2 bg-white rounded-lg border border-blue-200 hover:bg-blue-50/50">
+              <input
+                type="checkbox"
+                checked={config.showEventDate !== false}
+                onChange={(e) => update({ showEventDate: e.target.checked })}
+                className="w-4 h-4 text-blue-600 rounded"
+              />
+              <span className="font-bold text-blue-900">Tarikh Majlis / Sesi Sijil</span>
             </label>
           </div>
 

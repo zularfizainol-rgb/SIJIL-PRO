@@ -158,11 +158,11 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
   return (
     <div
       id={containerId}
-      className={`relative bg-white text-slate-900 mx-auto overflow-hidden select-none shadow-2xl transition-all ${
+      className={`relative bg-white text-slate-900 mx-auto overflow-hidden select-none transition-all ${
         isLandscape 
-          ? 'w-[1123px] h-[794px]' 
-          : 'w-[794px] h-[1123px]'
-      } ${isPrintMode ? 'shadow-none' : ''}`}
+          ? 'w-[1123px] h-[794px] print:w-[297mm] print:h-[210mm] print:max-w-[297mm] print:max-h-[210mm]' 
+          : 'w-[794px] h-[1123px] print:w-[210mm] print:h-[297mm] print:max-w-[210mm] print:max-h-[297mm]'
+      } ${isPrintMode ? 'shadow-none m-0' : 'shadow-2xl print:shadow-none print:m-0'}`}
       style={{
         boxSizing: 'border-box',
       }}
@@ -417,9 +417,13 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                 processed = replaceVar(processed, /\[\s*\{\{?KELAS\}?\}\s*\]|\[(?:NAMA\s*)?KELAS(?:\s*\/\s*TINGKATAN)?\]|\{\{?KELAS\}?\}|\[TINGKATAN\]|\{\{?TINGKATAN\}?\}/, cleanText(student.class) || 'KELAS', isFieldBold('class', true));
                 processed = replaceVar(processed, /\[\s*\{\{?UNIT\}?\}\s*\]|\[UNIT(?:\s*\/\s*BADAN\s*BERUNIFORM)?\]|\{\{?UNIT\}?\}|\[\s*\{\{?KELAB\}?\}\s*\]|\[(?:NAMA\s*)?KELAB(?:\s*\/\s*PERSATUAN(?:\s*\/\s*AKTIVITI)?)?\]|\{\{?KELAB\}?\}/, cleanText(student.unitClub) || 'UNIT / KELAB', isFieldBold('unit', true));
                 processed = replaceVar(processed, /\[\s*\{\{?IC\}?\}\s*\]|\[(?:NO\.?\s*)?(?:MYKID|KP|K\/P|KAD\s*PENGENALAN)\]|\[NO\.?\s*MYKID\s*\/\s*NO\.?\s*KP\]|\{\{?IC\}?\}/, cleanText(student.ic) || 'NO. KAD PENGENALAN', isFieldBold('ic', false));
-                processed = replaceVar(processed, /\[\s*\{\{?TARIKH\}?\}\s*\]|\[(?:TARIKH|TARIKH\s*MAJLIS)\]|\{\{?TARIKH\}?\}/, cleanText(student.date || config.issueDate) || '18 OKTOBER 2026', isFieldBold('date', false));
-                processed = replaceVar(processed, /\[\s*\{\{?SESI\}?\}\s*\]|\[SESI\]|\{\{?SESI\}?\}/, cleanText(config.academicSession || config.eventYear) || '2025/2026', false);
-                processed = replaceVar(processed, /\[\s*\{\{?TAHUN\}?\}\s*\]|\[TAHUN\]|\{\{?TAHUN\}?\}/, cleanText(config.eventYear) || '2026', false);
+                const dateVal = config.showEventDate !== false ? (cleanText(student.date || config.issueDate) || '18 OKTOBER 2026') : '';
+                const sessionVal = config.showEventDate !== false ? (cleanText(config.academicSession || config.eventYear) || '2025/2026') : '';
+                const yearVal = config.showEventDate !== false ? (cleanText(config.eventYear) || '2026') : '';
+
+                processed = replaceVar(processed, /\[\s*\{\{?TARIKH\}?\}\s*\]|\[(?:TARIKH|TARIKH\s*MAJLIS)\]|\{\{?TARIKH\}?\}/, dateVal, isFieldBold('date', false));
+                processed = replaceVar(processed, /\[\s*\{\{?SESI\}?\}\s*\]|\[SESI\]|\{\{?SESI\}?\}/, sessionVal, false);
+                processed = replaceVar(processed, /\[\s*\{\{?TAHUN\}?\}\s*\]|\[TAHUN\]|\{\{?TAHUN\}?\}/, yearVal, false);
                 processed = replaceVar(processed, /\[\s*\{\{?TEMPAT\}?\}\s*\]|\[(?:TEMPAT|LOKASI|DEWAN\s*SEKOLAH\s*\/\s*LOKASI\s*MAJLIS)\]|\{\{?TEMPAT\}?\}|\[LOKASI\]|\{\{?LOKASI\}?\}/, cleanText(student.venue || config.eventVenue) || 'DEWAN SEKOLAH', false);
                 processed = replaceVar(processed, /\[\s*\{\{?PERINGKAT\}?\}\s*\]|\[PERINGKAT\]|\{\{?PERINGKAT\}?\}/, sLevelFormatted, isFieldBold('level', true));
                 processed = replaceVar(processed, /\[\s*\{\{?SEKOLAH\}?\}\s*\]|\[NAMA\s*SEKOLAH\]|\{\{?SEKOLAH\}?\}/, cleanText(config.schoolName) || 'SEKOLAH', isFieldBold('school', true));
@@ -593,13 +597,15 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                 )}
               </div>
 
-              {/* bagi tahun TAHUN */}
-              <div className="pt-1.5">
-                <p className="text-xs font-serif italic text-slate-600">bagi tahun</p>
-                <p className="text-sm md:text-base font-bold text-slate-950 font-sans tracking-wide mt-0.5">
-                  {cleanText(config.eventYear || student.date?.match(/\d{4}/)?.[0]) || '2026'}
-                </p>
-              </div>
+              {/* bagi tahun TAHUN (Pilihan Guru untuk papar atau sorok) */}
+              {config.showEventDate !== false && (
+                <div className="pt-1.5">
+                  <p className="text-xs font-serif italic text-slate-600">bagi tahun</p>
+                  <p className="text-sm md:text-base font-bold text-slate-950 font-sans tracking-wide mt-0.5">
+                    {cleanText(config.eventYear || student.date?.match(/\d{4}/)?.[0]) || '2026'}
+                  </p>
+                </div>
+              )}
 
               {student.customSentence && (
                 <p className="text-xs italic font-serif text-slate-600 max-w-lg mx-auto pt-1">
@@ -646,13 +652,15 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                 )}
               </div>
 
-              {/* Bagi Sesi TAHUN/SESI */}
-              <div className="pt-1.5">
-                <p className="text-xs font-serif italic text-slate-600">Bagi Sesi</p>
-                <p className="text-sm md:text-base font-bold text-slate-950 font-sans tracking-wide mt-0.5">
-                  {cleanText(config.academicSession || config.eventYear) || '2025/2026'}
-                </p>
-              </div>
+              {/* Bagi Sesi TAHUN/SESI (Pilihan Guru untuk papar atau sorok) */}
+              {config.showEventDate !== false && (
+                <div className="pt-1.5">
+                  <p className="text-xs font-serif italic text-slate-600">Bagi Sesi</p>
+                  <p className="text-sm md:text-base font-bold text-slate-950 font-sans tracking-wide mt-0.5">
+                    {cleanText(config.academicSession || config.eventYear) || '2025/2026'}
+                  </p>
+                </div>
+              )}
 
               {/* Semoga kejayaan ini menjadi pendorong untuk terus cemerlang pada masa hadapan. */}
               <p className="text-xs italic font-serif text-slate-600 max-w-lg mx-auto leading-relaxed pt-1">
@@ -709,13 +717,15 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                 )}
               </div>
 
-              {/* Bagi TAHUN */}
-              <div className="pt-1.5">
-                <p className="text-xs font-serif italic text-slate-600">Bagi</p>
-                <p className="text-sm md:text-base font-bold text-slate-950 font-sans tracking-wide mt-0.5">
-                  {cleanText(config.eventYear || student.date?.match(/\d{4}/)?.[0]) || '2026'}
-                </p>
-              </div>
+              {/* Bagi TAHUN (Pilihan Guru untuk papar atau sorok) */}
+              {config.showEventDate !== false && (
+                <div className="pt-1.5">
+                  <p className="text-xs font-serif italic text-slate-600">Bagi</p>
+                  <p className="text-sm md:text-base font-bold text-slate-950 font-sans tracking-wide mt-0.5">
+                    {cleanText(config.eventYear || student.date?.match(/\d{4}/)?.[0]) || '2026'}
+                  </p>
+                </div>
+              )}
 
               {student.customSentence && (
                 <p className="text-xs italic font-serif text-slate-600 max-w-lg mx-auto pt-1">
@@ -782,12 +792,14 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
               {/* 6. Ruang Pada & Tempat */}
               {config.showDateVenueBlock !== false && (
                 <div className="pt-2.5 space-y-2 text-center">
-                  <div>
-                    <p className="text-xs font-serif italic text-slate-600">Pada:</p>
-                    <p className="text-sm md:text-base font-bold text-slate-950 font-sans tracking-wide">
-                      {student.date || config.issueDate || '18 OKTOBER 2026'}
-                    </p>
-                  </div>
+                  {config.showEventDate !== false && (
+                    <div>
+                      <p className="text-xs font-serif italic text-slate-600">Pada:</p>
+                      <p className="text-sm md:text-base font-bold text-slate-950 font-sans tracking-wide">
+                        {student.date || config.issueDate || '18 OKTOBER 2026'}
+                      </p>
+                    </div>
+                  )}
                   {(student.venue || config.eventVenue) && (
                     <div>
                       <p className="text-xs font-serif italic text-slate-600">Tempat:</p>
@@ -1057,9 +1069,11 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                       <p className="text-[11px] font-medium text-slate-600 mt-0.5">
                         {config.headmasterTitle || 'Pengetua / Guru Besar'}
                       </p>
-                      <p className="text-[11px] font-bold text-slate-700 mt-1">
-                        Tarikh: {cleanText(student.date) || config.issueDate || '18 OKTOBER 2026'}
-                      </p>
+                      {config.showEventDate !== false && (
+                        <p className="text-[11px] font-bold text-slate-700 mt-1">
+                          Tarikh: {cleanText(student.date) || config.issueDate || '18 OKTOBER 2026'}
+                        </p>
+                      )}
                     </div>
                   </div>
                 );
@@ -1109,9 +1123,11 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                       <p className="text-[11px] font-medium text-slate-600 mt-0.5">
                         {config.secondSignerTitle || pkDefaultTitle}
                       </p>
-                      <p className="text-[11px] font-bold text-slate-700 mt-1">
-                        Tarikh: {cleanText(student.date) || config.issueDate || '18 OKTOBER 2026'}
-                      </p>
+                      {config.showEventDate !== false && (
+                        <p className="text-[11px] font-bold text-slate-700 mt-1">
+                          Tarikh: {cleanText(student.date) || config.issueDate || '18 OKTOBER 2026'}
+                        </p>
+                      )}
                     </div>
                   </div>
                 );
@@ -1240,9 +1256,11 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                         <p className="text-xs font-semibold text-slate-800 uppercase mt-0.5">
                           {cleanText(config.secondSignerName) || 'NAMA PK HEM / GURU'}
                         </p>
-                        <p className="text-[11px] font-bold text-slate-700 mt-0.5">
-                          Tarikh: {cleanText(student.date) || config.issueDate || '18 OKTOBER 2026'}
-                        </p>
+                        {config.showEventDate !== false && (
+                          <p className="text-[11px] font-bold text-slate-700 mt-0.5">
+                            Tarikh: {cleanText(student.date) || config.issueDate || '18 OKTOBER 2026'}
+                          </p>
+                        )}
                       </>
                     ) : config.paragraphLayout === 'format-akademik' ? (
                       <>
@@ -1252,9 +1270,11 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                         <p className="text-xs font-semibold text-slate-800 uppercase mt-0.5">
                           {cleanText(config.secondSignerName) || 'NAMA PK PENTADBIR'}
                         </p>
-                        <p className="text-[11px] font-bold text-slate-700 mt-0.5">
-                          Tarikh: {cleanText(student.date) || config.issueDate || '18 OKTOBER 2026'}
-                        </p>
+                        {config.showEventDate !== false && (
+                          <p className="text-[11px] font-bold text-slate-700 mt-0.5">
+                            Tarikh: {cleanText(student.date) || config.issueDate || '18 OKTOBER 2026'}
+                          </p>
+                        )}
                       </>
                     ) : config.paragraphLayout === 'format-ringkas-moden' ? (
                       <>
@@ -1264,9 +1284,11 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                         <p className="text-xs font-semibold text-slate-800 uppercase mt-0.5">
                           {cleanText(config.secondSignerName) || 'NAMA PENOLONG KANAN'}
                         </p>
-                        <p className="text-[11px] font-bold text-slate-700 mt-0.5">
-                          Tarikh: {cleanText(student.date) || config.issueDate || '18 OKTOBER 2026'}
-                        </p>
+                        {config.showEventDate !== false && (
+                          <p className="text-[11px] font-bold text-slate-700 mt-0.5">
+                            Tarikh: {cleanText(student.date) || config.issueDate || '18 OKTOBER 2026'}
+                          </p>
+                        )}
                       </>
                     ) : (
                       <>
@@ -1337,7 +1359,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
               {/* Middle: Certificate Reference & Date */}
               {(config.showCertDate || config.showCertNumber) && (
                 <div className="text-center pb-2">
-                  {config.showCertDate && (
+                  {config.showCertDate && config.showEventDate !== false && (
                     <p className="text-[11px] font-semibold text-slate-700">
                       TARIKH: <span className="font-bold text-slate-900">{student.date || config.issueDate || '15 OKTOBER 2026'}</span>
                     </p>

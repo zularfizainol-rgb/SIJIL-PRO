@@ -43,18 +43,50 @@
   }
 }
 
+.print-only {
+  display: none !important;
+}
+
 @media print {
+  @page {
+    margin: 0mm;
+    size: auto;
+  }
+
+  body[data-orientation="landscape"] {
+    @page {
+      size: landscape;
+      margin: 0mm;
+    }
+  }
+
+  body[data-orientation="portrait"] {
+    @page {
+      size: portrait;
+      margin: 0mm;
+    }
+  }
+
   html, body {
     background: #ffffff !important;
     margin: 0 !important;
     padding: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
+  
   .no-print {
     display: none !important;
   }
+
+  .print-only {
+    display: block !important;
+  }
+
   .print-container {
+    display: block !important;
     position: absolute !important;
     left: 0 !important;
     top: 0 !important;
@@ -62,14 +94,20 @@
     margin: 0 !important;
     padding: 0 !important;
   }
+
   .print-certificate-page {
     page-break-after: always;
     break-after: page;
+    page-break-inside: avoid;
+    break-inside: avoid;
     box-shadow: none !important;
     margin: 0 !important;
-  }
-  @page {
-    size: A4 portrait;
-    margin: 0mm;
+    padding: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    background: #ffffff !important;
   }
 }

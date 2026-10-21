@@ -9,6 +9,7 @@ import { ImportModal } from './components/ImportModal';
 import { StudentEditModal } from './components/StudentEditModal';
 import { BatchPrintModal } from './components/BatchPrintModal';
 import { StudentQuickForm } from './components/StudentQuickForm';
+import { UserGuideModal } from './components/UserGuideModal';
 import { exportCertificateToPDF, exportCertificateToImage, triggerPrint } from './utils/pdfExport';
 import { 
   Award, 
@@ -30,7 +31,8 @@ import {
   HelpCircle,
   Plus,
   Trash2,
-  ExternalLink
+  ExternalLink,
+  BookOpen
 } from 'lucide-react';
 
 export default function App() {
@@ -84,6 +86,7 @@ export default function App() {
   const [isBatchPrintOpen, setIsBatchPrintOpen] = useState(false);
   const [batchSelectedIds, setBatchSelectedIds] = useState<string[]>([]);
   const [isDeployHelpOpen, setIsDeployHelpOpen] = useState(false);
+  const [isUserGuideOpen, setIsUserGuideOpen] = useState(false);
 
   // Preview zoom scale
   const [zoomScale, setZoomScale] = useState<number>(0.72);
@@ -106,6 +109,11 @@ export default function App() {
       console.error(e);
     }
   }, [config]);
+
+  // Sync data-orientation to body for @media print @page sizing
+  useEffect(() => {
+    document.body.setAttribute('data-orientation', config.orientation || 'landscape');
+  }, [config.orientation]);
 
   // Current active student (Guna EMPTY_STUDENT_PREVIEW jika senarai murid kosong - Tiada tanda kurungan siku [ ])
   const currentStudent = students.find((s) => s.id === selectedStudentId) || students[0] || EMPTY_STUDENT_PREVIEW;
@@ -265,6 +273,16 @@ export default function App() {
 
             {/* Top Right Action Buttons */}
             <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsUserGuideOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold transition shadow-xs ring-1 ring-blue-400/30"
+                title="Panduan Lengkap Cara Menggunakan Aplikasi SijilPro"
+              >
+                <BookOpen className="w-3.5 h-3.5 text-amber-300" />
+                <span className="hidden sm:inline">Panduan Penggunaan</span>
+                <span className="sm:hidden">Panduan</span>
+              </button>
+
               <button
                 onClick={() => setIsImportOpen(true)}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition shadow-xs"
@@ -816,6 +834,44 @@ export default function App() {
                       </button>
                     </div>
                   </div>
+
+                  {/* Pilihan Tarikh Majlis: Papar vs Sembunyi (Permintaan Pengguna) */}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-bold text-slate-700 uppercase text-[10px] tracking-wide flex items-center gap-1">
+                      <span>📅</span> Tarikh Majlis:
+                    </span>
+                    <div className="flex items-center bg-white p-0.5 rounded-lg border border-slate-200 shadow-2xs">
+                      <button
+                        onClick={() => {
+                          setConfig({ ...config, showEventDate: true });
+                          showToast('Tarikh Majlis: Dipaparkan di sijil');
+                        }}
+                        className={`px-2.5 py-1 rounded text-xs font-bold transition flex items-center gap-1 ${
+                          config.showEventDate !== false
+                            ? 'bg-blue-600 text-white shadow-2xs'
+                            : 'text-slate-700 hover:bg-slate-100'
+                        }`}
+                        title="Paparkan tarikh majlis / sesi pada sijil dan tanda tangan"
+                      >
+                        <span>✓</span> Papar Tarikh
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setConfig({ ...config, showEventDate: false });
+                          showToast('Tarikh Majlis: Disembunyikan daripada sijil');
+                        }}
+                        className={`px-2.5 py-1 rounded text-xs font-bold transition flex items-center gap-1 ${
+                          config.showEventDate === false
+                            ? 'bg-blue-600 text-white shadow-2xs'
+                            : 'text-slate-700 hover:bg-slate-100'
+                        }`}
+                        title="Sembunyikan tarikh majlis daripada sijil"
+                      >
+                        <span>✕</span> Sembunyi Tarikh
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Banner Panduan Jika Pangkalan Data Murid Kosong (Lalai Selepas Deploy) */}
@@ -964,7 +1020,7 @@ export default function App() {
       </main>
 
       {/* 3. ISOLATED PRINT-ONLY CONTAINER (Only rendered during window.print()) */}
-      <div className="print-container print-only hidden">
+      <div className="print-container print-only">
         {batchSelectedIds.length > 0 && isBatchPrintOpen ? (
           students
             .filter((s) => batchSelectedIds.includes(s.id))
@@ -991,6 +1047,12 @@ export default function App() {
       </div>
 
       {/* 4. MODALS */}
+      {/* User Guide Modal */}
+      <UserGuideModal
+        isOpen={isUserGuideOpen}
+        onClose={() => setIsUserGuideOpen(false)}
+      />
+
       {/* Import Modal */}
       <ImportModal
         isOpen={isImportOpen}
