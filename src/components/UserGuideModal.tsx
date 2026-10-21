@@ -224,13 +224,23 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
           {/* TAB 2: FORMATS */}
           {activeTab === 'formats' && (
             <div className="space-y-4">
-              <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
-                <h3 className="font-bold text-slate-900 text-xs uppercase">
-                  Penerangan 3 Format Utama & Mod Bebas
+              <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                <h3 className="font-bold text-slate-900 text-xs uppercase flex items-center gap-2">
+                  <Award className="w-4 h-4 text-amber-500" />
+                  Penukaran Tajuk Utama Sijil (1-Klik)
                 </h3>
-                <p className="text-[11px] text-slate-600 mt-0.5">
-                  Setiap format telah disesuaikan mengikut tradisi dan pekeliling persijilan sekolah Malaysia:
+                <p className="text-[11px] text-slate-600">
+                  Guru boleh menukar tajuk utama sijil pada bila-bila masa menggunakan bar butang pantas di atas pratonton atau menaip tajuk tersuai:
                 </p>
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  <span className="px-2 py-0.5 bg-blue-100 text-blue-900 font-bold rounded text-[10px]">🏆 SIJIL PENGHARGAAN</span>
+                  <span className="px-2 py-0.5 bg-emerald-100 text-emerald-900 font-bold rounded text-[10px]">🎖️ SIJIL PENYERTAAN</span>
+                  <span className="px-2 py-0.5 bg-purple-100 text-purple-900 font-bold rounded text-[10px]">📜 WATIKAH PELANTIKAN</span>
+                  <span className="px-2 py-0.5 bg-amber-100 text-amber-900 font-bold rounded text-[10px]">🥇 SIJIL PENCAPAIAN</span>
+                  <span className="px-2 py-0.5 bg-indigo-100 text-indigo-900 font-bold rounded text-[10px]">🌟 SIJIL KECEMERLANGAN</span>
+                  <span className="px-2 py-0.5 bg-rose-100 text-rose-900 font-bold rounded text-[10px]">🤝 SIJIL KHIDMAT BAKTI</span>
+                  <span className="px-2 py-0.5 bg-teal-100 text-teal-900 font-bold rounded text-[10px]">⏱️ SIJIL KEHADIRAN PENUH</span>
+                </div>
               </div>
 
               <div className="space-y-3">

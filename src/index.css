@@ -53,20 +53,6 @@
     size: auto;
   }
 
-  body[data-orientation="landscape"] {
-    @page {
-      size: landscape;
-      margin: 0mm;
-    }
-  }
-
-  body[data-orientation="portrait"] {
-    @page {
-      size: portrait;
-      margin: 0mm;
-    }
-  }
-
   html, body {
     background: #ffffff !important;
     margin: 0 !important;
@@ -87,27 +73,42 @@
 
   .print-container {
     display: block !important;
-    position: absolute !important;
-    left: 0 !important;
-    top: 0 !important;
+    position: static !important;
     width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
   }
 
   .print-certificate-page {
-    page-break-after: always;
-    break-after: page;
-    page-break-inside: avoid;
-    break-inside: avoid;
+    page-break-after: always !important;
+    break-after: page !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
     box-shadow: none !important;
-    margin: 0 !important;
+    margin: 0 auto !important;
     padding: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
     background: #ffffff !important;
+  }
+
+  body[data-orientation="landscape"] .print-certificate-page {
+    width: 297mm !important;
+    height: 210mm !important;
+    max-width: 297mm !important;
+    max-height: 210mm !important;
+  }
+
+  body[data-orientation="portrait"] .print-certificate-page {
+    width: 210mm !important;
+    height: 297mm !important;
+    max-width: 210mm !important;
+    max-height: 297mm !important;
+  }
+
+  .print-certificate-page:last-child {
+    page-break-after: auto !important;
+    break-after: auto !important;
   }
 }

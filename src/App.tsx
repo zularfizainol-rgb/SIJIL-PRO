@@ -110,9 +110,17 @@ export default function App() {
     }
   }, [config]);
 
-  // Sync data-orientation to body for @media print @page sizing
+  // Sync print orientation dynamically so browser print preview matches landscape or portrait
   useEffect(() => {
-    document.body.setAttribute('data-orientation', config.orientation || 'landscape');
+    const isLandscape = config.orientation === 'landscape';
+    document.body.setAttribute('data-orientation', isLandscape ? 'landscape' : 'portrait');
+    let styleEl = document.getElementById('dynamic-print-page-style') as HTMLStyleElement | null;
+    if (!styleEl) {
+      styleEl = document.createElement('style');
+      styleEl.id = 'dynamic-print-page-style';
+      document.head.appendChild(styleEl);
+    }
+    styleEl.innerHTML = `@media print { @page { size: ${isLandscape ? 'landscape' : 'portrait'}; margin: 0mm; } }`;
   }, [config.orientation]);
 
   // Current active student (Guna EMPTY_STUDENT_PREVIEW jika senarai murid kosong - Tiada tanda kurungan siku [ ])
@@ -197,6 +205,8 @@ export default function App() {
     setIsExportingPDF(false);
     if (success) {
       showToast('Fail PDF berjaya dimuat turun!');
+    } else {
+      showToast('Ralat semasa menjana fail PDF');
     }
   };
 
@@ -205,6 +215,15 @@ export default function App() {
     const success = await exportCertificateToImage('active-certificate', filename, config.orientation);
     if (success) {
       showToast('Imej sijil berjaya dimuat turun!');
+    } else {
+      showToast('Ralat semasa menjana imej PNG');
+    }
+  };
+
+  const handlePrint = () => {
+    const ok = triggerPrint();
+    if (!ok) {
+      showToast('Sila klik "Eksport PDF" untuk memuat turun fail cetakan.');
     }
   };
 
@@ -525,7 +544,7 @@ export default function App() {
                           setConfig({
                             ...config,
                             paragraphLayout: 'format-rasmi',
-                            certTitle: 'SIJIL PENGHARGAAN',
+                            certTitle: config.certTitle || 'SIJIL PENGHARGAAN',
                             introText: 'Dengan ini diperakukan bahawa didokumenkan',
                             showDividers: false,
                             showStudentIC: true,
@@ -557,7 +576,7 @@ export default function App() {
                           setConfig({
                             ...config,
                             paragraphLayout: 'format-akademik',
-                            certTitle: 'SIJIL PENGHARGAAN',
+                            certTitle: config.certTitle || 'SIJIL PENGHARGAAN',
                             introText: 'Diberikan dengan tulus ikhlas kepada',
                             closingText: 'Semoga kejayaan ini menjadi pendorong untuk terus cemerlang pada masa hadapan.',
                             showDividers: false,
@@ -589,7 +608,7 @@ export default function App() {
                           setConfig({
                             ...config,
                             paragraphLayout: 'format-ringkas-moden',
-                            certTitle: 'SIJIL PENGHARGAAN',
+                            certTitle: config.certTitle || 'SIJIL PENGHARGAAN',
                             introText: 'Dianugerahkan kepada',
                             showDividers: false,
                             showActivity: true,
@@ -647,7 +666,7 @@ export default function App() {
                   {/* Print & Export Buttons */}
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={triggerPrint}
+                      onClick={handlePrint}
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition shadow-xs"
                       title="Cetak terus melalui browser (Resolusi Penuh A4)"
                     >
@@ -678,6 +697,66 @@ export default function App() {
                     </button>
                   </div>
 
+                </div>
+
+                {/* Bar Pilihan Tajuk Utama Sijil (Penghargaan, Penyertaan, Watikah Pelantikan, dll.) */}
+                <div className="bg-white p-3 rounded-2xl border border-slate-200/90 shadow-2xs space-y-2 mb-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="font-bold text-slate-800 text-xs flex items-center gap-1.5 uppercase tracking-wide">
+                      <Award className="w-4 h-4 text-amber-500" />
+                      <span>Pilihan Tajuk Utama Sijil:</span>
+                      <span className="px-2.5 py-0.5 rounded-lg bg-amber-100 text-amber-950 font-black text-xs border border-amber-300">
+                        {config.certTitle || 'SIJIL PENGHARGAAN'}
+                      </span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newTitle = prompt('Masukkan tajuk utama sijil yang anda inginkan:', config.certTitle || 'SIJIL PENGHARGAAN');
+                        if (newTitle && newTitle.trim()) {
+                          setConfig({ ...config, certTitle: newTitle.trim().toUpperCase(), showCertTitle: true });
+                          showToast(`Tajuk ditukar: ${newTitle.trim().toUpperCase()}`);
+                        }
+                      }}
+                      className="text-xs font-bold text-blue-600 hover:text-blue-800 underline"
+                      title="Taip tajuk sijil lain secara manual"
+                    >
+                      + Taip Sendiri
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-0.5">
+                    {[
+                      { title: 'SIJIL PENGHARGAAN', icon: '🏆', label: 'Penghargaan' },
+                      { title: 'SIJIL PENYERTAAN', icon: '🎖️', label: 'Penyertaan' },
+                      { title: 'WATIKAH PELANTIKAN', icon: '📜', label: 'Watikah Pelantikan' },
+                      { title: 'SIJIL PENCAPAIAN', icon: '🥇', label: 'Pencapaian' },
+                      { title: 'SIJIL KECEMERLANGAN', icon: '🌟', label: 'Kecemerlangan' },
+                      { title: 'SIJIL KHIDMAT BAKTI', icon: '🤝', label: 'Khidmat Bakti' },
+                      { title: 'SIJIL KEHADIRAN PENUH', icon: '⏱️', label: 'Kehadiran Penuh' },
+                    ].map((item) => {
+                      const isSel = (config.certTitle || 'SIJIL PENGHARGAAN').toUpperCase() === item.title;
+                      return (
+                        <button
+                          key={item.title}
+                          type="button"
+                          onClick={() => {
+                            setConfig({ ...config, certTitle: item.title, showCertTitle: true });
+                            showToast(`Tajuk sijil ditukar kepada ${item.title}`);
+                          }}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 border ${
+                            isSel
+                              ? 'bg-blue-600 text-white border-blue-600 shadow-xs ring-2 ring-blue-500/20'
+                              : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 hover:border-slate-300'
+                          }`}
+                        >
+                          <span>{item.icon}</span>
+                          <span>{item.label}</span>
+                          {isSel && <Check className="w-3.5 h-3.5 ml-0.5" />}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 {/* Bar Kawalan Cepat: Susunan Logo (2 Logo Di Tengah) & Pilihan Tandatangan (GB / PK / Dua-dua) */}

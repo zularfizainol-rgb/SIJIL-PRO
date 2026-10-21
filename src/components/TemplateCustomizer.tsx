@@ -1532,7 +1532,7 @@ export const TemplateCustomizer: React.FC<TemplateCustomizerProps> = ({
                   type="button"
                   onClick={() => update({ 
                     paragraphLayout: 'format-rasmi',
-                    certTitle: 'SIJIL PENGHARGAAN',
+                    certTitle: config.certTitle || 'SIJIL PENGHARGAAN',
                     introText: 'Dengan ini diperakukan bahawa didokumenkan',
                     showDividers: false,
                     showStudentIC: true,
@@ -1573,7 +1573,7 @@ export const TemplateCustomizer: React.FC<TemplateCustomizerProps> = ({
                   type="button"
                   onClick={() => update({ 
                     paragraphLayout: 'format-akademik',
-                    certTitle: 'SIJIL PENGHARGAAN',
+                    certTitle: config.certTitle || 'SIJIL PENGHARGAAN',
                     introText: 'Diberikan dengan tulus ikhlas kepada',
                     closingText: 'Semoga kejayaan ini menjadi pendorong untuk terus cemerlang pada masa hadapan.',
                     showDividers: false,
@@ -1614,7 +1614,7 @@ export const TemplateCustomizer: React.FC<TemplateCustomizerProps> = ({
                   type="button"
                   onClick={() => update({ 
                     paragraphLayout: 'format-ringkas-moden',
-                    certTitle: 'SIJIL PENGHARGAAN',
+                    certTitle: config.certTitle || 'SIJIL PENGHARGAAN',
                     introText: 'Dianugerahkan kepada',
                     showDividers: false,
                     showActivity: true,
@@ -2042,18 +2042,51 @@ export const TemplateCustomizer: React.FC<TemplateCustomizerProps> = ({
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+        <div className="pt-2 space-y-2">
           <div>
-            <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
-              Tajuk Utama Sijil:
+            <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">
+              Pilihan Pantas Tajuk Utama Sijil (1-Klik):
             </label>
-            <input
-              type="text"
-              value={config.certTitle}
-              onChange={(e) => update({ certTitle: e.target.value })}
-              className="w-full text-xs font-bold p-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none uppercase"
-            />
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              {[
+                { title: 'SIJIL PENGHARGAAN', icon: '🏆', label: 'Penghargaan' },
+                { title: 'SIJIL PENYERTAAN', icon: '🎖️', label: 'Penyertaan' },
+                { title: 'WATIKAH PELANTIKAN', icon: '📜', label: 'Watikah Pelantikan' },
+                { title: 'SIJIL PENCAPAIAN', icon: '🥇', label: 'Pencapaian' },
+                { title: 'SIJIL KECEMERLANGAN', icon: '🌟', label: 'Kecemerlangan' },
+                { title: 'SIJIL KHIDMAT BAKTI', icon: '🤝', label: 'Khidmat Bakti' },
+                { title: 'SIJIL KEHADIRAN PENUH', icon: '⏱️', label: 'Kehadiran Penuh' },
+              ].map((item) => (
+                <button
+                  key={item.title}
+                  type="button"
+                  onClick={() => update({ certTitle: item.title, showCertTitle: true })}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 border ${
+                    config.certTitle === item.title
+                      ? 'bg-blue-600 text-white border-blue-600 shadow-2xs ring-2 ring-blue-500/20'
+                      : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'
+                  }`}
+                >
+                  <span>{item.icon}</span>
+                  <span>{item.label}</span>
+                </button>
+              ))}
+            </div>
           </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
+                Tajuk Utama Sijil (Boleh Edit / Taip Sendiri):
+              </label>
+              <input
+                type="text"
+                value={config.certTitle}
+                onChange={(e) => update({ certTitle: e.target.value })}
+                className="w-full text-xs font-bold p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none uppercase"
+                placeholder="SIJIL PENGHARGAAN"
+              />
+            </div>
 
           <div>
             <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
@@ -2063,11 +2096,13 @@ export const TemplateCustomizer: React.FC<TemplateCustomizerProps> = ({
               type="text"
               value={config.certSubtitle}
               onChange={(e) => update({ certSubtitle: e.target.value })}
-              className="w-full text-xs p-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none uppercase"
+              className="w-full text-xs p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none uppercase"
+              placeholder="ATAS KEJAYAAN MENGHARUMKAN NAMA SEKOLAH"
             />
           </div>
         </div>
       </div>
+    </div>
 
       {/* 6. SEKSYEN PELBAGAI KEGUNAAN & KANDUNGAN SIJIL (LANTIKAN, SUKAN, PROGRAM) */}
       <div className="space-y-4 pt-3 border-t border-slate-100">

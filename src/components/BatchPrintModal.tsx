@@ -14,7 +14,7 @@ import {
   FileText,
   Sparkles
 } from 'lucide-react';
-import jsPDF from 'jspdf';
+import { createJsPdf, triggerPrint } from '../utils/pdfExport';
 import html2canvas from 'html2canvas';
 
 interface BatchPrintModalProps {
@@ -40,10 +40,12 @@ export const BatchPrintModal: React.FC<BatchPrintModalProps> = ({
 
   const isLandscape = config.orientation === 'landscape';
   const previewStudent = students[previewIndex] || students[0];
+  const targetWidth = isLandscape ? 1123 : 794;
+  const targetHeight = isLandscape ? 794 : 1123;
 
   // 1. Direct browser batch printing (uses @media print page break)
   const handlePrintAll = () => {
-    window.print();
+    triggerPrint();
   };
 
   // 2. Generate Multi-Page PDF
@@ -53,7 +55,7 @@ export const BatchPrintModal: React.FC<BatchPrintModalProps> = ({
     setStatusMessage('Memulakan penjanaan fail PDF berkelompok...');
 
     try {
-      const pdf = new jsPDF({
+      const pdf = createJsPdf({
         orientation: isLandscape ? 'landscape' : 'portrait',
         unit: 'mm',
         format: 'a4',
@@ -64,17 +66,29 @@ export const BatchPrintModal: React.FC<BatchPrintModalProps> = ({
 
       for (let i = 0; i < students.length; i++) {
         const student = students[i];
+        setPreviewIndex(i); // Update live preview in modal
         setStatusMessage(`Menjana sijil (${i + 1}/${students.length}): ${student.name}...`);
         setProgress(Math.round(((i + 1) / students.length) * 100));
 
         const element = document.getElementById(`batch-cert-${student.id}`);
         if (element) {
+          // Allow DOM to settle
+          await new Promise((resolve) => setTimeout(resolve, 80));
+
           const canvas = await html2canvas(element, {
             scale: 2,
             useCORS: true,
+            allowTaint: true,
             logging: false,
             backgroundColor: '#ffffff',
-            windowWidth: isLandscape ? 1123 : 794,
+            width: targetWidth,
+            height: targetHeight,
+            windowWidth: targetWidth,
+            windowHeight: targetHeight,
+            scrollX: 0,
+            scrollY: 0,
+            x: 0,
+            y: 0,
           });
 
           const imgData = canvas.toDataURL('image/jpeg', 0.95);
@@ -89,7 +103,7 @@ export const BatchPrintModal: React.FC<BatchPrintModalProps> = ({
 
       setStatusMessage('Menyimpan fail PDF...');
       pdf.save(`Sijil_Penghargaan_Sekolah_Berkelompok_${students.length}_Murid.pdf`);
-      setStatusMessage('Selesai!');
+      setStatusMessage('Selesai! Fail PDF berjaya dimuat turun.');
     } catch (err) {
       console.error('Ralat semasa menjana batch PDF:', err);
       setStatusMessage('Ralat semasa menjana fail PDF berkelompok.');
@@ -324,10 +338,33 @@ export const BatchPrintModal: React.FC<BatchPrintModalProps> = ({
 
         </div>
 
-        {/* Hidden Container rendering all certificates for print & canvas capture */}
-        <div className="batch-render-container opacity-0 pointer-events-none fixed -left-[9999px] top-0">
+        {/* Staging Sandbox for batch PDF canvas capture (Rendered at origin 0,0 behind modal at z-index -50 with full opacity) */}
+        <div 
+          className="batch-capture-sandbox no-print"
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: isLandscape ? '1123px' : '794px',
+            height: isLandscape ? '794px' : '1123px',
+            zIndex: -50,
+            overflow: 'hidden',
+            backgroundColor: '#ffffff',
+            opacity: 1,
+            pointerEvents: 'none',
+          }}
+        >
           {students.map((s) => (
-            <div key={s.id} className="print-certificate-page">
+            <div 
+              key={s.id} 
+              id={`batch-container-${s.id}`}
+              style={{
+                width: isLandscape ? '1123px' : '794px',
+                height: isLandscape ? '794px' : '1123px',
+                overflow: 'hidden',
+                backgroundColor: '#ffffff',
+              }}
+            >
               <CertificateView
                 student={s}
                 config={config}

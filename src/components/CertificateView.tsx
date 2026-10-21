@@ -339,18 +339,34 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
             </>
           )}
 
-          {/* Certificate Title Badge (Format Ringkas & Moden mempunyai susunan 2 baris kemas) */}
+          {/* Certificate Title Badge (Menyokong sebarang tajuk utama: Penghargaan, Penyertaan, Pelantikan, dll.) */}
           {config.showCertTitle && (
             <div className="mt-2 inline-block">
-              {config.paragraphLayout === 'format-ringkas-moden' ? (
-                <h3 className={`font-black tracking-[0.25em] uppercase text-slate-950 ${titleSizeClass} ${fontClass} leading-tight`}>
-                  <span>SIJIL</span><br /><span className="text-amber-800">PENGHARGAAN</span>
-                </h3>
-              ) : (
-                <h3 className={`font-extrabold tracking-wide uppercase text-slate-900 ${titleSizeClass} ${fontClass}`}>
-                  {config.certTitle || 'SIJIL PENGHARGAAN'}
-                </h3>
-              )}
+              {(() => {
+                const titleText = (config.certTitle || 'SIJIL PENGHARGAAN').trim();
+                if (config.paragraphLayout === 'format-ringkas-moden') {
+                  const words = titleText.split(/\s+/);
+                  if (words.length > 1) {
+                    const firstWord = words[0];
+                    const restWords = words.slice(1).join(' ');
+                    return (
+                      <h3 className={`font-black tracking-[0.25em] uppercase text-slate-950 ${titleSizeClass} ${fontClass} leading-tight`}>
+                        <span>{firstWord}</span><br /><span className="text-amber-800">{restWords}</span>
+                      </h3>
+                    );
+                  }
+                  return (
+                    <h3 className={`font-black tracking-[0.25em] uppercase text-slate-950 ${titleSizeClass} ${fontClass} leading-tight`}>
+                      <span className="text-amber-800">{titleText}</span>
+                    </h3>
+                  );
+                }
+                return (
+                  <h3 className={`font-extrabold tracking-wide uppercase text-slate-900 ${titleSizeClass} ${fontClass}`}>
+                    {titleText}
+                  </h3>
+                );
+              })()}
               {config.showCertSubtitle && config.certSubtitle && config.paragraphLayout !== 'format-ringkas-moden' && (
                 <p className="text-xs tracking-[0.25em] font-semibold text-slate-600 uppercase mt-1">
                   {config.certSubtitle}
