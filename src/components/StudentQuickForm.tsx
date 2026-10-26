@@ -2,6 +2,7 @@ import React from 'react';
 import { Student, AchievementLevel } from '../types/certificate';
 import { formatIC } from '../utils/importer';
 import { Sparkles, Trophy, Calendar, Hash, IdCard, GraduationCap } from 'lucide-react';
+import { parseClassString, formatFullClassName } from '../utils/classHelper';
 
 interface StudentQuickFormProps {
   student: Student;
@@ -47,7 +48,7 @@ export const StudentQuickForm: React.FC<StudentQuickFormProps> = ({
           />
         </div>
 
-        {/* No IC & Kelas */}
+        {/* No IC & Kelas dengan Butang Aliran (Tahun 1-6) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1 flex items-center gap-1">
@@ -64,17 +65,61 @@ export const StudentQuickForm: React.FC<StudentQuickFormProps> = ({
           </div>
 
           <div>
-            <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1 flex items-center gap-1">
-              <GraduationCap className="w-3.5 h-3.5 text-slate-400" />
-              Kelas:
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-[11px] font-bold text-slate-600 uppercase flex items-center gap-1">
+                <GraduationCap className="w-3.5 h-3.5 text-blue-600" />
+                <span>Kelas:</span>
+              </label>
+              <div className="flex items-center gap-0.5">
+                <span className="text-[9px] font-bold text-slate-400 uppercase mr-0.5">Aliran:</span>
+                {[1, 2, 3, 4, 5, 6].map((num) => {
+                  const isCurrent = student.class.trim().startsWith(String(num));
+                  return (
+                    <button
+                      key={num}
+                      type="button"
+                      onClick={() => {
+                        const parsed = parseClassString(student.class);
+                        const newClass = `${num} ${parsed.className || 'IBNU SINA'}`;
+                        updateField('class', newClass);
+                      }}
+                      className={`w-4.5 h-4.5 rounded text-[10px] font-bold transition flex items-center justify-center border ${
+                        isCurrent
+                          ? 'bg-blue-600 text-white border-blue-600 shadow-2xs'
+                          : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'
+                      }`}
+                      title={`Tukar ke Tahun ${num}`}
+                    >
+                      {num}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
             <input
               type="text"
               value={student.class}
               onChange={(e) => updateField('class', e.target.value.toUpperCase())}
               placeholder="6 IBNU SINA"
-              className="w-full text-xs font-bold p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none uppercase"
+              className="w-full text-xs font-bold p-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none uppercase font-sans text-slate-900"
             />
+            {/* Butang Pantas Nama Kelas */}
+            <div className="flex items-center gap-1 overflow-x-auto pt-1 pb-0.5">
+              {['IBNU SINA', 'IBNU KHALDUN', 'AL-FARABI', 'CEMERLANG', 'PINTAR', 'BESTARI', 'AMANAH'].map((cls) => (
+                <button
+                  key={cls}
+                  type="button"
+                  onClick={() => {
+                    const parsed = parseClassString(student.class);
+                    const streamNum = parsed.streamNumber || '6';
+                    updateField('class', `${streamNum} ${cls}`);
+                  }}
+                  className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 shrink-0"
+                >
+                  {cls}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 

@@ -4,7 +4,8 @@ import {
   parsePastedData, 
   parseSpreadsheetFile, 
   fetchGoogleSheet, 
-  downloadSampleCSVTemplate 
+  downloadSampleCSVTemplate,
+  downloadSampleExcelTemplate 
 } from '../utils/importer';
 import { 
   FileSpreadsheet, 
@@ -168,20 +169,47 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
         {/* Modal Body */}
         <div className="p-6 overflow-y-auto space-y-4 flex-1">
           {/* Quick Help & Download Template Banner */}
-          <div className="flex flex-wrap items-center justify-between p-3.5 bg-blue-50 border border-blue-200/80 rounded-xl gap-2">
-            <div className="text-xs text-blue-900">
-              <span className="font-bold">Susunan Kolum Disyorkan:</span>{' '}
-              <span className="font-mono text-[11px] bg-white px-2 py-0.5 rounded border border-blue-200">
-                Nama Murid | No IC | Kelas | Acara / Aktiviti | Peringkat | Pencapaian
-              </span>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 bg-blue-50 border border-blue-200/90 rounded-2xl gap-3">
+            <div className="space-y-1 text-xs text-blue-950">
+              <div className="font-bold flex items-center gap-1.5">
+                <span>💡</span>
+                <span>Format Kolum Aliran & Kelas Disokong:</span>
+              </div>
+              <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
+                <span className="bg-emerald-100 text-emerald-900 px-2 py-0.5 rounded font-mono font-bold border border-emerald-300">
+                  Pilihan 1: ALIRAN (Tahun 1-6) + NAMA KELAS (contoh: IBNU SINA)
+                </span>
+                <span className="text-slate-400 font-bold">atau</span>
+                <span className="bg-white text-blue-900 px-2 py-0.5 rounded font-mono font-bold border border-blue-300">
+                  Pilihan 2: KELAS (contoh: 6 IBNU SINA)
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-600">
+                Sistem akan menggabungkan kolum <strong>ALIRAN</strong> dan <strong>NAMA KELAS</strong> secara automatik ke format sijil rasmi.
+              </p>
             </div>
-            <button
-              onClick={downloadSampleCSVTemplate}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-blue-700 bg-white border border-blue-300 rounded-lg shadow-xs hover:bg-blue-100/50 transition"
-            >
-              <Download className="w-3.5 h-3.5" />
-              Muat Turun Templat Contoh
-            </button>
+            
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={downloadSampleExcelTemplate}
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-xs transition"
+                title="Muat turun fail templat Microsoft Excel (.xlsx) dengan kolum Aliran & Nama Kelas"
+              >
+                <Download className="w-3.5 h-3.5" />
+                Templat Excel (.xlsx)
+              </button>
+
+              <button
+                type="button"
+                onClick={downloadSampleCSVTemplate}
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 border border-slate-300 rounded-xl shadow-xs transition"
+                title="Muat turun fail templat CSV"
+              >
+                <Download className="w-3.5 h-3.5" />
+                Templat CSV
+              </button>
+            </div>
           </div>
 
           {/* TAB 1: COPY PASTE */}
@@ -194,9 +222,11 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
                 rows={6}
                 value={pastedText}
                 onChange={(e) => setPastedText(e.target.value)}
-                placeholder={`Contoh (Salin & tampal dari Google Sheet):
-MUHAMMAD DANISH RAYYAN\t130412-14-0821\t6 IBNU SINA\tKEJOHANAN MEMANAH MSSD\tDaerah\tJohan (Emas)
-NUR FARHANA BALQIS\t130825-10-1492\t6 IBNU KHALDUN\tKEJOHANAN BOLA TAMPAR\tNegeri\tNaib Johan`}
+                placeholder={`Contoh 1 (Kolum Aliran & Nama Kelas berasingan):
+NAMA MURID\tNO IC\tALIRAN\tNAMA KELAS\tAKTIVITI\tPERINGKAT\tPENCAPAIAN
+MUHAMMAD DANISH RAYYAN\t130412-14-0821\tTahun 6\tIBNU SINA\tKEJOHANAN MSSD\tDaerah\tJohan (Emas)
+NUR FARHANA BALQIS\t130825-10-1492\tTahun 6\tIBNU KHALDUN\tBOLA TAMPAR\tNegeri\tNaib Johan
+AMIRUL SYAHMI\t121105-14-0335\tTahun 5\tAL-FARABI\tBALAPAN & PADANG\tKebangsaan\tEmas`}
                 className="w-full text-xs font-mono p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
               />
               <button
@@ -289,7 +319,7 @@ NUR FARHANA BALQIS\t130825-10-1492\t6 IBNU KHALDUN\tKEJOHANAN BOLA TAMPAR\tNeger
                     <tr>
                       <th className="p-2">Nama Murid</th>
                       <th className="p-2">No IC / MyKid</th>
-                      <th className="p-2">Kelas</th>
+                      <th className="p-2">Kelas (Aliran + Nama)</th>
                       <th className="p-2">Aktiviti</th>
                       <th className="p-2">Peringkat</th>
                       <th className="p-2">Pencapaian</th>
@@ -299,8 +329,12 @@ NUR FARHANA BALQIS\t130825-10-1492\t6 IBNU KHALDUN\tKEJOHANAN BOLA TAMPAR\tNeger
                     {previewStudents.slice(0, 5).map((s, idx) => (
                       <tr key={idx} className="hover:bg-slate-50">
                         <td className="p-2 font-bold text-slate-900">{s.name}</td>
-                        <td className="p-2 font-mono">{s.ic}</td>
-                        <td className="p-2">{s.class}</td>
+                        <td className="p-2 font-mono text-[11px]">{s.ic}</td>
+                        <td className="p-2">
+                          <span className="font-bold text-blue-950 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                            {s.class}
+                          </span>
+                        </td>
                         <td className="p-2 truncate max-w-xs">{s.activity}</td>
                         <td className="p-2 uppercase text-[10px] font-bold">{s.level}</td>
                         <td className="p-2 text-amber-700 font-semibold">{s.achievement}</td>

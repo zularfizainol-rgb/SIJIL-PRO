@@ -5,6 +5,8 @@ export interface Student {
   name: string;
   ic: string;
   class: string;
+  streamGrade?: string; // Aliran / Tahun (contoh: 'Tahun 1' hingga 'Tahun 6')
+  classNameOnly?: string; // Nama Kelas sahaja (contoh: 'IBNU SINA')
   activity: string;
   level: AchievementLevel;
   achievement: string; // e.g. Johan, Naib Johan, Tempat Ketiga, Emas, Penyertaan / MENYERTAI

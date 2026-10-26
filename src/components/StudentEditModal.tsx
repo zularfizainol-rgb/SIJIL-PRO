@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Student, AchievementLevel } from '../types/certificate';
-import { X, Save, UserPlus, Sparkles } from 'lucide-react';
+import { X, Save, UserPlus, Sparkles, IdCard } from 'lucide-react';
 import { formatIC } from '../utils/importer';
+import { ClassSelector } from './ClassSelector';
 
 interface StudentEditModalProps {
   isOpen: boolean;
@@ -113,33 +114,34 @@ export const StudentEditModal: React.FC<StudentEditModalProps> = ({
             />
           </div>
 
-          {/* IC & Class */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                No. Kad Pengenalan / MyKid:
-              </label>
-              <input
-                type="text"
-                value={formData.ic}
-                onChange={(e) => setFormData({ ...formData, ic: formatIC(e.target.value) })}
-                placeholder="CONTOH: 130412-14-0821"
-                className="w-full text-xs font-mono font-bold p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
-              />
-            </div>
+          {/* No. Kad Pengenalan / MyKid */}
+          <div>
+            <label className="block text-xs font-bold text-slate-700 uppercase mb-1 flex items-center gap-1">
+              <IdCard className="w-3.5 h-3.5 text-slate-500" />
+              <span>No. Kad Pengenalan / MyKid:</span>
+            </label>
+            <input
+              type="text"
+              value={formData.ic}
+              onChange={(e) => setFormData({ ...formData, ic: formatIC(e.target.value) })}
+              placeholder="CONTOH: 130412-14-0821"
+              className="w-full text-xs font-mono font-bold p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+            />
+          </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                Kelas:
-              </label>
-              <input
-                type="text"
-                value={formData.class}
-                onChange={(e) => setFormData({ ...formData, class: e.target.value })}
-                placeholder="CONTOH: 6 IBNU SINA"
-                className="w-full text-xs font-semibold p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none uppercase"
-              />
-            </div>
+          {/* Ruang Pemilihan Aliran (Tahun 1 - 6) & Nama Kelas */}
+          <div>
+            <ClassSelector
+              value={formData.class}
+              onChange={(fullClass, stream, classNameOnly) => {
+                setFormData({
+                  ...formData,
+                  class: fullClass,
+                  streamGrade: stream,
+                  classNameOnly: classNameOnly,
+                });
+              }}
+            />
           </div>
 
           {/* Ruang Nama Unit / Kelab & Jawatan Dilantik */}

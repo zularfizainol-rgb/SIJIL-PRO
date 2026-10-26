@@ -16,6 +16,7 @@ import {
   Square
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
+import { parseClassString } from '../utils/classHelper';
 
 interface StudentManagerProps {
   students: Student[];
@@ -77,18 +78,23 @@ export const StudentManager: React.FC<StudentManagerProps> = ({
   };
 
   const exportCurrentListToExcel = () => {
-    const dataToExport = filtered.map((s, idx) => ({
-      'Bil': idx + 1,
-      'Nama Murid': s.name,
-      'No Kad Pengenalan': s.ic,
-      'Kelas': s.class,
-      'Aktiviti / Pertandingan': s.activity,
-      'Peringkat': LEVEL_BADGES[s.level]?.label || s.level,
-      'Pencapaian': s.achievement,
-      'Tarikh Sijil': s.date,
-      'No. Siri Sijil': s.certNumber,
-      'Catatan': s.extraInfo || '',
-    }));
+    const dataToExport = filtered.map((s, idx) => {
+      const parsed = parseClassString(s.class);
+      return {
+        'Bil': idx + 1,
+        'Nama Murid': s.name,
+        'No Kad Pengenalan': s.ic,
+        'Aliran': s.streamGrade || parsed.stream || 'Tahun 6',
+        'Nama Kelas': s.classNameOnly || parsed.className || s.class,
+        'Kelas Penuh': s.class,
+        'Aktiviti / Pertandingan': s.activity,
+        'Peringkat': LEVEL_BADGES[s.level]?.label || s.level,
+        'Pencapaian': s.achievement,
+        'Tarikh Sijil': s.date,
+        'No. Siri Sijil': s.certNumber,
+        'Catatan': s.extraInfo || '',
+      };
+    });
 
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
     const workbook = XLSX.utils.book_new();

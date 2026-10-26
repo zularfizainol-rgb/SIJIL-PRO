@@ -1,6 +1,7 @@
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import { Student, AchievementLevel } from '../types/certificate';
+import { parseClassString, formatFullClassName } from './classHelper';
 
 export interface RawRow {
   [key: string]: string | number | undefined;
@@ -63,7 +64,64 @@ export function mapRowsToStudents(rows: RawRow[], basePrefix = 'SKAK/2026/'): St
 
     const name = stripBrackets(findValue(['nama', 'murid', 'student', 'name']) || `MURID ${index + 1}`);
     const icRaw = stripBrackets(findValue(['ic', 'pengenalan', 'k/p', 'kp', 'mykid', 'identity']));
-    const studentClass = stripBrackets(findValue(['kelas', 'class', 'tingkatan', 'tahun']) || '6 CEMERLANG');
+    
+    // Sokongan kolum berasingan Aliran (Tahun 1-6) dan Nama Kelas (atau kolum Kelas biasa)
+    const streamRaw = stripBrackets(findValue([
+      'aliran', 
+      'tahun', 
+      'tingkatan', 
+      'darjah', 
+      'stream', 
+      'grade', 
+      'level/tahun',
+      'thn'
+    ]));
+
+    const classNameRaw = stripBrackets(findValue([
+      'nama kelas', 
+      'nama_kelas', 
+      'namakelas', 
+      'nama-kelas', 
+      'class name', 
+      'classname'
+    ]));
+
+    const classCombinedRaw = stripBrackets(findValue([
+      'kelas', 
+      'class'
+    ]));
+
+    let studentClass = '';
+    let streamGrade = '';
+    let classNameOnly = '';
+
+    if (streamRaw && classNameRaw) {
+      // Dua kolum berasingan: ALIRAN dan NAMA KELAS
+      streamGrade = streamRaw;
+      classNameOnly = classNameRaw;
+      studentClass = formatFullClassName(streamRaw, classNameRaw);
+    } else if (streamRaw && classCombinedRaw && classCombinedRaw.toLowerCase() !== streamRaw.toLowerCase()) {
+      // Kolum ALIRAN dan KELAS
+      streamGrade = streamRaw;
+      classNameOnly = classCombinedRaw;
+      studentClass = formatFullClassName(streamRaw, classCombinedRaw);
+    } else if (classCombinedRaw) {
+      // Satu kolum KELAS (contoh: "6 IBNU SINA" atau "TAHUN 5 CEMERLANG")
+      const parsed = parseClassString(classCombinedRaw);
+      streamGrade = parsed.stream;
+      classNameOnly = parsed.className;
+      studentClass = classCombinedRaw;
+    } else if (streamRaw) {
+      // Hanya ada kolum ALIRAN
+      streamGrade = streamRaw;
+      classNameOnly = '';
+      studentClass = streamRaw.toUpperCase();
+    } else {
+      studentClass = '6 CEMERLANG';
+      streamGrade = 'Tahun 6';
+      classNameOnly = 'CEMERLANG';
+    }
+
     const unitClub = findValue(['unit', 'kelab', 'persatuan', 'badan', 'uniform', 'rumah', 'unit/kelab']);
     const positionRole = findValue(['jawatan', 'peranan', 'role', 'position', 'lantikan']);
     const activity = stripBrackets(findValue(['aktiviti', 'pertandingan', 'kejohanan', 'acara', 'activity', 'sukan', 'program']) || 'KEJOHANAN MSSD KERAMAT');
@@ -79,6 +137,8 @@ export function mapRowsToStudents(rows: RawRow[], basePrefix = 'SKAK/2026/'): St
       name: name.toUpperCase(),
       ic: formatIC(icRaw),
       class: studentClass.toUpperCase(),
+      streamGrade: streamGrade || undefined,
+      classNameOnly: classNameOnly || undefined,
       unitClub: unitClub ? stripBrackets(unitClub).toUpperCase() : undefined,
       positionRole: positionRole ? stripBrackets(positionRole).toUpperCase() : undefined,
       activity: activity.toUpperCase(),
@@ -198,15 +258,18 @@ export async function fetchGoogleSheet(url: string): Promise<Student[]> {
 }
 
 /**
- * Generate sample CSV template for teachers to download
+ * Generate sample CSV template with ALIRAN and NAMA KELAS columns for teachers to download
  */
 export function downloadSampleCSVTemplate() {
   const csvContent = 
-`NAMA MURID,NO KAD PENGENALAN,KELAS,UNIT / KELAB,JAWATAN,AKTIVITI / KEJOHANAN,PERINGKAT,PENCAPAIAN,TARIKH,CATATAN
-MUHAMMAD DANISH RAYYAN BIN KHAIRUL,130412-14-0821,6 IBNU SINA,KELAB MEMANAH,KAPTEN PASUKAN,KEJOHANAN MEMANAH MSSD KERAMAT,Daerah,Johan (Emas),15 OKTOBER 2026,Kategori Recurve Bawah 12
-NUR FARHANA BALQIS BINTI MOHD FAIZAL,130825-10-1492,6 IBNU KHALDUN,PANDU PUTERI,KETUA PATROL,KEJOHANAN BOLA TAMPAR MSSWPKL,Negeri,Naib Johan,12 OKTOBER 2026,Pemain Terbaik Zon
-AMIRUL SYAHMI BIN AZHAR,121105-14-0335,6 AL-FARABI,TKRS,KOPRAL TKRS,KEJOHANAN BALAPAN & PADANG MSS KEBANGSAAN,Kebangsaan,Pingat Emas (Lari Pecut 100M),28 SEPTEMBER 2026,Rekod Baharu MSSM
-SARAH ADRIANA BINTI ZULKIFLI,130219-14-1108,5 IBNU RUSYD,KELAB ROBOTIK,PENGERUSI,PERTANDINGAN ROBOTIK WRO ANTARABANGSA,Antarabangsa,Tempat Ke-3 (Gangsa Dunia),20 OGOS 2026,Mewakili Malaysia
+`NAMA MURID,NO KAD PENGENALAN,ALIRAN,NAMA KELAS,KELAS,UNIT / KELAB,JAWATAN,AKTIVITI / KEJOHANAN,PERINGKAT,PENCAPAIAN,TARIKH,CATATAN
+MUHAMMAD DANISH RAYYAN BIN KHAIRUL,130412-14-0821,Tahun 6,IBNU SINA,6 IBNU SINA,KELAB MEMANAH,KAPTEN PASUKAN,KEJOHANAN MEMANAH MSSD KERAMAT,Daerah,Johan (Emas),15 OKTOBER 2026,Kategori Recurve Bawah 12
+NUR FARHANA BALQIS BINTI MOHD FAIZAL,130825-10-1492,Tahun 6,IBNU KHALDUN,6 IBNU KHALDUN,PANDU PUTERI,KETUA PATROL,KEJOHANAN BOLA TAMPAR MSSWPKL,Negeri,Naib Johan,12 OKTOBER 2026,Pemain Terbaik Zon
+AMIRUL SYAHMI BIN AZHAR,121105-14-0335,Tahun 5,AL-FARABI,5 AL-FARABI,TKRS,KOPRAL TKRS,KEJOHANAN BALAPAN & PADANG MSS KEBANGSAAN,Kebangsaan,Pingat Emas (Lari Pecut 100M),28 SEPTEMBER 2026,Rekod Baharu MSSM
+SARAH ADRIANA BINTI ZULKIFLI,130219-14-1108,Tahun 4,CEMERLANG,4 CEMERLANG,KELAB ROBOTIK,PENGERUSI,PERTANDINGAN ROBOTIK WRO ANTARABANGSA,Antarabangsa,Tempat Ke-3 (Gangsa Dunia),20 OGOS 2026,Mewakili Malaysia
+ADAM HARIS BIN MOHD RIDZWAN,140510-10-2341,Tahun 3,PINTAR,3 PINTAR,KELAB CATUR,AHLI JAWATANKUASA,KEJOHANAN CATUR MSSD,Zon,Tempat Keempat,18 OKTOBER 2026,Kategori Bawah 9 Tahun
+NUR AISYAH HUMAIRA BINTI ZAMRI,150315-14-5522,Tahun 2,BESTARI,2 BESTARI,PERSATUAN BAHASA MELAYU,PESERTA,PERTANDINGAN BERCERITA TAHAP 1,Sekolah,Johan,05 OKTOBER 2026,Tahap 1
+MUHAMMAD RAYYAN RIZQI BIN HAFIDZ,160720-14-8891,Tahun 1,AMANAH,1 AMANAH,KELAB SENI KREATIF,PESERTA,PERTANDINGAN MEWARNA HARI KANAK-KANAK,Sekolah,Saguhati,10 OKTOBER 2026,Tahap 1
 `;
 
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -217,4 +280,129 @@ SARAH ADRIANA BINTI ZULKIFLI,130219-14-1108,5 IBNU RUSYD,KELAB ROBOTIK,PENGERUSI
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+}
+
+/**
+ * Generate official sample Excel (.xlsx) template with ALIRAN (Tahun 1-6) and NAMA KELAS columns
+ */
+export function downloadSampleExcelTemplate() {
+  const data = [
+    [
+      'NAMA MURID',
+      'NO KAD PENGENALAN',
+      'ALIRAN',
+      'NAMA KELAS',
+      'KELAS',
+      'UNIT / KELAB',
+      'JAWATAN',
+      'AKTIVITI / KEJOHANAN',
+      'PERINGKAT',
+      'PENCAPAIAN',
+      'TARIKH',
+      'CATATAN'
+    ],
+    [
+      'MUHAMMAD DANISH RAYYAN BIN KHAIRUL',
+      '130412-14-0821',
+      'Tahun 6',
+      'IBNU SINA',
+      '6 IBNU SINA',
+      'KELAB MEMANAH',
+      'KAPTEN PASUKAN',
+      'KEJOHANAN MEMANAH MSSD KERAMAT',
+      'Daerah',
+      'Johan (Emas)',
+      '15 OKTOBER 2026',
+      'Kategori Recurve Bawah 12'
+    ],
+    [
+      'NUR FARHANA BALQIS BINTI MOHD FAIZAL',
+      '130825-10-1492',
+      'Tahun 6',
+      'IBNU KHALDUN',
+      '6 IBNU KHALDUN',
+      'PANDU PUTERI',
+      'KETUA PATROL',
+      'KEJOHANAN BOLA TAMPAR MSSWPKL',
+      'Negeri',
+      'Naib Johan',
+      '12 OKTOBER 2026',
+      'Pemain Terbaik Zon'
+    ],
+    [
+      'AMIRUL SYAHMI BIN AZHAR',
+      '121105-14-0335',
+      'Tahun 5',
+      'AL-FARABI',
+      '5 AL-FARABI',
+      'TKRS',
+      'KOPRAL TKRS',
+      'KEJOHANAN BALAPAN & PADANG MSS KEBANGSAAN',
+      'Kebangsaan',
+      'Pingat Emas (Lari Pecut 100M)',
+      '28 SEPTEMBER 2026',
+      'Rekod Baharu MSSM'
+    ],
+    [
+      'SARAH ADRIANA BINTI ZULKIFLI',
+      '130219-14-1108',
+      'Tahun 4',
+      'CEMERLANG',
+      '4 CEMERLANG',
+      'KELAB ROBOTIK',
+      'PENGERUSI',
+      'PERTANDINGAN ROBOTIK WRO ANTARABANGSA',
+      'Antarabangsa',
+      'Tempat Ke-3 (Gangsa Dunia)',
+      '20 OGOS 2026',
+      'Mewakili Malaysia'
+    ],
+    [
+      'ADAM HARIS BIN MOHD RIDZWAN',
+      '140510-10-2341',
+      'Tahun 3',
+      'PINTAR',
+      '3 PINTAR',
+      'KELAB CATUR',
+      'AHLI JAWATANKUASA',
+      'KEJOHANAN CATUR MSSD',
+      'Zon',
+      'Tempat Keempat',
+      '18 OKTOBER 2026',
+      'Kategori Bawah 9 Tahun'
+    ],
+    [
+      'NUR AISYAH HUMAIRA BINTI ZAMRI',
+      '150315-14-5522',
+      'Tahun 2',
+      'BESTARI',
+      '2 BESTARI',
+      'PERSATUAN BAHASA MELAYU',
+      'PESERTA',
+      'PERTANDINGAN BERCERITA TAHAP 1',
+      'Sekolah',
+      'Johan',
+      '05 OKTOBER 2026',
+      'Tahap 1'
+    ],
+    [
+      'MUHAMMAD RAYYAN RIZQI BIN HAFIDZ',
+      '160720-14-8891',
+      'Tahun 1',
+      'AMANAH',
+      '1 AMANAH',
+      'KELAB SENI KREATIF',
+      'PESERTA',
+      'PERTANDINGAN MEWARNA HARI KANAK-KANAK',
+      'Sekolah',
+      'Saguhati',
+      '10 OKTOBER 2026',
+      'Tahap 1'
+    ]
+  ];
+
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Senarai Murid');
+  XLSX.writeFile(wb, 'Templat_Import_Murid_Sijil_Sekolah.xlsx');
 }
