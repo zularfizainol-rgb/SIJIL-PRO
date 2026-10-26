@@ -933,6 +933,37 @@ export default function App() {
                         Tepi
                       </button>
                     </div>
+
+                    {/* Quick elevation adjustment: Naikkan Tandatangan supaya muat A4 */}
+                    <div className="flex items-center gap-1 bg-white p-0.5 rounded-lg border border-slate-200 shadow-2xs" title="Naikkan atau turunkan kedudukan tandatangan Guru Besar supaya muat kemas dalam kertas A4">
+                      <span className="text-[10px] font-bold text-slate-500 pl-1">
+                        Naikkan: <strong className="text-blue-700 font-mono">+{config.signatureBottomOffset ?? 18}px</strong>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const nextOffset = Math.min(60, (config.signatureBottomOffset ?? 18) + 6);
+                          setConfig({ ...config, signatureBottomOffset: nextOffset });
+                          showToast(`Tandatangan dinaikkan (+${nextOffset}px)`);
+                        }}
+                        className="px-1.5 py-0.5 rounded text-[11px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 transition"
+                        title="Naikkan tandatangan ke atas (+6px)"
+                      >
+                        ⬆️ Naik
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const nextOffset = Math.max(0, (config.signatureBottomOffset ?? 18) - 6);
+                          setConfig({ ...config, signatureBottomOffset: nextOffset });
+                          showToast(`Tandatangan diturunkan (${nextOffset}px)`);
+                        }}
+                        className="px-1.5 py-0.5 rounded text-[11px] font-bold text-slate-600 hover:bg-slate-100 transition"
+                        title="Turunkan tandatangan ke bawah (-6px)"
+                      >
+                        ⬇️ Turun
+                      </button>
+                    </div>
                   </div>
 
                   {/* Kawalan 1: Pilihan Tarikh Sijil (Papar vs Sembunyi Berasingan & Edit Tarikh Terus) */}

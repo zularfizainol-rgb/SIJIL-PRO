@@ -91,6 +91,7 @@
     justify-content: center !important;
     align-items: center !important;
     background: #ffffff !important;
+    overflow: hidden !important;
   }
 
   body[data-orientation="landscape"] .print-certificate-page {
@@ -98,6 +99,7 @@
     height: 210mm !important;
     max-width: 297mm !important;
     max-height: 210mm !important;
+    overflow: hidden !important;
   }
 
   body[data-orientation="portrait"] .print-certificate-page {
@@ -105,6 +107,7 @@
     height: 297mm !important;
     max-width: 210mm !important;
     max-height: 297mm !important;
+    overflow: hidden !important;
   }
 
   .print-certificate-page:last-child {

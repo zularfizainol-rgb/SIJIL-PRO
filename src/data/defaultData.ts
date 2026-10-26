@@ -33,6 +33,7 @@ export const DEFAULT_CONFIG: CertificateConfig = {
   showDividers: false, // Buangkan garis pemisah atas dan bawah mengikut arahan pengguna
   signatureMode: 'both', // 'both' | 'headmaster-only' | 'pk-only' | 'side-both'
   signaturePlacement: 'center', // 'center' | 'side' (Di Tengah atau Di Tepi)
+  signatureBottomOffset: 18, // Dinaikkan sedikit sebanyak 18px supaya muat kemas dalam A4 apabila dicetak
   
   headmasterName: 'NAMA PENGETUA / GURU BESAR',
   headmasterTitle: 'Pengetua / Guru Besar',

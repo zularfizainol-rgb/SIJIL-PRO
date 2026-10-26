@@ -897,6 +897,20 @@ export const TemplateCustomizer: React.FC<TemplateCustomizerProps> = ({
                   className="w-full text-xs font-semibold p-2.5 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
                 />
               </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1 flex items-center justify-between">
+                  <span>Nama Sekolah di Bahagian Tandatangan:</span>
+                  <span className="text-[10px] text-blue-600 font-semibold lowercase">dipaparkan di bawah jawatan tandatangan</span>
+                </label>
+                <input
+                  type="text"
+                  value={config.headmasterSchool ?? config.schoolName}
+                  onChange={(e) => update({ headmasterSchool: e.target.value })}
+                  placeholder="Sekolah Kebangsaan AU Keramat"
+                  className="w-full text-xs font-semibold p-2.5 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none uppercase"
+                />
+              </div>
             </div>
 
             {/* Pilihan Tandatangan Guru Besar */}
@@ -1033,6 +1047,40 @@ export const TemplateCustomizer: React.FC<TemplateCustomizerProps> = ({
             </div>
           </div>
         )}
+
+        {/* Pelaras Ketinggian Tandatangan (Naikkan Supaya Muat A4) */}
+        <div className="p-3.5 bg-blue-50/70 border border-blue-200 rounded-xl space-y-1.5">
+          <div className="flex justify-between items-center text-xs font-semibold text-slate-700">
+            <span className="font-bold text-blue-950 flex items-center gap-1.5">
+              <span>⬆️</span> Anjakan Tandatangan Ke Atas (Muat Saiz A4):
+            </span>
+            <span className="font-mono font-bold text-blue-700 bg-white px-2 py-0.5 rounded border border-blue-200 shadow-2xs">
+              +{config.signatureBottomOffset ?? 18}px ke atas
+            </span>
+          </div>
+
+          <div className="flex items-center gap-3 pt-1">
+            <input
+              type="range"
+              min="0"
+              max="60"
+              step="2"
+              value={config.signatureBottomOffset ?? 18}
+              onChange={(e) => update({ signatureBottomOffset: parseInt(e.target.value) })}
+              className="w-full accent-blue-600 h-1.5 bg-slate-200 rounded-lg cursor-pointer"
+            />
+            <button
+              type="button"
+              onClick={() => update({ signatureBottomOffset: 18 })}
+              className="text-[10px] font-bold text-slate-600 hover:text-slate-900 px-2.5 py-1 bg-white hover:bg-slate-100 rounded border border-slate-300 shrink-0"
+            >
+              Lalai 18px
+            </button>
+          </div>
+          <p className="text-[10px] text-slate-500">
+            *Tandatangan dinaikkan sedikit sebanyak 18px secara automatik bagi memastikan seluruh sijil muat 1 halaman A4 dengan kemas apabila dicetak.
+          </p>
+        </div>
 
         {/* Official Seal / Cop Mohor Toggle */}
         <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl">

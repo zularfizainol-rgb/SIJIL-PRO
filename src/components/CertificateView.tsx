@@ -223,7 +223,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
         className="relative z-10 w-full h-full px-12 py-10 flex flex-col justify-between items-center text-center"
         style={{
           paddingTop: `${44 + (config.topMarginOffset || 0)}px`,
-          paddingBottom: '40px',
+          paddingBottom: `${Math.max(16, 28 - (config.signatureBottomOffset ?? 18))}px`,
         }}
       >
         
@@ -1043,7 +1043,12 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
           config.paragraphLayout === 'format-ringkas-moden' || 
           config.paragraphLayout === 'rasmi-kbs') ? (
           
-          <div className="w-full mt-auto pt-4 shrink-0">
+          <div 
+            className="w-full mt-auto pt-1 shrink-0 transition-transform duration-200"
+            style={{
+              transform: `translateY(-${config.signatureBottomOffset ?? 18}px)`,
+            }}
+          >
             {/* TIADA GARISAN PEMISAH DI ATAS TANDATANGAN (buangkan garis pemisah atas dan bawah) */}
 
             {/* LOGIK PILIHAN PENANDATANGAN: Guru Besar Sahaja, PK Sahaja, Kedua-duanya, atau Susunan Di Tepi */}
@@ -1053,25 +1058,26 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                 (!config.signatureMode && config.paragraphLayout === 'format-ringkas-moden' && !config.hasSecondSigner);
               const isSideBoth = config.signatureMode === 'side-both';
               const isSidePlacement = config.signaturePlacement === 'side' || isSideBoth;
+              const displaySchoolName = cleanText(config.headmasterSchool || config.schoolName) || 'SEKOLAH KEBANGSAAN AU KERAMAT';
 
               if (isHeadmasterOnly) {
                 /* 1. PILIHAN: TANDATANGAN GURU BESAR / PENGETUA SAHAJA (DI TENGAH ATAU DI TEPI KANAN) */
                 return (
                   <div className={`w-full pb-2 flex ${isSidePlacement ? 'justify-end pr-4 sm:pr-8' : 'justify-center items-center text-center'}`}>
                     <div className="text-center w-72 flex flex-col items-center">
-                      <div className="h-12 flex items-end justify-center mb-1">
+                      <div className="h-10 sm:h-11 flex items-end justify-center mb-0.5">
                         {config.headmasterSignatureUrl ? (
                           <img 
                             src={config.headmasterSignatureUrl} 
                             alt="Tandatangan" 
-                            className="max-h-12 object-contain"
+                            className="max-h-10 sm:max-h-11 object-contain"
                           />
                         ) : config.useDigitalSignature ? (
-                          <div className="font-signature text-3xl text-slate-800 -rotate-3 select-none">
+                          <div className="font-signature text-2xl sm:text-3xl text-slate-800 -rotate-3 select-none">
                             Zulkarnain
                           </div>
                         ) : (
-                          <div className="h-8" />
+                          <div className="h-6" />
                         )}
                       </div>
 
@@ -1088,8 +1094,11 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                       <p className="text-[11px] font-medium text-slate-600 mt-0.5">
                         {config.headmasterTitle || 'Pengetua / Guru Besar'}
                       </p>
+                      <p className="text-[10px] sm:text-[11px] font-semibold text-slate-700 uppercase tracking-wide mt-0.5">
+                        {displaySchoolName}
+                      </p>
                       {config.showEventDate !== false && (
-                        <p className="text-[11px] font-bold text-slate-700 mt-1">
+                        <p className="text-[11px] font-bold text-slate-700 mt-0.5">
                           Tarikh: {certDate}
                         </p>
                       )}
@@ -1113,19 +1122,19 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                 return (
                   <div className={`w-full pb-2 flex ${isSidePlacement ? 'justify-end pr-4 sm:pr-8' : 'justify-center items-center text-center'}`}>
                     <div className="text-center w-72 flex flex-col items-center">
-                      <div className="h-12 flex items-end justify-center mb-1">
+                      <div className="h-10 sm:h-11 flex items-end justify-center mb-0.5">
                         {config.secondSignerSignatureUrl ? (
                           <img 
                             src={config.secondSignerSignatureUrl} 
                             alt="Tandatangan" 
-                            className="max-h-12 object-contain"
+                            className="max-h-10 sm:max-h-11 object-contain"
                           />
                         ) : config.useDigitalSignature ? (
                           <div className="font-signature text-2xl text-slate-700 -rotate-2 select-none">
                             Faizal
                           </div>
                         ) : (
-                          <div className="h-8" />
+                          <div className="h-6" />
                         )}
                       </div>
 
@@ -1142,8 +1151,11 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                       <p className="text-[11px] font-medium text-slate-600 mt-0.5">
                         {config.secondSignerTitle || pkDefaultTitle}
                       </p>
+                      <p className="text-[10px] sm:text-[11px] font-semibold text-slate-700 uppercase tracking-wide mt-0.5">
+                        {displaySchoolName}
+                      </p>
                       {config.showEventDate !== false && (
-                        <p className="text-[11px] font-bold text-slate-700 mt-1">
+                        <p className="text-[11px] font-bold text-slate-700 mt-0.5">
                           Tarikh: {certDate}
                         </p>
                       )}
@@ -1163,19 +1175,19 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                 }`}>
                   {/* Tandatangan Kiri: PENGETUA / GURU BESAR (atau PENGARAH dalam KBS) */}
                   <div className="text-center w-64 flex flex-col items-center">
-                    <div className="h-12 flex items-end justify-center mb-1">
+                    <div className="h-10 sm:h-11 flex items-end justify-center mb-0.5">
                       {config.headmasterSignatureUrl ? (
                         <img 
                           src={config.headmasterSignatureUrl} 
                           alt="Tandatangan" 
-                          className="max-h-12 object-contain"
+                          className="max-h-10 sm:max-h-11 object-contain"
                         />
                       ) : config.useDigitalSignature ? (
                         <div className="font-signature text-2xl text-slate-800 -rotate-3 select-none">
                           Zulkarnain
                         </div>
                       ) : (
-                        <div className="h-8" />
+                        <div className="h-6" />
                       )}
                     </div>
 
@@ -1195,6 +1207,9 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                         <p className="text-[11px] font-medium text-slate-600 mt-0.5">
                           {config.headmasterTitle || 'Pengetua / Guru Besar'}
                         </p>
+                        <p className="text-[10px] sm:text-[11px] font-semibold text-slate-700 uppercase tracking-wide mt-0.5">
+                          {displaySchoolName}
+                        </p>
                       </>
                     ) : config.paragraphLayout === 'format-akademik' ? (
                       <>
@@ -1206,6 +1221,9 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                         </p>
                         <p className="text-[11px] font-medium text-slate-600 mt-0.5">
                           {config.headmasterTitle || 'Pengetua / Guru Besar'}
+                        </p>
+                        <p className="text-[10px] sm:text-[11px] font-semibold text-slate-700 uppercase tracking-wide mt-0.5">
+                          {displaySchoolName}
                         </p>
                       </>
                     ) : config.paragraphLayout === 'format-ringkas-moden' ? (
@@ -1219,6 +1237,9 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                         <p className="text-[11px] font-medium text-slate-600 mt-0.5">
                           {config.headmasterTitle || 'Pengetua / Guru Besar'}
                         </p>
+                        <p className="text-[10px] sm:text-[11px] font-semibold text-slate-700 uppercase tracking-wide mt-0.5">
+                          {displaySchoolName}
+                        </p>
                       </>
                     ) : (
                       <>
@@ -1227,6 +1248,9 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                         </p>
                         <p className="text-[11px] font-semibold text-slate-700 mt-0.5">
                           {config.secondSignerTitle || 'Jawatan'}
+                        </p>
+                        <p className="text-[10px] sm:text-[11px] font-semibold text-slate-700 uppercase tracking-wide mt-0.5">
+                          {displaySchoolName}
                         </p>
                       </>
                     )}
@@ -1246,19 +1270,19 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
 
                   {/* Tandatangan Kanan: PK HEM / PK PENTADBIR / PENAUNG */}
                   <div className="text-center w-64 flex flex-col items-center">
-                    <div className="h-12 flex items-end justify-center mb-1">
+                    <div className="h-10 sm:h-11 flex items-end justify-center mb-0.5">
                       {config.secondSignerSignatureUrl ? (
                         <img 
                           src={config.secondSignerSignatureUrl} 
                           alt="Tandatangan" 
-                          className="max-h-12 object-contain"
+                          className="max-h-10 sm:max-h-11 object-contain"
                         />
                       ) : config.useDigitalSignature ? (
                         <div className="font-signature text-2xl text-slate-700 -rotate-2 select-none">
                           Faizal
                         </div>
                       ) : (
-                        <div className="h-8" />
+                        <div className="h-6" />
                       )}
                     </div>
 
@@ -1275,6 +1299,12 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                         <p className="text-xs font-semibold text-slate-800 uppercase mt-0.5">
                           {cleanText(config.secondSignerName) || 'NAMA PK HEM / GURU'}
                         </p>
+                        <p className="text-[11px] font-medium text-slate-600 mt-0.5">
+                          {config.secondSignerTitle || 'Penolong Kanan HEM'}
+                        </p>
+                        <p className="text-[10px] sm:text-[11px] font-semibold text-slate-700 uppercase tracking-wide mt-0.5">
+                          {displaySchoolName}
+                        </p>
                         {config.showEventDate !== false && (
                           <p className="text-[11px] font-bold text-slate-700 mt-0.5">
                             Tarikh: {certDate}
@@ -1288,6 +1318,12 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                         </p>
                         <p className="text-xs font-semibold text-slate-800 uppercase mt-0.5">
                           {cleanText(config.secondSignerName) || 'NAMA PK PENTADBIR'}
+                        </p>
+                        <p className="text-[11px] font-medium text-slate-600 mt-0.5">
+                          {config.secondSignerTitle || 'Penolong Kanan Pentadbiran'}
+                        </p>
+                        <p className="text-[10px] sm:text-[11px] font-semibold text-slate-700 uppercase tracking-wide mt-0.5">
+                          {displaySchoolName}
                         </p>
                         {config.showEventDate !== false && (
                           <p className="text-[11px] font-bold text-slate-700 mt-0.5">
@@ -1303,6 +1339,12 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                         <p className="text-xs font-semibold text-slate-800 uppercase mt-0.5">
                           {cleanText(config.secondSignerName) || 'NAMA PENOLONG KANAN'}
                         </p>
+                        <p className="text-[11px] font-medium text-slate-600 mt-0.5">
+                          {config.secondSignerTitle || 'Penolong Kanan Kokurikulum'}
+                        </p>
+                        <p className="text-[10px] sm:text-[11px] font-semibold text-slate-700 uppercase tracking-wide mt-0.5">
+                          {displaySchoolName}
+                        </p>
                         {config.showEventDate !== false && (
                           <p className="text-[11px] font-bold text-slate-700 mt-0.5">
                             Tarikh: {certDate}
@@ -1317,6 +1359,9 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                         <p className="text-[11px] font-semibold text-slate-700 mt-0.5">
                           {config.headmasterTitle || 'Jawatan'}
                         </p>
+                        <p className="text-[10px] sm:text-[11px] font-semibold text-slate-700 uppercase tracking-wide mt-0.5">
+                          {displaySchoolName}
+                        </p>
                       </>
                     )}
                   </div>
@@ -1326,7 +1371,12 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
           </div>
         ) : (
           /* FOOTER STANDARD KPM / PRESET ASAL (Tanpa Garis Pemisah Atas) */
-          <div className="w-full pt-4 mt-auto shrink-0">
+          <div 
+            className="w-full pt-1 mt-auto shrink-0 transition-transform duration-200"
+            style={{
+              transform: `translateY(-${config.signatureBottomOffset ?? 18}px)`,
+            }}
+          >
             <div className="flex items-end justify-between px-6">
               
               {/* Left Side: School Stamp / Secondary Signer */}
