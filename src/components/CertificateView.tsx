@@ -17,90 +17,129 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
 }) => {
   const isLandscape = config.orientation === 'landscape';
 
-  const getFontClass = (font: CertificateConfig['fontFamily']) => {
-    switch (font) {
-      case 'cormorant':
-        return 'font-cormorant';
-      case 'greatvibes':
-        return 'font-greatvibes';
-      case 'cinzel':
-        return 'font-cinzel';
-      case 'cinzel-decor':
-        return 'font-cinzel-decor';
-      case 'garamond':
-        return 'font-garamond';
-      case 'marcellus':
-        return 'font-marcellus';
-      case 'lora':
-        return 'font-lora';
-      case 'merriweather':
-        return 'font-merriweather';
-      case 'playfair':
-        return 'font-playfair';
-      case 'montserrat':
-        return 'font-montserrat';
-      default:
-        return 'font-cinzel';
-    }
+  const FONT_FAMILY_MAP: Record<string, string> = {
+    'cinzel': "'Cinzel', Georgia, serif",
+    'cinzel-decor': "'Cinzel Decorative', Georgia, serif",
+    'cormorant': "'Cormorant Garamond', Garamond, Georgia, serif",
+    'greatvibes': "'Great Vibes', cursive",
+    'calligraphy-royal': "'Pinyon Script', cursive",
+    'calligraphy-brush': "'Alex Brush', cursive",
+    'garamond': "'Cormorant Garamond', Garamond, Georgia, serif",
+    'marcellus': "'Marcellus', 'Cinzel', Georgia, serif",
+    'playfair': "'Playfair Display', Georgia, serif",
+    'lora': "'Lora', Georgia, serif",
+    'merriweather': "'Merriweather', Georgia, serif",
+    'montserrat': "'Montserrat', sans-serif",
+    'mono': "'Courier New', Courier, monospace",
+    'sans': "'Montserrat', 'Plus Jakarta Sans', -apple-system, sans-serif",
+    'serif': "'Cormorant Garamond', Georgia, serif",
   };
 
-  const getTitleFontSizeClass = (size?: CertificateConfig['titleFontSize']) => {
+  const getFontFamilyCss = (fontKey?: string, fallback = "'Cinzel', Georgia, serif") => {
+    if (!fontKey || fontKey === 'inherit') return fallback;
+    return FONT_FAMILY_MAP[fontKey] || fallback;
+  };
+
+  const getTitleFontSizeStyle = (size?: CertificateConfig['titleFontSize']) => {
     switch (size) {
-      case 'sm':
-        return 'text-2xl md:text-3xl';
-      case 'md':
-        return 'text-3xl md:text-4xl';
-      case 'lg':
-        return 'text-4xl md:text-5xl';
-      case 'xl':
-        return 'text-5xl md:text-6xl';
-      case '2xl':
-        return 'text-6xl md:text-7xl';
-      default:
-        return 'text-3xl md:text-4xl';
+      case 'sm': return { fontSize: '26px', lineHeight: '1.2' };
+      case 'md': return { fontSize: '34px', lineHeight: '1.2' };
+      case 'lg': return { fontSize: '44px', lineHeight: '1.2' };
+      case 'xl': return { fontSize: '56px', lineHeight: '1.2' };
+      case '2xl': return { fontSize: '68px', lineHeight: '1.2' };
+      default: return { fontSize: '44px', lineHeight: '1.2' };
     }
   };
 
-  const getStudentNameFontSizeClass = (size?: CertificateConfig['studentNameFontSize']) => {
+  const getStudentNameFontSizeStyle = (size?: CertificateConfig['studentNameFontSize']) => {
     switch (size) {
-      case 'sm':
-        return 'text-xl md:text-2xl';
-      case 'md':
-        return 'text-2xl md:text-3xl';
-      case 'lg':
-        return 'text-3xl md:text-4xl';
-      case 'xl':
-        return 'text-4xl md:text-5xl';
-      case '2xl':
-        return 'text-5xl md:text-6xl';
-      default:
-        return 'text-3xl md:text-4xl';
+      case 'sm': return { fontSize: '24px', lineHeight: '1.2' };
+      case 'md': return { fontSize: '32px', lineHeight: '1.25' };
+      case 'lg': return { fontSize: '40px', lineHeight: '1.25' };
+      case 'xl': return { fontSize: '50px', lineHeight: '1.3' };
+      case '2xl': return { fontSize: '62px', lineHeight: '1.3' };
+      default: return { fontSize: '40px', lineHeight: '1.25' };
     }
   };
 
-  const fontClass = getFontClass(config.fontFamily);
-  const titleSizeClass = getTitleFontSizeClass(config.titleFontSize);
-  const nameSizeClass = getStudentNameFontSizeClass(config.studentNameFontSize);
+  const getMetaFontSizeStyle = (size?: CertificateConfig['metaFontSize']) => {
+    switch (size) {
+      case 'sm': return { fontSize: '13px', lineHeight: '1.25' };
+      case 'md': return { fontSize: '16px', lineHeight: '1.3' };
+      case 'lg': return { fontSize: '20px', lineHeight: '1.35', fontWeight: 700 };
+      case 'xl': return { fontSize: '26px', lineHeight: '1.4', fontWeight: 800 };
+      case '2xl': return { fontSize: '32px', lineHeight: '1.4', fontWeight: 900 };
+      default: return { fontSize: '16px', lineHeight: '1.3' };
+    }
+  };
+
+  const getActivityFontSizeStyle = (size?: CertificateConfig['activityFontSize']) => {
+    switch (size) {
+      case 'sm': return { fontSize: '15px', lineHeight: '1.25' };
+      case 'md': return { fontSize: '20px', lineHeight: '1.3' };
+      case 'lg': return { fontSize: '26px', lineHeight: '1.35' };
+      case 'xl': return { fontSize: '33px', lineHeight: '1.4' };
+      case '2xl': return { fontSize: '40px', lineHeight: '1.45' };
+      default: return { fontSize: '20px', lineHeight: '1.3' };
+    }
+  };
+
+  const getAchievementFontSizeStyle = (size?: CertificateConfig['achievementFontSize']) => {
+    switch (size) {
+      case 'sm': return { fontSize: '14px', lineHeight: '1.25' };
+      case 'md': return { fontSize: '19px', lineHeight: '1.3' };
+      case 'lg': return { fontSize: '25px', lineHeight: '1.35' };
+      case 'xl': return { fontSize: '31px', lineHeight: '1.4' };
+      case '2xl': return { fontSize: '38px', lineHeight: '1.45' };
+      default: return { fontSize: '19px', lineHeight: '1.3' };
+    }
+  };
+
+  const getBodyTextFontSizeStyle = (size?: CertificateConfig['bodyTextFontSize']) => {
+    switch (size) {
+      case 'sm': return { fontSize: '12px', lineHeight: '1.3' };
+      case 'md': return { fontSize: '15px', lineHeight: '1.4' };
+      case 'lg': return { fontSize: '19px', lineHeight: '1.45' };
+      case 'xl': return { fontSize: '24px', lineHeight: '1.5' };
+      default: return { fontSize: '15px', lineHeight: '1.4' };
+    }
+  };
+
+  const masterFontCss = getFontFamilyCss(config.fontFamily, "'Cinzel', Georgia, serif");
+
+  const studentNameFontCss = 
+    config.studentNameFont && config.studentNameFont !== 'inherit'
+      ? getFontFamilyCss(config.studentNameFont, masterFontCss)
+      : masterFontCss;
 
   const isScript = 
     config.studentNameFont === 'greatvibes' || 
     config.studentNameFont === 'calligraphy-royal' || 
     config.studentNameFont === 'calligraphy-brush' || 
-    (config.studentNameFont === 'inherit' && config.fontFamily === 'greatvibes');
+    ((!config.studentNameFont || config.studentNameFont === 'inherit') && (config.fontFamily === 'greatvibes'));
 
-  const getStudentNameFontClass = () => {
-    const sFont = config.studentNameFont;
-    if (sFont === 'greatvibes') return `font-greatvibes capitalize tracking-normal text-slate-950 font-normal ${nameSizeClass}`;
-    if (sFont === 'calligraphy-royal') return `font-calligraphy-royal capitalize tracking-normal text-slate-950 font-normal ${nameSizeClass}`;
-    if (sFont === 'calligraphy-brush') return `font-calligraphy-brush capitalize tracking-wide text-slate-950 font-normal ${nameSizeClass}`;
-    if (sFont === 'cinzel') return `font-cinzel uppercase font-extrabold ${nameSizeClass}`;
-    if (sFont === 'garamond') return `font-garamond uppercase font-bold tracking-widest ${nameSizeClass}`;
-    if (sFont === 'cormorant') return `font-cormorant uppercase font-bold tracking-widest ${nameSizeClass}`;
-    if (sFont === 'playfair') return `font-playfair uppercase font-bold tracking-wide ${nameSizeClass}`;
-    return `${fontClass} ${isScript ? 'capitalize font-normal' : 'uppercase font-extrabold'} ${nameSizeClass}`;
-  };
+  const titleSizeStyle = getTitleFontSizeStyle(config.titleFontSize);
+  const nameSizeStyle = getStudentNameFontSizeStyle(config.studentNameFontSize);
 
-  const studentNameFontClass = getStudentNameFontClass();
+  const metaFontCss = 
+    config.metaFontFamily && config.metaFontFamily !== 'inherit'
+      ? getFontFamilyCss(config.metaFontFamily, "'Courier New', Courier, monospace")
+      : (config.metaFontFamily === 'inherit' ? masterFontCss : "'Courier New', Courier, monospace");
+  const metaSizeStyle = getMetaFontSizeStyle(config.metaFontSize);
+
+  const activityFontCss = 
+    config.activityFontFamily && config.activityFontFamily !== 'inherit'
+      ? getFontFamilyCss(config.activityFontFamily, masterFontCss)
+      : masterFontCss;
+  const activitySizeStyle = getActivityFontSizeStyle(config.activityFontSize);
+
+  const achievementFontCss = 
+    config.achievementFontFamily && config.achievementFontFamily !== 'inherit'
+      ? getFontFamilyCss(config.achievementFontFamily, masterFontCss)
+      : masterFontCss;
+  const achievementSizeStyle = getAchievementFontSizeStyle(config.achievementFontSize);
+
+  const bodySizeStyle = getBodyTextFontSizeStyle(config.bodyTextFontSize);
 
   // Buang tanda [ dan ] daripada sebarang teks supaya output sijil bersih dan profesional
   const cleanText = (val?: string | null): string => {
@@ -174,6 +213,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
       } ${isPrintMode ? 'shadow-none m-0' : 'shadow-2xl print:shadow-none print:m-0'}`}
       style={{
         boxSizing: 'border-box',
+        fontFamily: masterFontCss,
       }}
     >
       {/* 1. Background Layers */}
@@ -228,6 +268,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
       <div 
         className="relative z-10 w-full h-full px-12 py-10 flex flex-col justify-between items-center text-center"
         style={{
+          fontFamily: masterFontCss,
           paddingTop: `${44 + (config.topMarginOffset || 0)}px`,
           paddingBottom: `${Math.max(16, 28 - (config.signatureBottomOffset ?? 18))}px`,
         }}
@@ -367,20 +408,41 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                     const firstWord = words[0];
                     const restWords = words.slice(1).join(' ');
                     return (
-                      <h3 className={`font-black tracking-[0.22em] uppercase text-slate-950 ${titleSizeClass} ${fontClass} leading-tight`}>
+                      <h3 
+                        className="font-black tracking-[0.22em] uppercase text-slate-950 leading-tight"
+                        style={{
+                          fontFamily: masterFontCss,
+                          fontSize: titleSizeStyle.fontSize,
+                          lineHeight: titleSizeStyle.lineHeight,
+                        }}
+                      >
                         <span>{firstWord}</span><br /><span className="text-amber-800">{restWords}</span>
                       </h3>
                     );
                   }
                   return (
-                    <h3 className={`font-black tracking-[0.22em] uppercase text-slate-950 ${titleSizeClass} ${fontClass} leading-tight`}>
+                    <h3 
+                      className="font-black tracking-[0.22em] uppercase text-slate-950 leading-tight"
+                      style={{
+                        fontFamily: masterFontCss,
+                        fontSize: titleSizeStyle.fontSize,
+                        lineHeight: titleSizeStyle.lineHeight,
+                      }}
+                    >
                       <span className="text-amber-800">{titleText}</span>
                     </h3>
                   );
                 }
 
                 return (
-                  <h3 className={`font-extrabold tracking-wide uppercase text-slate-900 ${titleSizeClass} ${fontClass}`}>
+                  <h3 
+                    className="font-extrabold tracking-wide uppercase text-slate-900"
+                    style={{
+                      fontFamily: masterFontCss,
+                      fontSize: titleSizeStyle.fontSize,
+                      lineHeight: titleSizeStyle.lineHeight,
+                    }}
+                  >
                     {titleText}
                   </h3>
                 );
@@ -564,7 +626,14 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                         return (
                           <div key={lIdx} className="my-2 py-0.5 text-center">
                             <div className={`inline-block ${config.customShowUnderline !== false ? 'border-b-2 border-slate-900 pb-0.5' : ''}`}>
-                              <h2 className={`tracking-wider text-slate-950 font-black ${studentNameFontClass}`}>
+                              <h2 
+                                className="tracking-wider text-slate-950 font-black"
+                                style={{
+                                  fontFamily: studentNameFontCss,
+                                  fontSize: nameSizeStyle.fontSize,
+                                  lineHeight: nameSizeStyle.lineHeight,
+                                }}
+                              >
                                 {sNameFormatted}
                               </h2>
                             </div>
@@ -573,7 +642,13 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                       }
 
                       return (
-                        <p key={lIdx} className={`${fontSizeClass} ${lineHeightClass} font-serif text-slate-800`}>
+                        <p 
+                          key={lIdx} 
+                          className={`${fontSizeClass} ${lineHeightClass} text-slate-800`}
+                          style={{
+                            fontFamily: masterFontCss,
+                          }}
+                        >
                           {parseFormatting(line)}
                         </p>
                       );
@@ -586,46 +661,96 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
             /* 1. FORMAT SUSUNAN RASMI (UMUM / SAHSIAH / KEHADIRAN) */
             <div className="space-y-3.5 max-w-2xl mx-auto text-center w-full">
               {/* Ayat Mukadimah */}
-              <p className="text-sm md:text-base font-serif italic text-slate-700 tracking-wide">
+              <p 
+                className="italic text-slate-700 tracking-wide"
+                style={{
+                  fontFamily: masterFontCss,
+                  fontSize: bodySizeStyle.fontSize,
+                  lineHeight: bodySizeStyle.lineHeight,
+                }}
+              >
                 {config.introText || 'Dengan ini diperakukan bahawa didokumenkan'}
               </p>
 
               {/* NAMA PENUH MURID */}
               <div className="my-1.5 py-0.5 inline-block min-w-[380px] max-w-full">
-                <h2 className={`tracking-wider text-slate-950 ${studentNameFontClass}`}>
+                <h2 
+                  className="tracking-wider text-slate-950 font-black"
+                  style={{
+                    fontFamily: studentNameFontCss,
+                    fontSize: nameSizeStyle.fontSize,
+                    lineHeight: nameSizeStyle.lineHeight,
+                  }}
+                >
                   {formatStudentName(student.name, isScript)}
                 </h2>
               </div>
 
               {/* NO. MYKID / NO. KP (Tanpa kurungan siku) */}
               {config.showStudentIC && (
-                <div className="text-xs md:text-sm font-mono font-semibold text-slate-800 tracking-wider">
+                <div 
+                  className="font-semibold text-slate-800 tracking-wider"
+                  style={{
+                    fontFamily: metaFontCss,
+                    fontSize: metaSizeStyle.fontSize,
+                    lineHeight: metaSizeStyle.lineHeight,
+                  }}
+                >
                   <span>{cleanText(student.ic) || 'NO. MYKID / NO. KP'}</span>
                 </div>
               )}
 
               {/* dari */}
-              <p className="text-xs md:text-sm font-serif italic text-slate-600">
+              <p 
+                className="italic text-slate-600"
+                style={{
+                  fontFamily: masterFontCss,
+                  fontSize: '13px',
+                }}
+              >
                 dari
               </p>
 
               {/* NAMA KELAS / TINGKATAN */}
-              <p className="text-sm md:text-base font-bold text-slate-900 uppercase font-sans tracking-wide">
+              <p 
+                className="font-bold text-slate-900 uppercase tracking-wide"
+                style={{
+                  fontFamily: metaFontCss,
+                  fontSize: metaSizeStyle.fontSize,
+                  lineHeight: metaSizeStyle.lineHeight,
+                }}
+              >
                 {cleanText(student.class) || 'NAMA KELAS / TINGKATAN'}
               </p>
 
               {/* telah menunjukkan prestasi yang cemerlang dan terpuji dalam program / aspek: */}
-              <p className="text-xs md:text-sm font-serif italic text-slate-700 max-w-lg mx-auto leading-relaxed pt-1">
+              <p 
+                className="italic text-slate-700 max-w-lg mx-auto leading-relaxed pt-1"
+                style={{
+                  fontFamily: masterFontCss,
+                  fontSize: '13px',
+                }}
+              >
                 telah menunjukkan prestasi yang cemerlang dan terpuji dalam program / aspek:
               </p>
 
               {/* NAMA PROGRAM ATAU JENIS PENGHARGAAN (Tanpa tanda kurungan siku) */}
               <div className="pt-0.5">
-                <p className="text-base md:text-lg font-black text-slate-950 uppercase tracking-wide font-sans max-w-xl mx-auto leading-snug">
+                <p 
+                  className="font-black text-slate-950 uppercase tracking-wide max-w-xl mx-auto leading-snug"
+                  style={{
+                    fontFamily: activityFontCss,
+                    fontSize: activitySizeStyle.fontSize,
+                    lineHeight: activitySizeStyle.lineHeight,
+                  }}
+                >
                   {cleanText(student.activity || student.achievement) || 'KEHADIRAN PENUH / SAHSIAH TERPUJI / KHIDMAT BAKTI PENGAWAS'}
                 </p>
                 {student.extraInfo && (
-                  <p className="text-xs text-slate-500 italic mt-0.5">
+                  <p 
+                    className="text-xs text-slate-500 italic mt-0.5"
+                    style={{ fontFamily: masterFontCss }}
+                  >
                     ({cleanText(student.extraInfo)})
                   </p>
                 )}
@@ -634,15 +759,29 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
               {/* bagi tahun TAHUN (Pilihan Guru untuk papar atau sorok berasingan daripada tarikh) */}
               {config.showSessionYear !== false && (
                 <div className="pt-1.5">
-                  <p className="text-xs font-serif italic text-slate-600">bagi tahun</p>
-                  <p className="text-sm md:text-base font-bold text-slate-950 font-sans tracking-wide mt-0.5">
+                  <p 
+                    className="italic text-slate-600"
+                    style={{ fontFamily: masterFontCss, fontSize: '13px' }}
+                  >
+                    bagi tahun
+                  </p>
+                  <p 
+                    className="font-bold text-slate-950 tracking-wide mt-0.5"
+                    style={{
+                      fontFamily: metaFontCss,
+                      fontSize: '16px',
+                    }}
+                  >
                     {cleanText(config.eventYear || student.date?.match(/\d{4}/)?.[0]) || '2026'}
                   </p>
                 </div>
               )}
 
               {student.customSentence && (
-                <p className="text-xs italic font-serif text-slate-600 max-w-lg mx-auto pt-1">
+                <p 
+                  className="italic text-slate-600 max-w-lg mx-auto pt-1 text-xs"
+                  style={{ fontFamily: masterFontCss }}
+                >
                   "{student.customSentence}"
                 </p>
               )}
@@ -651,36 +790,73 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
             /* 2. FORMAT SUSUNAN AKADEMIK (PENCAPAIAN CEMERLANG) */
             <div className="space-y-3.5 max-w-2xl mx-auto text-center w-full">
               {/* Diberikan dengan tulus ikhlas kepada */}
-              <p className="text-sm md:text-base font-serif italic text-slate-700 tracking-wide">
+              <p 
+                className="italic text-slate-700 tracking-wide"
+                style={{
+                  fontFamily: masterFontCss,
+                  fontSize: bodySizeStyle.fontSize,
+                  lineHeight: bodySizeStyle.lineHeight,
+                }}
+              >
                 {config.introText || 'Diberikan dengan tulus ikhlas kepada'}
               </p>
 
               {/* NAMA PENUH MURID */}
               <div className="my-1.5 py-0.5 inline-block min-w-[380px] max-w-full">
-                <h2 className={`tracking-wider text-slate-950 ${studentNameFontClass}`}>
+                <h2 
+                  className="tracking-wider text-slate-950 font-black"
+                  style={{
+                    fontFamily: studentNameFontCss,
+                    fontSize: nameSizeStyle.fontSize,
+                    lineHeight: nameSizeStyle.lineHeight,
+                  }}
+                >
                   {formatStudentName(student.name, isScript)}
                 </h2>
               </div>
 
               {/* NO. MYKID / NO. KP (Tanpa kurungan siku) */}
               {config.showStudentIC && (
-                <div className="text-xs md:text-sm font-mono font-semibold text-slate-800 tracking-wider">
+                <div 
+                  className="font-semibold text-slate-800 tracking-wider"
+                  style={{
+                    fontFamily: metaFontCss,
+                    fontSize: metaSizeStyle.fontSize,
+                    lineHeight: metaSizeStyle.lineHeight,
+                  }}
+                >
                   <span>{cleanText(student.ic) || 'NO. MYKID / NO. KP'}</span>
                 </div>
               )}
 
               {/* Atas pencapaian cemerlang dan usaha gigih dalam */}
-              <p className="text-xs md:text-sm font-serif italic text-slate-700 max-w-lg mx-auto leading-relaxed pt-1">
+              <p 
+                className="italic text-slate-700 max-w-lg mx-auto leading-relaxed pt-1"
+                style={{
+                  fontFamily: masterFontCss,
+                  fontSize: '13px',
+                }}
+              >
                 Atas pencapaian cemerlang dan usaha gigih dalam
               </p>
 
               {/* NAMA MATA PELAJARAN / PENCAPAIAN (Tanpa tanda kurungan siku) */}
               <div className="pt-0.5">
-                <p className="text-base md:text-lg font-black text-slate-950 uppercase tracking-wide font-sans max-w-xl mx-auto leading-snug">
+                <p 
+                  className="font-black text-slate-950 uppercase tracking-wide max-w-xl mx-auto leading-snug"
+                  style={{
+                    fontFamily: activityFontCss,
+                    fontSize: activitySizeStyle.fontSize,
+                    lineHeight: activitySizeStyle.lineHeight,
+                  }}
+                >
                   {cleanText(student.activity || student.achievement) || 'PEPERIKSAAN AKHIR TAHUN / SUBJEK MATEMATIK'}
                 </p>
                 {student.extraInfo && (
-                  <p className="text-xs text-slate-500 italic mt-0.5">
+                  <p 
+                    className="text-xs text-slate-500 italic mt-0.5"
+                    style={{ fontFamily: masterFontCss }}
+                  >
                     ({cleanText(student.extraInfo)})
                   </p>
                 )}
@@ -689,20 +865,41 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
               {/* Bagi Sesi TAHUN/SESI (Pilihan Guru untuk papar atau sorok berasingan daripada tarikh) */}
               {config.showSessionYear !== false && (
                 <div className="pt-1.5">
-                  <p className="text-xs font-serif italic text-slate-600">Bagi Sesi</p>
-                  <p className="text-sm md:text-base font-bold text-slate-950 font-sans tracking-wide mt-0.5">
+                  <p 
+                    className="italic text-slate-600"
+                    style={{ fontFamily: masterFontCss, fontSize: '13px' }}
+                  >
+                    Bagi Sesi
+                  </p>
+                  <p 
+                    className="font-bold text-slate-950 tracking-wide mt-0.5"
+                    style={{
+                      fontFamily: metaFontCss,
+                      fontSize: '16px',
+                    }}
+                  >
                     {cleanText(config.academicSession || config.eventYear) || '2025/2026'}
                   </p>
                 </div>
               )}
 
               {/* Semoga kejayaan ini menjadi pendorong untuk terus cemerlang pada masa hadapan. */}
-              <p className="text-xs italic font-serif text-slate-600 max-w-lg mx-auto leading-relaxed pt-1">
+              <p 
+                className="italic text-slate-600 max-w-lg mx-auto leading-relaxed pt-1"
+                style={{
+                  fontFamily: masterFontCss,
+                  fontSize: bodySizeStyle.fontSize,
+                  lineHeight: bodySizeStyle.lineHeight,
+                }}
+              >
                 {config.closingText || 'Semoga kejayaan ini menjadi pendorong untuk terus cemerlang pada masa hadapan.'}
               </p>
 
               {student.customSentence && (
-                <p className="text-xs italic font-serif text-slate-600 max-w-lg mx-auto pt-1">
+                <p 
+                  className="text-xs italic text-slate-600 max-w-lg mx-auto pt-1"
+                  style={{ fontFamily: masterFontCss }}
+                >
                   "{student.customSentence}"
                 </p>
               )}
@@ -711,41 +908,101 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
             /* 3. FORMAT SUSUNAN RINGKAS & MODEN (KOKURIKULUM / PENGLIBATAN) */
             <div className="space-y-3.5 max-w-2xl mx-auto text-center w-full">
               {/* Dianugerahkan kepada */}
-              <p className="text-sm md:text-base font-serif italic text-slate-700 tracking-wide">
+              <p 
+                className="italic text-slate-700 tracking-wide"
+                style={{
+                  fontFamily: masterFontCss,
+                  fontSize: bodySizeStyle.fontSize,
+                  lineHeight: bodySizeStyle.lineHeight,
+                }}
+              >
                 {config.introText || 'Dianugerahkan kepada'}
               </p>
 
               {/* NAMA PENUH MURID */}
               <div className="my-1.5 py-0.5 inline-block min-w-[380px] max-w-full">
-                <h2 className={`tracking-wider text-slate-950 ${studentNameFontClass}`}>
+                <h2 
+                  className="tracking-wider text-slate-950 font-black"
+                  style={{
+                    fontFamily: studentNameFontCss,
+                    fontSize: nameSizeStyle.fontSize,
+                    lineHeight: nameSizeStyle.lineHeight,
+                  }}
+                >
                   {formatStudentName(student.name, isScript)}
                 </h2>
               </div>
 
+              {/* NO. MYKID / NO. KP (jika dipaparkan) */}
+              {config.showStudentIC && student.ic && (
+                <div 
+                  className="font-semibold text-slate-800 tracking-wider"
+                  style={{
+                    fontFamily: metaFontCss,
+                    fontSize: metaSizeStyle.fontSize,
+                    lineHeight: metaSizeStyle.lineHeight,
+                  }}
+                >
+                  <span>{cleanText(student.ic)}</span>
+                  {config.showStudentClass && student.class && (
+                    <span className="ml-2 text-slate-600 font-normal">| {cleanText(student.class)}</span>
+                  )}
+                </div>
+              )}
+
               {/* Atas sumbangan, komitmen dan penglibatan aktif sebagai */}
-              <p className="text-xs md:text-sm font-serif italic text-slate-700 max-w-lg mx-auto leading-relaxed pt-1">
+              <p 
+                className="italic text-slate-700 max-w-lg mx-auto leading-relaxed pt-1"
+                style={{
+                  fontFamily: masterFontCss,
+                  fontSize: '13px',
+                }}
+              >
                 Atas sumbangan, komitmen dan penglibatan aktif sebagai
               </p>
 
               {/* JAWATAN / PERANAN MURID (Tanpa tanda kurungan siku) */}
               <div className="pt-0.5">
-                <p className="text-base md:text-lg font-black text-slate-950 uppercase tracking-wide font-sans max-w-xl mx-auto leading-snug">
+                <p 
+                  className="font-black text-slate-950 uppercase tracking-wide max-w-xl mx-auto leading-snug"
+                  style={{
+                    fontFamily: achievementFontCss,
+                    fontSize: achievementSizeStyle.fontSize,
+                    lineHeight: achievementSizeStyle.lineHeight,
+                  }}
+                >
                   {cleanText(student.positionRole || student.achievement) || 'AHLI JAWATANKUASA / PESERTA / WAKIL SEKOLAH'}
                 </p>
               </div>
 
               {/* Dalam */}
-              <p className="text-xs md:text-sm font-serif italic text-slate-600">
+              <p 
+                className="italic text-slate-600"
+                style={{
+                  fontFamily: masterFontCss,
+                  fontSize: '13px',
+                }}
+              >
                 Dalam
               </p>
 
               {/* NAMA KELAB / PERSATUAN / AKTIVITI (Tanpa tanda kurungan siku) */}
               <div className="pt-0.5">
-                <p className="text-base md:text-lg font-black text-slate-950 uppercase tracking-wide font-sans max-w-xl mx-auto leading-snug">
+                <p 
+                  className="font-black text-slate-950 uppercase tracking-wide max-w-xl mx-auto leading-snug"
+                  style={{
+                    fontFamily: activityFontCss,
+                    fontSize: activitySizeStyle.fontSize,
+                    lineHeight: activitySizeStyle.lineHeight,
+                  }}
+                >
                   {cleanText(student.unitClub || student.activity) || 'NAMA KELAB / PERSATUAN / AKTIVITI'}
                 </p>
                 {student.extraInfo && (
-                  <p className="text-xs text-slate-500 italic mt-0.5">
+                  <p 
+                    className="text-xs text-slate-500 italic mt-0.5"
+                    style={{ fontFamily: masterFontCss }}
+                  >
                     ({cleanText(student.extraInfo)})
                   </p>
                 )}
@@ -754,15 +1011,29 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
               {/* Bagi TAHUN (Pilihan Guru untuk papar atau sorok berasingan daripada tarikh) */}
               {config.showSessionYear !== false && (
                 <div className="pt-1.5">
-                  <p className="text-xs font-serif italic text-slate-600">Bagi</p>
-                  <p className="text-sm md:text-base font-bold text-slate-950 font-sans tracking-wide mt-0.5">
+                  <p 
+                    className="italic text-slate-600"
+                    style={{ fontFamily: masterFontCss, fontSize: '13px' }}
+                  >
+                    Bagi
+                  </p>
+                  <p 
+                    className="font-bold text-slate-950 tracking-wide mt-0.5"
+                    style={{
+                      fontFamily: metaFontCss,
+                      fontSize: '16px',
+                    }}
+                  >
                     {cleanText(config.eventYear || student.date?.match(/\d{4}/)?.[0]) || '2026'}
                   </p>
                 </div>
               )}
 
               {student.customSentence && (
-                <p className="text-xs italic font-serif text-slate-600 max-w-lg mx-auto pt-1">
+                <p 
+                  className="text-xs italic text-slate-600 max-w-lg mx-auto pt-1"
+                  style={{ fontFamily: masterFontCss }}
+                >
                   "{student.customSentence}"
                 </p>
               )}
@@ -771,20 +1042,41 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
             /* SUSUNAN RASMI KERAJAAN / JABATAN BELIA & SUKAN (MENGIKUT CONTOH LAMPIRAN PENGGUNA) */
             <div className="space-y-3 max-w-2xl mx-auto text-center">
               {/* 1. Ayat Mukadimah */}
-              <p className="text-sm md:text-base font-serif italic text-slate-700 tracking-wide mb-1">
+              <p 
+                className="italic text-slate-700 tracking-wide mb-1"
+                style={{
+                  fontFamily: masterFontCss,
+                  fontSize: bodySizeStyle.fontSize,
+                  lineHeight: bodySizeStyle.lineHeight,
+                }}
+              >
                 {config.introText || 'Dengan ini diperakui bahawa'}
               </p>
 
               {/* 2. Nama Penerima */}
               <div className="my-1 py-0.5 inline-block min-w-[380px] max-w-full">
-                <h2 className={`tracking-wider text-slate-950 ${studentNameFontClass}`}>
+                <h2 
+                  className="tracking-wider text-slate-950 font-black"
+                  style={{
+                    fontFamily: studentNameFontCss,
+                    fontSize: nameSizeStyle.fontSize,
+                    lineHeight: nameSizeStyle.lineHeight,
+                  }}
+                >
                   {formatStudentName(student.name, isScript)}
                 </h2>
               </div>
 
               {/* 3. No. K/P dalam kurungan (K/P: 010203-10-XXXX) */}
               {config.showStudentIC && (student.ic || '010203-10-XXXX') && (
-                <div className="text-xs md:text-sm font-semibold text-slate-800 tracking-wider">
+                <div 
+                  className="font-semibold text-slate-800 tracking-wider"
+                  style={{
+                    fontFamily: metaFontCss,
+                    fontSize: metaSizeStyle.fontSize,
+                    lineHeight: metaSizeStyle.lineHeight,
+                  }}
+                >
                   <span>(K/P: {student.ic || '010203-10-XXXX'})</span>
                   {config.showStudentClass && student.class && (
                     <span className="ml-2 text-slate-600 font-normal">| {student.class}</span>
@@ -794,10 +1086,20 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
 
               {/* 4. kerana telah / MENYERTAI */}
               <div className="pt-2">
-                <p className="text-xs font-serif italic text-slate-600">
+                <p 
+                  className="italic text-slate-600"
+                  style={{ fontFamily: masterFontCss, fontSize: '13px' }}
+                >
                   {config.actionConnectiveText || 'kerana telah'}
                 </p>
-                <p className="text-lg md:text-xl font-black text-slate-950 uppercase tracking-widest font-sans mt-0.5">
+                <p 
+                  className="font-black text-slate-950 uppercase tracking-widest mt-0.5"
+                  style={{
+                    fontFamily: achievementFontCss,
+                    fontSize: achievementSizeStyle.fontSize,
+                    lineHeight: achievementSizeStyle.lineHeight,
+                  }}
+                >
                   {student.actionVerb || student.achievement || config.actionVerbText || 'MENYERTAI'}
                 </p>
               </div>
@@ -805,12 +1107,22 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
               {/* 5. Nama Program / Kursus & Peringkat */}
               <div className="pt-1.5 space-y-1">
                 {config.showActivity && student.activity && (
-                  <p className="text-lg md:text-xl font-black text-slate-950 uppercase tracking-wide leading-snug font-sans max-w-xl mx-auto">
+                  <p 
+                    className="font-black text-slate-950 uppercase tracking-wide leading-snug max-w-xl mx-auto"
+                    style={{
+                      fontFamily: activityFontCss,
+                      fontSize: activitySizeStyle.fontSize,
+                      lineHeight: activitySizeStyle.lineHeight,
+                    }}
+                  >
                     {student.activity}
                   </p>
                 )}
                 {config.showLevel && student.level && (
-                  <p className="text-xs md:text-sm uppercase tracking-[0.25em] text-slate-700 font-extrabold font-sans">
+                  <p 
+                    className="text-xs md:text-sm uppercase tracking-[0.25em] text-slate-700 font-extrabold"
+                    style={{ fontFamily: masterFontCss }}
+                  >
                     {renderLevelDisplay()}
                   </p>
                 )}
@@ -818,7 +1130,14 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
 
               {/* Ruang Unit / Kelab jika diaktifkan */}
               {config.showUnitClub && student.unitClub && (
-                <div className="text-xs md:text-sm font-bold text-slate-800 uppercase tracking-wide">
+                <div 
+                  className="font-bold text-slate-800 uppercase tracking-wide"
+                  style={{
+                    fontFamily: activityFontCss,
+                    fontSize: metaSizeStyle.fontSize,
+                    lineHeight: metaSizeStyle.lineHeight,
+                  }}
+                >
                   {student.unitClub}
                 </div>
               )}
@@ -828,16 +1147,32 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                 <div className="pt-2.5 space-y-2 text-center">
                   {config.showEventDate !== false && (
                     <div>
-                      <p className="text-xs font-serif italic text-slate-600">Pada:</p>
-                      <p className="text-sm md:text-base font-bold text-slate-950 font-sans tracking-wide">
+                      <p 
+                        className="italic text-slate-600"
+                        style={{ fontFamily: masterFontCss, fontSize: '13px' }}
+                      >
+                        Pada:
+                      </p>
+                      <p 
+                        className="font-bold text-slate-950 tracking-wide"
+                        style={{ fontFamily: metaFontCss, fontSize: '15px' }}
+                      >
                         {certDate}
                       </p>
                     </div>
                   )}
                   {(student.venue || config.eventVenue) && (
                     <div>
-                      <p className="text-xs font-serif italic text-slate-600">Tempat:</p>
-                      <p className="text-sm md:text-base font-bold text-slate-950 font-sans tracking-wide">
+                      <p 
+                        className="italic text-slate-600"
+                        style={{ fontFamily: masterFontCss, fontSize: '13px' }}
+                      >
+                        Tempat:
+                      </p>
+                      <p 
+                        className="font-bold text-slate-950 tracking-wide"
+                        style={{ fontFamily: metaFontCss, fontSize: '15px' }}
+                      >
                         {student.venue || config.eventVenue || 'DEWAN MERDEKA, IDCC SHAH ALAM'}
                       </p>
                     </div>
@@ -847,13 +1182,19 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
 
               {/* Catatan / Ayat Tambahan jika ada */}
               {student.customSentence && (
-                <p className="text-xs italic font-serif text-slate-600 max-w-lg mx-auto pt-1">
+                <p 
+                  className="text-xs italic text-slate-600 max-w-lg mx-auto pt-1"
+                  style={{ fontFamily: masterFontCss }}
+                >
                   "{student.customSentence}"
                 </p>
               )}
 
               {config.closingText && (
-                <p className="text-[11px] italic font-serif text-slate-600 max-w-lg mx-auto pt-1 leading-relaxed">
+                <p 
+                  className="text-[11px] italic text-slate-600 max-w-lg mx-auto pt-1 leading-relaxed"
+                  style={{ fontFamily: masterFontCss }}
+                >
                   "{config.closingText}"
                 </p>
               )}
@@ -862,13 +1203,27 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
             /* Gaya Perenggan Naratif Rasmi (Continuous Flow Paragraph) */
             <div className="space-y-3.5 max-w-2xl mx-auto text-center">
               {/* Preamble / Ayat Mukadimah */}
-              <p className="text-sm italic font-serif text-slate-700 tracking-wide">
+              <p 
+                className="italic text-slate-700 tracking-wide"
+                style={{
+                  fontFamily: masterFontCss,
+                  fontSize: bodySizeStyle.fontSize,
+                  lineHeight: bodySizeStyle.lineHeight,
+                }}
+              >
                 {config.introText}
               </p>
 
               {/* Student Name */}
               <div className="my-1 py-0.5 border-b-2 border-slate-900/80 inline-block min-w-[380px] max-w-full">
-                <h2 className={`tracking-wider text-slate-950 ${studentNameFontClass}`}>
+                <h2 
+                  className="tracking-wider text-slate-950 font-black"
+                  style={{
+                    fontFamily: studentNameFontCss,
+                    fontSize: nameSizeStyle.fontSize,
+                    lineHeight: nameSizeStyle.lineHeight,
+                  }}
+                >
                   {formatStudentName(student.name, isScript)}
                 </h2>
               </div>
@@ -879,7 +1234,16 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                   {config.showStudentIC && student.ic && (
                     <span className="flex items-center gap-1.5">
                       <span className="text-slate-500 font-normal">NO. K/P:</span>
-                      <span className="font-mono tracking-wider text-slate-900 font-bold">{student.ic}</span>
+                      <span 
+                        className="tracking-wider text-slate-900 font-bold"
+                        style={{
+                          fontFamily: metaFontCss,
+                          fontSize: metaSizeStyle.fontSize,
+                          lineHeight: metaSizeStyle.lineHeight,
+                        }}
+                      >
+                        {student.ic}
+                      </span>
                     </span>
                   )}
                   {config.showStudentIC && config.showStudentClass && student.ic && student.class && (
@@ -888,43 +1252,71 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                   {config.showStudentClass && student.class && (
                     <span className="flex items-center gap-1.5">
                       <span className="text-slate-500 font-normal">KELAS:</span>
-                      <span className="text-slate-900 font-bold">{student.class}</span>
+                      <span 
+                        className="text-slate-900 font-bold"
+                        style={{
+                          fontFamily: metaFontCss,
+                          fontSize: metaSizeStyle.fontSize,
+                          lineHeight: metaSizeStyle.lineHeight,
+                        }}
+                      >
+                        {student.class}
+                      </span>
                     </span>
                   )}
                 </div>
               )}
 
               {/* Perenggan Rasmi Bersambung */}
-              <p className="text-base font-serif text-slate-800 leading-relaxed max-w-xl mx-auto pt-1">
+              <p 
+                className="text-slate-800 leading-relaxed max-w-xl mx-auto pt-1"
+                style={{
+                  fontFamily: masterFontCss,
+                  fontSize: bodySizeStyle.fontSize,
+                  lineHeight: bodySizeStyle.lineHeight,
+                }}
+              >
                 <span>{config.bodyLeadText} </span>
                 {config.showActivity && student.activity && (
-                  <span className="font-sans font-extrabold text-slate-950 uppercase tracking-wide">
+                  <span 
+                    className="font-extrabold text-slate-950 uppercase tracking-wide"
+                    style={{
+                      fontFamily: activityFontCss,
+                      fontSize: activitySizeStyle.fontSize,
+                    }}
+                  >
                     {student.activity}
                   </span>
                 )}
                 {config.showUnitClub && student.unitClub && (
-                  <span> bagi unit <span className="font-sans font-bold text-slate-950 uppercase">{student.unitClub}</span></span>
+                  <span> bagi unit <span className="font-bold text-slate-950 uppercase" style={{ fontFamily: activityFontCss }}>{student.unitClub}</span></span>
                 )}
                 {config.showLevel && student.level && (
-                  <span> di <span className="font-sans font-bold text-slate-950">{getLevelFormatted(student.level)}</span></span>
+                  <span> di <span className="font-bold text-slate-950">{getLevelFormatted(student.level)}</span></span>
                 )}
                 {config.showPositionRole && student.positionRole && (
-                  <span> dan telah diamanahkan menjawat jawatan <span className="font-sans font-extrabold text-slate-950 uppercase">{student.positionRole}</span></span>
+                  <span> dan telah diamanahkan menjawat jawatan <span className="font-extrabold text-slate-950 uppercase" style={{ fontFamily: achievementFontCss }}>{student.positionRole}</span></span>
                 )}
                 {config.showAchievement && student.achievement && (!config.showPositionRole || !student.positionRole || student.achievement !== student.positionRole) && (
-                  <span> serta berjaya merangkul <span className="font-sans font-extrabold text-slate-950 uppercase">{student.achievement}</span></span>
+                  <span> serta berjaya merangkul <span className="font-extrabold text-slate-950 uppercase" style={{ fontFamily: achievementFontCss }}>{student.achievement}</span></span>
                 )}
                 .
               </p>
 
               {student.customSentence && (
-                <p className="text-xs italic font-serif text-slate-600 max-w-lg mx-auto">
+                <p 
+                  className="text-xs italic text-slate-600 max-w-lg mx-auto"
+                  style={{ fontFamily: masterFontCss }}
+                >
                   "{student.customSentence}"
                 </p>
               )}
 
               {config.closingText && (
-                <p className="text-xs italic font-serif text-slate-500 max-w-xl mx-auto pt-1 leading-relaxed">
+                <p 
+                  className="text-xs italic text-slate-500 max-w-xl mx-auto pt-1 leading-relaxed"
+                  style={{ fontFamily: masterFontCss }}
+                >
                   "{config.closingText}"
                 </p>
               )}
@@ -933,13 +1325,27 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
             /* Gaya Lampiran Rasmi KPM (Standard Lampiran Sijil - Susunan Paling Kemas & Berstruktur) */
             <div className="space-y-2.5 max-w-2xl mx-auto text-center">
               {/* Preamble / Ayat Mukadimah (Rapat dengan Tajuk Sijil) */}
-              <p className="text-sm italic font-serif text-slate-700 tracking-wide mb-1">
+              <p 
+                className="italic text-slate-700 tracking-wide mb-1"
+                style={{
+                  fontFamily: masterFontCss,
+                  fontSize: bodySizeStyle.fontSize,
+                  lineHeight: bodySizeStyle.lineHeight,
+                }}
+              >
                 {config.introText}
               </p>
 
               {/* Student Name */}
               <div className="my-1 py-0.5 border-b-2 border-slate-900/80 inline-block min-w-[400px] max-w-full">
-                <h2 className={`tracking-wider text-slate-950 ${studentNameFontClass}`}>
+                <h2 
+                  className="tracking-wider text-slate-950 font-black"
+                  style={{
+                    fontFamily: studentNameFontCss,
+                    fontSize: nameSizeStyle.fontSize,
+                    lineHeight: nameSizeStyle.lineHeight,
+                  }}
+                >
                   {formatStudentName(student.name, isScript)}
                 </h2>
               </div>
@@ -950,7 +1356,16 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                   {config.showStudentIC && student.ic && (
                     <span className="flex items-center gap-1.5">
                       <span className="text-slate-500 font-normal">NO. K/P:</span>
-                      <span className="font-mono tracking-wider text-slate-900 font-bold">{student.ic}</span>
+                      <span 
+                        className="tracking-wider text-slate-900 font-bold"
+                        style={{
+                          fontFamily: metaFontCss,
+                          fontSize: metaSizeStyle.fontSize,
+                          lineHeight: metaSizeStyle.lineHeight,
+                        }}
+                      >
+                        {student.ic}
+                      </span>
                     </span>
                   )}
                   {config.showStudentIC && config.showStudentClass && student.ic && student.class && (
@@ -959,14 +1374,30 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                   {config.showStudentClass && student.class && (
                     <span className="flex items-center gap-1.5">
                       <span className="text-slate-500 font-normal">KELAS:</span>
-                      <span className="text-slate-900 font-bold">{student.class}</span>
+                      <span 
+                        className="text-slate-900 font-bold"
+                        style={{
+                          fontFamily: metaFontCss,
+                          fontSize: metaSizeStyle.fontSize,
+                          lineHeight: metaSizeStyle.lineHeight,
+                        }}
+                      >
+                        {student.class}
+                      </span>
                     </span>
                   )}
                 </div>
               )}
 
               {/* Custom Lead Sentence by Teacher */}
-              <p className="text-sm font-serif text-slate-700 tracking-wide max-w-xl mx-auto leading-relaxed pt-1">
+              <p 
+                className="text-slate-700 tracking-wide max-w-xl mx-auto leading-relaxed pt-1"
+                style={{
+                  fontFamily: masterFontCss,
+                  fontSize: bodySizeStyle.fontSize,
+                  lineHeight: bodySizeStyle.lineHeight,
+                }}
+              >
                 {config.bodyLeadText}
               </p>
 
@@ -976,7 +1407,14 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                 {/* 1. Ruang Nama Pertandingan / Program (Tulisan Rasmi Kemas Tanpa Kotak) */}
                 {config.showActivity && student.activity && (
                   <div className="text-center">
-                    <p className="text-lg md:text-xl font-extrabold text-slate-950 uppercase tracking-wide leading-snug font-sans">
+                    <p 
+                      className="font-extrabold text-slate-950 uppercase tracking-wide leading-snug"
+                      style={{
+                        fontFamily: activityFontCss,
+                        fontSize: activitySizeStyle.fontSize,
+                        lineHeight: activitySizeStyle.lineHeight,
+                      }}
+                    >
                       {student.activity}
                     </p>
                   </div>
@@ -985,7 +1423,10 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                 {/* 2. Ruang Peringkat (Tersusun Kemas di Bawah Pertandingan) */}
                 {config.showLevel && student.level && (
                   <div className="text-center">
-                    <span className="text-xs uppercase tracking-widest text-slate-600 font-bold font-sans">
+                    <span 
+                      className="text-xs uppercase tracking-widest text-slate-600 font-bold"
+                      style={{ fontFamily: masterFontCss }}
+                    >
                       {renderLevelDisplay()}
                     </span>
                   </div>
@@ -994,10 +1435,20 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                 {/* 3. Ruang Nama Unit / Kelab (Jika Diaktifkan) */}
                 {config.showUnitClub && student.unitClub && (
                   <div className="text-center">
-                    <span className="text-xs italic font-serif text-slate-500 mr-2">
+                    <span 
+                      className="text-xs italic text-slate-500 mr-2"
+                      style={{ fontFamily: masterFontCss }}
+                    >
                       {config.connectorStyle === 'label' ? config.unitClubLabel : 'mewakili unit / kelab:'}
                     </span>
-                    <span className="text-sm md:text-base font-bold text-slate-900 uppercase tracking-wide font-sans">
+                    <span 
+                      className="font-bold text-slate-900 uppercase tracking-wide"
+                      style={{
+                        fontFamily: activityFontCss,
+                        fontSize: metaSizeStyle.fontSize,
+                        lineHeight: metaSizeStyle.lineHeight,
+                      }}
+                    >
                       {student.unitClub}
                     </span>
                   </div>
@@ -1006,10 +1457,20 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                 {/* 4. Ruang Jawatan Dilantik (Khas untuk Watikah Lantikan) */}
                 {config.showPositionRole && student.positionRole && (
                   <div className="text-center pt-1">
-                    <div className="text-xs italic font-serif text-slate-600 mb-0.5">
+                    <div 
+                      className="text-xs italic text-slate-600 mb-0.5"
+                      style={{ fontFamily: masterFontCss }}
+                    >
                       {config.connectorStyle === 'label' ? config.positionRoleLabel : 'telah dilantik memegang amanah jawatan:'}
                     </div>
-                    <div className="text-lg md:text-xl font-black text-slate-950 uppercase tracking-wider font-sans">
+                    <div 
+                      className="font-black text-slate-950 uppercase tracking-wider"
+                      style={{
+                        fontFamily: achievementFontCss,
+                        fontSize: achievementSizeStyle.fontSize,
+                        lineHeight: achievementSizeStyle.lineHeight,
+                      }}
+                    >
                       {student.positionRole}
                     </div>
                   </div>
@@ -1018,10 +1479,20 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                 {/* 5. Ruang Pencapaian (Untuk Kejohanan / Sukan / Akademik) */}
                 {config.showAchievement && student.achievement && (!config.showPositionRole || !student.positionRole || student.achievement !== student.positionRole) && (
                   <div className="text-center pt-1">
-                    <div className="text-xs italic font-serif text-slate-600 mb-0.5">
+                    <div 
+                      className="text-xs italic text-slate-600 mb-0.5"
+                      style={{ fontFamily: masterFontCss }}
+                    >
                       {config.connectorStyle === 'label' ? config.achievementLabel : 'dan telah berjaya memperoleh:'}
                     </div>
-                    <div className="text-lg md:text-xl font-black text-slate-950 uppercase tracking-wider font-sans">
+                    <div 
+                      className="font-black text-slate-950 uppercase tracking-wider"
+                      style={{
+                        fontFamily: achievementFontCss,
+                        fontSize: achievementSizeStyle.fontSize,
+                        lineHeight: achievementSizeStyle.lineHeight,
+                      }}
+                    >
                       {student.achievement}
                     </div>
                   </div>
@@ -1029,20 +1500,29 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
 
                 {/* Individual Student Custom Note / Sentence (Tulisan biasa tanpa kotak) */}
                 {student.customSentence && (
-                  <p className="mt-2 text-xs italic font-serif text-slate-700 max-w-lg mx-auto">
+                  <p 
+                    className="mt-2 text-xs italic text-slate-700 max-w-lg mx-auto"
+                    style={{ fontFamily: masterFontCss }}
+                  >
                     "{student.customSentence}"
                   </p>
                 )}
 
                 {student.extraInfo && !student.customSentence && (
-                  <p className="text-xs italic text-slate-600 mt-0.5">
+                  <p 
+                    className="text-xs italic text-slate-600 mt-0.5"
+                    style={{ fontFamily: masterFontCss }}
+                  >
                     ({student.extraInfo})
                   </p>
                 )}
 
                 {/* Closing Sentence / Ayat Harapan */}
                 {config.closingText && (
-                  <p className="text-[11px] italic font-serif text-slate-600 mt-2 max-w-xl mx-auto leading-relaxed">
+                  <p 
+                    className="text-[11px] italic text-slate-600 mt-2 max-w-xl mx-auto leading-relaxed"
+                    style={{ fontFamily: masterFontCss }}
+                  >
                     "{config.closingText}"
                   </p>
                 )}

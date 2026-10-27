@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Student, CertificateConfig, AchievementLevel } from './types/certificate';
+import { Student, CertificateConfig, AchievementLevel, FontSizeOption } from './types/certificate';
 import { DEFAULT_CONFIG, SAMPLE_STUDENTS, EMPTY_STUDENT_PREVIEW, LEVEL_BADGES } from './data/defaultData';
 import { CertificateView } from './components/CertificateView';
 import { StudentSelector } from './components/StudentSelector';
@@ -1197,6 +1197,90 @@ export default function App() {
                       </div>
                     </div>
                   </div>
+                </div>
+
+                {/* Bar Kawalan Cepat: Saiz Fon Elemen Sijil (No. IC, Kelas, Acara & Pencapaian) */}
+                <div className="bg-indigo-50/70 px-4 py-2 rounded-xl border border-indigo-200/90 flex flex-wrap items-center justify-between gap-2.5 text-xs mb-3 shadow-2xs">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="font-bold text-indigo-950 uppercase text-[10px] tracking-wide flex items-center gap-1 mr-1">
+                      <span>🔤</span> Saiz Elemen:
+                    </span>
+
+                    {/* IC & Kelas */}
+                    <div className="flex items-center bg-white p-0.5 rounded-lg border border-indigo-200 shadow-2xs">
+                      <span className="text-[10px] font-bold text-slate-600 px-1.5">IC/Kelas:</span>
+                      {(['sm', 'md', 'lg', 'xl'] as FontSizeOption[]).map((sz) => (
+                        <button
+                          key={sz}
+                          type="button"
+                          onClick={() => {
+                            setConfig({ ...config, metaFontSize: sz });
+                            showToast(`Saiz IC & Kelas: ${sz.toUpperCase()}`);
+                          }}
+                          className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition ${
+                            (config.metaFontSize || 'md') === sz
+                              ? 'bg-indigo-600 text-white'
+                              : 'text-slate-600 hover:bg-slate-100'
+                          }`}
+                        >
+                          {sz === 'sm' ? 'S' : sz === 'md' ? 'M' : sz === 'lg' ? 'L' : 'XL'}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Acara / Aktiviti */}
+                    <div className="flex items-center bg-white p-0.5 rounded-lg border border-indigo-200 shadow-2xs">
+                      <span className="text-[10px] font-bold text-slate-600 px-1.5">Acara/Sukan:</span>
+                      {(['sm', 'md', 'lg', 'xl', '2xl'] as FontSizeOption[]).map((sz) => (
+                        <button
+                          key={sz}
+                          type="button"
+                          onClick={() => {
+                            setConfig({ ...config, activityFontSize: sz });
+                            showToast(`Saiz Acara/Sukan: ${sz.toUpperCase()}`);
+                          }}
+                          className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition ${
+                            (config.activityFontSize || 'md') === sz
+                              ? 'bg-indigo-600 text-white'
+                              : 'text-slate-600 hover:bg-slate-100'
+                          }`}
+                        >
+                          {sz === 'sm' ? 'S' : sz === 'md' ? 'M' : sz === 'lg' ? 'L' : sz === 'xl' ? 'XL' : '2XL'}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Pencapaian / Jawatan */}
+                    <div className="flex items-center bg-white p-0.5 rounded-lg border border-indigo-200 shadow-2xs">
+                      <span className="text-[10px] font-bold text-slate-600 px-1.5">Pencapaian:</span>
+                      {(['sm', 'md', 'lg', 'xl'] as FontSizeOption[]).map((sz) => (
+                        <button
+                          key={sz}
+                          type="button"
+                          onClick={() => {
+                            setConfig({ ...config, achievementFontSize: sz });
+                            showToast(`Saiz Pencapaian: ${sz.toUpperCase()}`);
+                          }}
+                          className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition ${
+                            (config.achievementFontSize || 'md') === sz
+                              ? 'bg-indigo-600 text-white'
+                              : 'text-slate-600 hover:bg-slate-100'
+                          }`}
+                        >
+                          {sz === 'sm' ? 'S' : sz === 'md' ? 'M' : sz === 'lg' ? 'L' : 'XL'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('settings')}
+                    className="text-[11px] font-bold text-indigo-700 hover:text-indigo-950 flex items-center gap-1 hover:underline ml-auto"
+                    title="Buka panel tetapan fon dan tipografi penuh"
+                  >
+                    <span>⚙️ Pilihan Fon Penuh</span>
+                  </button>
                 </div>
 
                 {/* Banner Panduan Jika Pangkalan Data Murid Kosong (Lalai Selepas Deploy) */}

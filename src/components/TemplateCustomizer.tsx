@@ -1989,7 +1989,10 @@ export const TemplateCustomizer: React.FC<TemplateCustomizerProps> = ({
               <button
                 key={f.id}
                 type="button"
-                onClick={() => update({ fontFamily: f.id as CertificateConfig['fontFamily'] })}
+                onClick={() => update({ 
+                  fontFamily: f.id as CertificateConfig['fontFamily'],
+                  studentNameFont: (config.studentNameFont === 'inherit' || config.studentNameFont === config.fontFamily || config.studentNameFont === 'cinzel') ? 'inherit' : config.studentNameFont
+                })}
                 className={`p-2.5 rounded-xl border text-left transition ${
                   isSel
                     ? 'border-blue-600 bg-blue-50 text-blue-900 ring-2 ring-blue-500/20 shadow-2xs'
@@ -2095,6 +2098,280 @@ export const TemplateCustomizer: React.FC<TemplateCustomizerProps> = ({
                   {sz === 'sm' ? 'Kecil' : sz === 'md' ? 'Sedang' : sz === 'lg' ? 'Besar' : sz === 'xl' ? 'X-Besar' : 'Maks'}
                 </button>
               ))}
+            </div>
+          </div>
+        </div>
+
+        {/* KAWALAN FON & SAIZ ELEMEN / PEMBOLEHUBAH SIJIL (NO. IC, KELAS, ACARA, JAWATAN/PENCAPAIAN, TEKS) */}
+        <div className="p-4 bg-slate-50 border-2 border-indigo-200 rounded-2xl space-y-4 shadow-2xs">
+          <div className="flex items-center justify-between border-b border-indigo-100 pb-2">
+            <div className="flex items-center gap-2">
+              <span className="w-7 h-7 bg-indigo-600 text-white rounded-lg flex items-center justify-center font-bold text-xs shadow-xs">
+                🔤
+              </span>
+              <div>
+                <h4 className="text-xs font-black text-indigo-950 uppercase tracking-wide">
+                  Pilihan Fon & Saiz Elemen / Pembolehubah di Sijil
+                </h4>
+                <p className="text-[11px] text-slate-500">
+                  Guru boleh sesuaikan jenis fon dan saiz bagi setiap bahagian sijil mengikut keperluan
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => update({
+                metaFontFamily: 'mono',
+                metaFontSize: 'md',
+                activityFontFamily: 'inherit',
+                activityFontSize: 'md',
+                achievementFontFamily: 'inherit',
+                achievementFontSize: 'md',
+                bodyTextFontSize: 'md',
+              })}
+              className="text-[10px] font-bold text-indigo-700 hover:text-indigo-950 bg-white px-2.5 py-1 rounded-lg border border-indigo-200 transition"
+              title="Kembalikan semua saiz dan fon elemen kepada tetapan piawai"
+            >
+              Reset Lalai
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+            {/* 1. NO. KP / MYKID & KELAS */}
+            <div className="p-3 bg-white border border-slate-200 rounded-xl space-y-2.5 shadow-2xs">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                  <span>🆔</span> No. IC / MyKid & Kelas
+                </span>
+                <span className="text-[10px] font-mono text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200 uppercase font-bold">
+                  {config.metaFontSize || 'md'}
+                </span>
+              </div>
+
+              {/* Pilihan Fon IC & Kelas */}
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                  Jenis Fon (Font Family):
+                </label>
+                <div className="grid grid-cols-3 gap-1">
+                  {[
+                    { id: 'mono', label: 'Mono', desc: 'Mesin Taip' },
+                    { id: 'sans', label: 'Sans', desc: 'Moden' },
+                    { id: 'cormorant', label: 'Cormorant', desc: 'Rasmi KPM' },
+                    { id: 'garamond', label: 'Garamond', desc: 'Klasik' },
+                    { id: 'cinzel', label: 'Cinzel', desc: 'Romawi' },
+                    { id: 'inherit', label: 'Ikut Sijil', desc: 'Lalai' },
+                  ].map((f) => (
+                    <button
+                      key={f.id}
+                      type="button"
+                      onClick={() => update({ metaFontFamily: f.id as any })}
+                      className={`p-1.5 rounded-lg border text-left transition ${
+                        (config.metaFontFamily || 'mono') === f.id
+                          ? 'bg-indigo-600 text-white border-indigo-600 font-bold shadow-2xs'
+                          : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                      }`}
+                    >
+                      <div className="text-[11px] truncate leading-tight">{f.label}</div>
+                      <div className={`text-[9px] truncate ${(config.metaFontFamily || 'mono') === f.id ? 'text-indigo-100' : 'text-slate-400'}`}>{f.desc}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Pilihan Saiz IC & Kelas */}
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                  Saiz Tulisan (Font Size):
+                </label>
+                <div className="grid grid-cols-4 gap-1">
+                  {(['sm', 'md', 'lg', 'xl'] as FontSizeOption[]).map((sz) => (
+                    <button
+                      key={sz}
+                      type="button"
+                      onClick={() => update({ metaFontSize: sz })}
+                      className={`py-1 text-xs font-bold rounded-lg border transition ${
+                        (config.metaFontSize || 'md') === sz
+                          ? 'bg-indigo-600 text-white border-indigo-600'
+                          : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
+                      }`}
+                    >
+                      {sz === 'sm' ? 'Kecil' : sz === 'md' ? 'Sedang' : sz === 'lg' ? 'Besar' : 'X-Besar'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* 2. NAMA PROGRAM / AKTIVITI / SUKAN */}
+            <div className="p-3 bg-white border border-slate-200 rounded-xl space-y-2.5 shadow-2xs">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                  <span>🏆</span> Program / Aktiviti / Sukan
+                </span>
+                <span className="text-[10px] font-mono text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200 uppercase font-bold">
+                  {config.activityFontSize || 'md'}
+                </span>
+              </div>
+
+              {/* Pilihan Fon Aktiviti */}
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                  Jenis Fon (Font Family):
+                </label>
+                <div className="grid grid-cols-3 gap-1">
+                  {[
+                    { id: 'inherit', label: 'Ikut Sijil', desc: 'Lalai' },
+                    { id: 'sans', label: 'Sans-Serif', desc: 'Tebal Jelas' },
+                    { id: 'serif', label: 'Serif', desc: 'Klasik' },
+                    { id: 'cinzel', label: 'Cinzel', desc: 'Prestij' },
+                    { id: 'playfair', label: 'Playfair', desc: 'Elegan' },
+                    { id: 'cormorant', label: 'Cormorant', desc: 'Rasmi KPM' },
+                  ].map((f) => (
+                    <button
+                      key={f.id}
+                      type="button"
+                      onClick={() => update({ activityFontFamily: f.id as any })}
+                      className={`p-1.5 rounded-lg border text-left transition ${
+                        (config.activityFontFamily || 'inherit') === f.id
+                          ? 'bg-indigo-600 text-white border-indigo-600 font-bold shadow-2xs'
+                          : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                      }`}
+                    >
+                      <div className="text-[11px] truncate leading-tight">{f.label}</div>
+                      <div className={`text-[9px] truncate ${(config.activityFontFamily || 'inherit') === f.id ? 'text-indigo-100' : 'text-slate-400'}`}>{f.desc}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Pilihan Saiz Aktiviti */}
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                  Saiz Tulisan (Font Size):
+                </label>
+                <div className="grid grid-cols-5 gap-1">
+                  {(['sm', 'md', 'lg', 'xl', '2xl'] as FontSizeOption[]).map((sz) => (
+                    <button
+                      key={sz}
+                      type="button"
+                      onClick={() => update({ activityFontSize: sz })}
+                      className={`py-1 text-xs font-bold rounded-lg border transition ${
+                        (config.activityFontSize || 'md') === sz
+                          ? 'bg-indigo-600 text-white border-indigo-600'
+                          : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
+                      }`}
+                    >
+                      {sz === 'sm' ? 'Kecil' : sz === 'md' ? 'Sedang' : sz === 'lg' ? 'Besar' : sz === 'xl' ? 'X-Besar' : 'Maks'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* 3. PENCAPAIAN / JAWATAN / PERANAN */}
+            <div className="p-3 bg-white border border-slate-200 rounded-xl space-y-2.5 shadow-2xs">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                  <span>🎖️</span> Pencapaian / Jawatan / Unit
+                </span>
+                <span className="text-[10px] font-mono text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200 uppercase font-bold">
+                  {config.achievementFontSize || 'md'}
+                </span>
+              </div>
+
+              {/* Pilihan Fon Pencapaian */}
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                  Jenis Fon (Font Family):
+                </label>
+                <div className="grid grid-cols-3 gap-1">
+                  {[
+                    { id: 'inherit', label: 'Ikut Sijil', desc: 'Lalai' },
+                    { id: 'sans', label: 'Sans-Serif', desc: 'Moden' },
+                    { id: 'serif', label: 'Serif', desc: 'Klasik' },
+                    { id: 'cinzel', label: 'Cinzel', desc: 'Prestij' },
+                    { id: 'playfair', label: 'Playfair', desc: 'Elegan' },
+                    { id: 'cormorant', label: 'Cormorant', desc: 'Rasmi KPM' },
+                  ].map((f) => (
+                    <button
+                      key={f.id}
+                      type="button"
+                      onClick={() => update({ achievementFontFamily: f.id as any })}
+                      className={`p-1.5 rounded-lg border text-left transition ${
+                        (config.achievementFontFamily || 'inherit') === f.id
+                          ? 'bg-indigo-600 text-white border-indigo-600 font-bold shadow-2xs'
+                          : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                      }`}
+                    >
+                      <div className="text-[11px] truncate leading-tight">{f.label}</div>
+                      <div className={`text-[9px] truncate ${(config.achievementFontFamily || 'inherit') === f.id ? 'text-indigo-100' : 'text-slate-400'}`}>{f.desc}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Pilihan Saiz Pencapaian */}
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                  Saiz Tulisan (Font Size):
+                </label>
+                <div className="grid grid-cols-4 gap-1">
+                  {(['sm', 'md', 'lg', 'xl'] as FontSizeOption[]).map((sz) => (
+                    <button
+                      key={sz}
+                      type="button"
+                      onClick={() => update({ achievementFontSize: sz })}
+                      className={`py-1 text-xs font-bold rounded-lg border transition ${
+                        (config.achievementFontSize || 'md') === sz
+                          ? 'bg-indigo-600 text-white border-indigo-600'
+                          : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
+                      }`}
+                    >
+                      {sz === 'sm' ? 'Kecil' : sz === 'md' ? 'Sedang' : sz === 'lg' ? 'Besar' : 'X-Besar'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* 4. AYAT MUKADIMAH / PENGANTAR & KANDUNGAN */}
+            <div className="p-3 bg-white border border-slate-200 rounded-xl space-y-2.5 shadow-2xs">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                  <span>📜</span> Ayat Mukadimah & Kandungan
+                </span>
+                <span className="text-[10px] font-mono text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200 uppercase font-bold">
+                  {config.bodyTextFontSize || 'md'}
+                </span>
+              </div>
+
+              <p className="text-[11px] text-slate-500">
+                Kawal saiz ayat pembuka kata seperti <em>"Dengan ini diperakukan bahawa..."</em> dan ayat penerangan sijil.
+              </p>
+
+              {/* Pilihan Saiz Mukadimah */}
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                  Saiz Tulisan (Font Size):
+                </label>
+                <div className="grid grid-cols-4 gap-1">
+                  {(['sm', 'md', 'lg', 'xl'] as FontSizeOption[]).map((sz) => (
+                    <button
+                      key={sz}
+                      type="button"
+                      onClick={() => update({ bodyTextFontSize: sz })}
+                      className={`py-1.5 text-xs font-bold rounded-lg border transition ${
+                        (config.bodyTextFontSize || 'md') === sz
+                          ? 'bg-indigo-600 text-white border-indigo-600 shadow-2xs'
+                          : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                      }`}
+                    >
+                      {sz === 'sm' ? 'Kecil' : sz === 'md' ? 'Sedang' : sz === 'lg' ? 'Besar' : 'X-Besar'}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>

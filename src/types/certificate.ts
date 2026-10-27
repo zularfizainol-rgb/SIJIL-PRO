@@ -171,5 +171,15 @@ export interface CertificateConfig {
   studentNameFont: StudentNameFont;
   titleFontSize: FontSizeOption; // Saiz font tajuk sijil
   studentNameFontSize: FontSizeOption; // Saiz font nama murid
+  
+  // Pilihan Fon & Saiz Khusus Elemen / Pembolehubah Sijil (IC, Kelas, Aktiviti, Pencapaian, dll.)
+  metaFontFamily?: CertificateFont | 'inherit' | 'mono' | 'sans'; // Fon untuk No. IC & Kelas
+  metaFontSize?: FontSizeOption; // Saiz fon No. IC & Kelas
+  activityFontFamily?: CertificateFont | 'inherit' | 'sans' | 'serif'; // Fon untuk Acara / Program / Aktiviti
+  activityFontSize?: FontSizeOption; // Saiz fon Acara / Program / Aktiviti
+  achievementFontFamily?: CertificateFont | 'inherit' | 'sans' | 'serif'; // Fon untuk Pencapaian / Jawatan / Unit
+  achievementFontSize?: FontSizeOption; // Saiz fon Pencapaian / Jawatan / Unit
+  bodyTextFontSize?: FontSizeOption; // Saiz fon ayat mukadimah / pengantara
+  
   borderStyle: 'ornate' | 'minimal' | 'modern' | 'none';
 }
