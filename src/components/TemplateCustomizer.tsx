@@ -2217,6 +2217,90 @@ export const TemplateCustomizer: React.FC<TemplateCustomizerProps> = ({
             />
           </div>
         </div>
+
+        {/* Pilihan Wording Tajuk Sijil: Sebaris vs Atas Bawah */}
+        <div className="p-3.5 bg-amber-50/70 border border-amber-200 rounded-xl space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-amber-950 uppercase flex items-center gap-1.5">
+              <span>📝</span> Pilihan Wording Tulisan Tajuk Sijil:
+            </span>
+            <span className="text-[10px] text-amber-800 font-semibold bg-amber-100 px-2 py-0.5 rounded-full">
+              {config.certTitleLayout === 'stacked' || (!config.certTitleLayout && config.paragraphLayout === 'format-ringkas-moden') ? 'Atas Bawah (2 Baris)' : 'Sebaris (1 Baris)'}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => update({ certTitleLayout: 'single-line' })}
+              className={`p-2.5 rounded-xl border text-left transition flex items-center gap-2.5 ${
+                (config.certTitleLayout || (config.paragraphLayout === 'format-ringkas-moden' ? 'stacked' : 'single-line')) === 'single-line'
+                  ? 'bg-amber-600 text-white border-amber-600 shadow-2xs font-bold'
+                  : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'
+              }`}
+            >
+              <span className="text-lg">↔️</span>
+              <div>
+                <div className="text-xs font-bold">Sebaris (Satu Baris)</div>
+                <div className={`text-[10px] ${config.certTitleLayout === 'single-line' ? 'text-amber-100' : 'text-slate-500'}`}>
+                  {config.certTitle || 'SIJIL PENGHARGAAN'}
+                </div>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => update({ certTitleLayout: 'stacked' })}
+              className={`p-2.5 rounded-xl border text-left transition flex items-center gap-2.5 ${
+                (config.certTitleLayout === 'stacked' || (!config.certTitleLayout && config.paragraphLayout === 'format-ringkas-moden'))
+                  ? 'bg-amber-600 text-white border-amber-600 shadow-2xs font-bold'
+                  : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'
+              }`}
+            >
+              <span className="text-lg">↕️</span>
+              <div>
+                <div className="text-xs font-bold">Atas Bawah (Dua Baris)</div>
+                <div className={`text-[10px] ${config.certTitleLayout === 'stacked' ? 'text-amber-100' : 'text-slate-500'}`}>
+                  SIJIL [di atas] / PENGHARGAAN [di bawah]
+                </div>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        {/* Pelaras Anjakan Tajuk Sijil Ke Bawah (Adjust Ke Bawah) */}
+        <div className="p-3.5 bg-white border border-slate-200 rounded-xl space-y-1.5">
+          <div className="flex justify-between items-center text-xs font-semibold text-slate-700">
+            <span className="font-bold text-slate-900 flex items-center gap-1.5">
+              <span>⬇️</span> Laraskan Kedudukan Tajuk Ke Bawah:
+            </span>
+            <span className="font-mono font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 shadow-2xs">
+              +{config.certTitleOffset ?? 0}px ke bawah
+            </span>
+          </div>
+
+          <div className="flex items-center gap-3 pt-1">
+            <input
+              type="range"
+              min="0"
+              max="80"
+              step="2"
+              value={config.certTitleOffset ?? 0}
+              onChange={(e) => update({ certTitleOffset: parseInt(e.target.value) })}
+              className="w-full accent-amber-600 h-1.5 bg-slate-200 rounded-lg cursor-pointer"
+            />
+            <button
+              type="button"
+              onClick={() => update({ certTitleOffset: 0 })}
+              className="text-[10px] font-bold text-slate-600 hover:text-slate-900 px-2.5 py-1 bg-white hover:bg-slate-100 rounded border border-slate-300 shrink-0"
+            >
+              Asal (0px)
+            </button>
+          </div>
+          <p className="text-[10px] text-slate-500">
+            *Tolak perkataan tajuk sijil ke bawah mengikut kesesuaian ruang kepala surat, logo, atau jarak yang diingini oleh guru.
+          </p>
+        </div>
       </div>
     </div>
 

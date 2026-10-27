@@ -1113,6 +1113,90 @@ export default function App() {
                       </div>
                     </div>
                   </div>
+
+                  {/* Kawalan 3: Wording & Kedudukan Tajuk Sijil (Sebaris vs Atas Bawah & Adjust Ke Bawah) */}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-bold text-slate-700 uppercase text-[10px] tracking-wide flex items-center gap-1">
+                      <span>🏆</span> Wording Tajuk:
+                    </span>
+                    <div className="flex items-center bg-white p-0.5 rounded-lg border border-slate-200 shadow-2xs gap-0.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setConfig({ ...config, certTitleLayout: 'single-line' });
+                          showToast('Tajuk Sijil: Sebaris (1 Baris)');
+                        }}
+                        className={`px-2 py-0.5 rounded text-[11px] font-bold transition flex items-center gap-1 ${
+                          (config.certTitleLayout || (config.paragraphLayout === 'format-ringkas-moden' ? 'stacked' : 'single-line')) === 'single-line'
+                            ? 'bg-amber-600 text-white shadow-2xs'
+                            : 'text-slate-700 hover:bg-slate-100'
+                        }`}
+                        title="Paparkan tajuk sijil sebaris penuh (contoh: SIJIL PENGHARGAAN)"
+                      >
+                        <span>↔️</span> Sebaris
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setConfig({ ...config, certTitleLayout: 'stacked' });
+                          showToast('Tajuk Sijil: Atas Bawah (2 Baris)');
+                        }}
+                        className={`px-2 py-0.5 rounded text-[11px] font-bold transition flex items-center gap-1 ${
+                          (config.certTitleLayout === 'stacked' || (!config.certTitleLayout && config.paragraphLayout === 'format-ringkas-moden'))
+                            ? 'bg-amber-600 text-white shadow-2xs'
+                            : 'text-slate-700 hover:bg-slate-100'
+                        }`}
+                        title="Paparkan tajuk sijil bertingkat atas dan bawah (contoh: SIJIL di atas, PENGHARGAAN di bawah)"
+                      >
+                        <span>↕️</span> Atas Bawah
+                      </button>
+
+                      {/* Anjakan Tajuk Ke Bawah */}
+                      <div className="flex items-center pl-1 border-l border-slate-200 gap-1" title="Adjust kedudukan perkataan tajuk sijil ke bawah">
+                        <span className="text-[10px] font-bold text-slate-500 pl-0.5">
+                          Kedudukan: <strong className="text-amber-800 font-mono">+{config.certTitleOffset ?? 0}px</strong>
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const next = Math.min(80, (config.certTitleOffset ?? 0) + 4);
+                            setConfig({ ...config, certTitleOffset: next });
+                            showToast(`Tajuk diturunkan (+${next}px)`);
+                          }}
+                          className="px-1.5 py-0.5 rounded text-[10px] font-bold text-amber-900 bg-amber-50 hover:bg-amber-100 transition"
+                          title="Turunkan tajuk sijil ke bawah (+4px)"
+                        >
+                          ⬇️ Turun
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const next = Math.max(0, (config.certTitleOffset ?? 0) - 4);
+                            setConfig({ ...config, certTitleOffset: next });
+                            showToast(`Tajuk dinaikkan (${next}px)`);
+                          }}
+                          className="px-1.5 py-0.5 rounded text-[10px] font-bold text-slate-600 hover:bg-slate-100 transition"
+                          title="Naikkan semula tajuk sijil (-4px)"
+                        >
+                          ⬆️ Naik
+                        </button>
+                        {(config.certTitleOffset ?? 0) > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setConfig({ ...config, certTitleOffset: 0 });
+                              showToast('Kedudukan tajuk dikembalikan ke asal (0px)');
+                            }}
+                            className="px-1 py-0.5 text-[9px] font-bold text-slate-400 hover:text-red-600 transition"
+                            title="Reset kedudukan tajuk ke 0px"
+                          >
+                            Reset
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Banner Panduan Jika Pangkalan Data Murid Kosong (Lalai Selepas Deploy) */}

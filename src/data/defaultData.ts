@@ -16,6 +16,8 @@ export const DEFAULT_CONFIG: CertificateConfig = {
   
   certTitle: 'SIJIL PENGHARGAAN',
   certSubtitle: '',
+  certTitleLayout: 'single-line', // 'single-line' (Sebaris) | 'stacked' (Atas Bawah)
+  certTitleOffset: 0, // Anjakan ke bawah (px)
   introText: 'Dengan ini diperakukan bahawa didokumenkan',
   bodyLeadText: 'telah menunjukkan prestasi yang cemerlang dan terpuji dalam program / aspek:',
   atLevelText: 'PERINGKAT',

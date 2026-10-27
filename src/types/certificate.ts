@@ -79,6 +79,8 @@ export interface CertificateConfig {
   // Certificate Text
   certTitle: string; // "SIJIL PENYERTAAN" / "SIJIL PENGHARGAAN" / "WATIKAH PELANTIKAN"
   certSubtitle: string; // "ATAS KEJAYAAN MENGHARUMKAN NAMA SEKOLAH"
+  certTitleLayout?: 'single-line' | 'stacked'; // Susunan tajuk: 'single-line' (Sebaris) | 'stacked' (Atas Bawah / Dua Baris)
+  certTitleOffset?: number; // Jarak anjakan tajuk sijil ke bawah (px) untuk penataan mengikut kehendak pengguna (lalai: 0px)
   introText: string; // "Dengan ini diperakui bahawa"
   bodyLeadText: string; // "telah menunjukkan kecemerlangan..."
   atLevelText: string; // "di peringkat" / "PERINGKAT"
