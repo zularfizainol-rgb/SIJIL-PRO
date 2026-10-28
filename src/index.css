@@ -34,6 +34,10 @@
   .font-signature {
     font-family: 'Great Vibes', 'Alex Brush', cursive;
   }
+  .font-commercial-script {
+    font-family: 'Commercial Script BT', 'Commercial Script', 'CommercialScript BT', 'Italianno', 'Pinyon Script', cursive;
+    letter-spacing: 0.02em;
+  }
   .font-cormorant {
     font-family: 'Cormorant Garamond', Garamond, Georgia, serif;
   }
@@ -41,6 +45,18 @@
     font-family: 'Great Vibes', cursive;
     letter-spacing: 0.04em;
   }
+  .font-italianno {
+    font-family: 'Italianno', cursive;
+  }
+  .font-tangerine {
+    font-family: 'Tangerine', cursive;
+  }
+}
+
+@font-face {
+  font-family: 'Commercial Script BT';
+  src: local('Commercial Script BT'), local('Commercial Script'), local('CommercialScript BT'), local('CommercialScript');
+  font-display: swap;
 }
 
 .print-only {

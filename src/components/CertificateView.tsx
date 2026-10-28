@@ -18,12 +18,15 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
   const isLandscape = config.orientation === 'landscape';
 
   const FONT_FAMILY_MAP: Record<string, string> = {
+    'commercial-script': "'Commercial Script BT', 'Commercial Script', 'CommercialScript BT', 'Italianno', 'Pinyon Script', cursive",
     'cinzel': "'Cinzel', Georgia, serif",
     'cinzel-decor': "'Cinzel Decorative', Georgia, serif",
     'cormorant': "'Cormorant Garamond', Garamond, Georgia, serif",
     'greatvibes': "'Great Vibes', cursive",
+    'italianno': "'Italianno', cursive",
     'calligraphy-royal': "'Pinyon Script', cursive",
     'calligraphy-brush': "'Alex Brush', cursive",
+    'tangerine': "'Tangerine', cursive",
     'garamond': "'Cormorant Garamond', Garamond, Georgia, serif",
     'marcellus': "'Marcellus', 'Cinzel', Georgia, serif",
     'playfair': "'Playfair Display', Georgia, serif",
@@ -31,7 +34,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
     'merriweather': "'Merriweather', Georgia, serif",
     'montserrat': "'Montserrat', sans-serif",
     'mono': "'Courier New', Courier, monospace",
-    'sans': "'Montserrat', 'Plus Jakarta Sans', -apple-system, sans-serif",
+    'sans': "'Plus Jakarta Sans', 'Montserrat', -apple-system, sans-serif",
     'serif': "'Cormorant Garamond', Georgia, serif",
   };
 
@@ -43,69 +46,85 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
   const getTitleFontSizeStyle = (size?: CertificateConfig['titleFontSize']) => {
     switch (size) {
       case 'sm': return { fontSize: '26px', lineHeight: '1.2' };
-      case 'md': return { fontSize: '34px', lineHeight: '1.2' };
-      case 'lg': return { fontSize: '44px', lineHeight: '1.2' };
-      case 'xl': return { fontSize: '56px', lineHeight: '1.2' };
-      case '2xl': return { fontSize: '68px', lineHeight: '1.2' };
-      default: return { fontSize: '44px', lineHeight: '1.2' };
+      case 'md': return { fontSize: '36px', lineHeight: '1.2' };
+      case 'lg': return { fontSize: '46px', lineHeight: '1.2' };
+      case 'xl': return { fontSize: '58px', lineHeight: '1.2' };
+      case '2xl': return { fontSize: '72px', lineHeight: '1.2' };
+      default: return { fontSize: '46px', lineHeight: '1.2' };
     }
   };
 
   const getStudentNameFontSizeStyle = (size?: CertificateConfig['studentNameFontSize']) => {
     switch (size) {
       case 'sm': return { fontSize: '24px', lineHeight: '1.2' };
-      case 'md': return { fontSize: '32px', lineHeight: '1.25' };
-      case 'lg': return { fontSize: '40px', lineHeight: '1.25' };
-      case 'xl': return { fontSize: '50px', lineHeight: '1.3' };
-      case '2xl': return { fontSize: '62px', lineHeight: '1.3' };
-      default: return { fontSize: '40px', lineHeight: '1.25' };
+      case 'md': return { fontSize: '34px', lineHeight: '1.25' };
+      case 'lg': return { fontSize: '46px', lineHeight: '1.25' };
+      case 'xl': return { fontSize: '58px', lineHeight: '1.3' };
+      case '2xl': return { fontSize: '72px', lineHeight: '1.3' };
+      default: return { fontSize: '46px', lineHeight: '1.25' };
     }
   };
 
   const getMetaFontSizeStyle = (size?: CertificateConfig['metaFontSize']) => {
     switch (size) {
       case 'sm': return { fontSize: '13px', lineHeight: '1.25' };
-      case 'md': return { fontSize: '16px', lineHeight: '1.3' };
-      case 'lg': return { fontSize: '20px', lineHeight: '1.35', fontWeight: 700 };
-      case 'xl': return { fontSize: '26px', lineHeight: '1.4', fontWeight: 800 };
-      case '2xl': return { fontSize: '32px', lineHeight: '1.4', fontWeight: 900 };
-      default: return { fontSize: '16px', lineHeight: '1.3' };
+      case 'md': return { fontSize: '17px', lineHeight: '1.3' };
+      case 'lg': return { fontSize: '22px', lineHeight: '1.35', fontWeight: 700 };
+      case 'xl': return { fontSize: '28px', lineHeight: '1.4', fontWeight: 800 };
+      case '2xl': return { fontSize: '36px', lineHeight: '1.4', fontWeight: 900 };
+      default: return { fontSize: '17px', lineHeight: '1.3' };
     }
   };
 
   const getActivityFontSizeStyle = (size?: CertificateConfig['activityFontSize']) => {
     switch (size) {
       case 'sm': return { fontSize: '15px', lineHeight: '1.25' };
-      case 'md': return { fontSize: '20px', lineHeight: '1.3' };
-      case 'lg': return { fontSize: '26px', lineHeight: '1.35' };
-      case 'xl': return { fontSize: '33px', lineHeight: '1.4' };
-      case '2xl': return { fontSize: '40px', lineHeight: '1.45' };
-      default: return { fontSize: '20px', lineHeight: '1.3' };
+      case 'md': return { fontSize: '22px', lineHeight: '1.3' };
+      case 'lg': return { fontSize: '30px', lineHeight: '1.35' };
+      case 'xl': return { fontSize: '38px', lineHeight: '1.4' };
+      case '2xl': return { fontSize: '48px', lineHeight: '1.45' };
+      default: return { fontSize: '22px', lineHeight: '1.3' };
     }
   };
 
   const getAchievementFontSizeStyle = (size?: CertificateConfig['achievementFontSize']) => {
     switch (size) {
       case 'sm': return { fontSize: '14px', lineHeight: '1.25' };
-      case 'md': return { fontSize: '19px', lineHeight: '1.3' };
-      case 'lg': return { fontSize: '25px', lineHeight: '1.35' };
-      case 'xl': return { fontSize: '31px', lineHeight: '1.4' };
-      case '2xl': return { fontSize: '38px', lineHeight: '1.45' };
-      default: return { fontSize: '19px', lineHeight: '1.3' };
+      case 'md': return { fontSize: '20px', lineHeight: '1.3' };
+      case 'lg': return { fontSize: '28px', lineHeight: '1.35' };
+      case 'xl': return { fontSize: '36px', lineHeight: '1.4' };
+      case '2xl': return { fontSize: '46px', lineHeight: '1.45' };
+      default: return { fontSize: '20px', lineHeight: '1.3' };
     }
   };
 
   const getBodyTextFontSizeStyle = (size?: CertificateConfig['bodyTextFontSize']) => {
     switch (size) {
-      case 'sm': return { fontSize: '12px', lineHeight: '1.3' };
-      case 'md': return { fontSize: '15px', lineHeight: '1.4' };
-      case 'lg': return { fontSize: '19px', lineHeight: '1.45' };
-      case 'xl': return { fontSize: '24px', lineHeight: '1.5' };
-      default: return { fontSize: '15px', lineHeight: '1.4' };
+      case 'sm': return { fontSize: '13px', lineHeight: '1.3' };
+      case 'md': return { fontSize: '16px', lineHeight: '1.4' };
+      case 'lg': return { fontSize: '20px', lineHeight: '1.45' };
+      case 'xl': return { fontSize: '26px', lineHeight: '1.5' };
+      default: return { fontSize: '16px', lineHeight: '1.4' };
     }
   };
 
   const masterFontCss = getFontFamilyCss(config.fontFamily, "'Cinzel', Georgia, serif");
+
+  // Fon khusus untuk tajuk sijil sahaja
+  const titleFontCss = 
+    config.titleFont && config.titleFont !== 'inherit'
+      ? getFontFamilyCss(config.titleFont, masterFontCss)
+      : masterFontCss;
+
+  // Semak jika fon tajuk adalah jenis kaligrafi bersambung (script)
+  const isTitleScript = 
+    config.titleFont === 'commercial-script' ||
+    config.titleFont === 'greatvibes' || 
+    config.titleFont === 'italianno' ||
+    config.titleFont === 'calligraphy-royal' || 
+    config.titleFont === 'calligraphy-brush' || 
+    config.titleFont === 'tangerine' ||
+    ((!config.titleFont || config.titleFont === 'inherit') && (config.fontFamily === 'greatvibes' || config.fontFamily === 'commercial-script'));
 
   const studentNameFontCss = 
     config.studentNameFont && config.studentNameFont !== 'inherit'
@@ -113,10 +132,11 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
       : masterFontCss;
 
   const isScript = 
+    config.studentNameFont === 'commercial-script' ||
     config.studentNameFont === 'greatvibes' || 
     config.studentNameFont === 'calligraphy-royal' || 
     config.studentNameFont === 'calligraphy-brush' || 
-    ((!config.studentNameFont || config.studentNameFont === 'inherit') && (config.fontFamily === 'greatvibes'));
+    ((!config.studentNameFont || config.studentNameFont === 'inherit') && (config.fontFamily === 'greatvibes' || config.fontFamily === 'commercial-script'));
 
   const titleSizeStyle = getTitleFontSizeStyle(config.titleFontSize);
   const nameSizeStyle = getStudentNameFontSizeStyle(config.studentNameFontSize);
@@ -172,6 +192,19 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
     return rawName.toUpperCase();
   };
 
+  // Format title text nicely (Title Case untuk tulisan kaligrafi bersambung agar kemas dan anggun)
+  const formatTitleText = (title: string, isScriptMode: boolean) => {
+    const raw = cleanText(title) || 'SIJIL PENGHARGAAN';
+    if (isScriptMode) {
+      return raw
+        .toLowerCase()
+        .split(' ')
+        .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(' ');
+    }
+    return raw.toUpperCase();
+  };
+
   // Format level label nicely in Bahasa Melayu without repetition
   const getLevelFormatted = (level?: Student['level']) => {
     switch (level) {
@@ -206,6 +239,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
   return (
     <div
       id={containerId}
+      key={`cert-${config.fontFamily}-${config.titleFont}-${config.studentNameFont}-${config.studentNameFontSize}-${config.titleFontSize}-${config.metaFontFamily}-${config.metaFontSize}-${config.activityFontFamily}-${config.activityFontSize}-${config.achievementFontFamily}-${config.achievementFontSize}-${config.paragraphLayout}`}
       className={`relative bg-white text-slate-900 mx-auto overflow-hidden select-none transition-all ${
         isLandscape 
           ? 'w-[1123px] h-[794px] print:w-[297mm] print:h-[210mm] print:max-w-[297mm] print:max-h-[210mm]' 
@@ -389,7 +423,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
             </>
           )}
 
-          {/* Certificate Title Badge (Menyokong sebarang tajuk utama: Penghargaan, Penyertaan, Pelantikan, dll.) */}
+          {/* Certificate Title Badge (Menyokong sebarang tajuk utama dengan pilihan fon tajuk tersendiri) */}
           {config.showCertTitle && (
             <div 
               className="inline-block transition-all"
@@ -398,9 +432,18 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
               }}
             >
               {(() => {
-                const titleText = (config.certTitle || 'SIJIL PENGHARGAAN').trim();
+                const rawTitle = (config.certTitle || 'SIJIL PENGHARGAAN').trim();
+                const titleText = formatTitleText(rawTitle, isTitleScript);
                 const isStacked = config.certTitleLayout === 'stacked' || 
                   (config.certTitleLayout !== 'single-line' && config.paragraphLayout === 'format-ringkas-moden');
+
+                const titleStyleProps: React.CSSProperties = {
+                  fontFamily: titleFontCss,
+                  fontSize: isTitleScript ? `calc(${titleSizeStyle.fontSize} * 1.15)` : titleSizeStyle.fontSize,
+                  lineHeight: titleSizeStyle.lineHeight,
+                  letterSpacing: isTitleScript ? '0.02em' : undefined,
+                  fontWeight: isTitleScript ? 700 : 900,
+                };
 
                 if (isStacked) {
                   const words = titleText.split(/\s+/);
@@ -409,12 +452,8 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                     const restWords = words.slice(1).join(' ');
                     return (
                       <h3 
-                        className="font-black tracking-[0.22em] uppercase text-slate-950 leading-tight"
-                        style={{
-                          fontFamily: masterFontCss,
-                          fontSize: titleSizeStyle.fontSize,
-                          lineHeight: titleSizeStyle.lineHeight,
-                        }}
+                        className={`leading-tight text-slate-950 ${isTitleScript ? 'tracking-normal' : 'font-black tracking-[0.22em] uppercase'}`}
+                        style={titleStyleProps}
                       >
                         <span>{firstWord}</span><br /><span className="text-amber-800">{restWords}</span>
                       </h3>
@@ -422,12 +461,8 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                   }
                   return (
                     <h3 
-                      className="font-black tracking-[0.22em] uppercase text-slate-950 leading-tight"
-                      style={{
-                        fontFamily: masterFontCss,
-                        fontSize: titleSizeStyle.fontSize,
-                        lineHeight: titleSizeStyle.lineHeight,
-                      }}
+                      className={`leading-tight text-slate-950 ${isTitleScript ? 'tracking-normal' : 'font-black tracking-[0.22em] uppercase'}`}
+                      style={titleStyleProps}
                     >
                       <span className="text-amber-800">{titleText}</span>
                     </h3>
@@ -436,12 +471,8 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
 
                 return (
                   <h3 
-                    className="font-extrabold tracking-wide uppercase text-slate-900"
-                    style={{
-                      fontFamily: masterFontCss,
-                      fontSize: titleSizeStyle.fontSize,
-                      lineHeight: titleSizeStyle.lineHeight,
-                    }}
+                    className={`text-slate-900 ${isTitleScript ? 'tracking-normal' : 'font-extrabold tracking-wide uppercase'}`}
+                    style={titleStyleProps}
                   >
                     {titleText}
                   </h3>
@@ -493,33 +524,33 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                   return boldFields[fieldKey] ?? fallback;
                 };
 
-                const replaceVar = (tmpl: string, pattern: RegExp, value: string, fieldBold: boolean) => {
-                  // Jika pengguna sudah apit dengan [TEBAL] atau ** atau <b>, kekalkan tebal
-                  const wrappedRegex = new RegExp(`(?:\\[TEBAL\\]|\\*\\*|<b>|<strong[^>]*>)\\s*(?:${pattern.source})\\s*(?:\\[\\/TEBAL\\]|\\*\\*|<\\/b>|<\\/strong>)`, 'gi');
-                  tmpl = tmpl.replace(wrappedRegex, `[TEBAL]${value}[/TEBAL]`);
-
-                  // Gantikan semua kemunculan biasa mengikut status pilihan tebal
+                const replaceVar = (tmpl: string, pattern: RegExp, value: string, fieldBold: boolean, tokenType = 'default') => {
                   const plainRegex = new RegExp(`(?:${pattern.source})`, 'gi');
-                  const finalVal = fieldBold ? `[TEBAL]${value}[/TEBAL]` : value;
+                  let finalVal = value;
+                  if (tokenType === 'name') finalVal = `[VAR_NAME]${value}[/VAR_NAME]`;
+                  else if (tokenType === 'meta') finalVal = `[VAR_META]${value}[/VAR_META]`;
+                  else if (tokenType === 'activity') finalVal = `[VAR_ACT]${value}[/VAR_ACT]`;
+                  else if (tokenType === 'achievement') finalVal = `[VAR_ACH]${value}[/VAR_ACH]`;
+                  else if (fieldBold) finalVal = `[TEBAL]${value}[/TEBAL]`;
                   return tmpl.replace(plainRegex, finalVal);
                 };
 
-                // Dynamic variable replacement dengan kawalan tebal (bold) mengikut pilihan pengguna
+                // Dynamic variable replacement dengan kawalan tebal & fon spesifik mengikut pilihan pengguna
                 let processed = config.customParagraphTemplate || '';
-                processed = replaceVar(processed, /\[\s*\{\{?NAMA\}?\}\s*\]|\[NAMA(?:\s*PENUH)?(?:\s*MURID)?(?:\s*DENGAN\s*HURUF\s*BESAR)?\]|\{\{?NAMA\}?\}/, sNameFormatted, isFieldBold('name', true));
-                processed = replaceVar(processed, /\[\s*\{\{?AKTIVITI\}?\}\s*\]|\[(?:NAMA\s*)?PROGRAM(?:\s*ATAU\s*JENIS\s*PENGHARGAAN)?\]|\[(?:NAMA\s*)?MATA\s*PELAJARAN(?:\s*\/\s*PENCAPAIAN)?\]|\[AKTIVITI\]|\{\{?AKTIVITI\}?\}|\[PROGRAM\]|\{\{?PROGRAM\}?\}/, cleanText(student.activity || student.achievement) || 'NAMA PROGRAM', isFieldBold('activity', true));
-                processed = replaceVar(processed, /\[\s*\{\{?JAWATAN\}?\}\s*\]|\[JAWATAN(?:\s*\/\s*PERANAN(?:\s*MURID)?)?\]|\{\{?JAWATAN\}?\}|\[PERANAN\]|\{\{?PERANAN\}?\}/, cleanText(student.positionRole) || 'JAWATAN', isFieldBold('position', true));
-                processed = replaceVar(processed, /\[\s*\{\{?PENCAPAIAN\}?\}\s*\]|\[PENCAPAIAN(?:\s*CEMERLANG)?\]|\[PENYERTAAN\s*\/\s*PENCAPAIAN\s*CEMERLANG\]|\{\{?PENCAPAIAN\}?\}/, cleanText(student.achievement) || 'PENCAPAIAN', isFieldBold('achievement', true));
-                processed = replaceVar(processed, /\[\s*\{\{?KELAS\}?\}\s*\]|\[(?:NAMA\s*)?KELAS(?:\s*\/\s*TINGKATAN)?\]|\{\{?KELAS\}?\}|\[TINGKATAN\]|\{\{?TINGKATAN\}?\}/, cleanText(student.class) || 'KELAS', isFieldBold('class', true));
-                processed = replaceVar(processed, /\[\s*\{\{?UNIT\}?\}\s*\]|\[UNIT(?:\s*\/\s*BADAN\s*BERUNIFORM)?\]|\{\{?UNIT\}?\}|\[\s*\{\{?KELAB\}?\}\s*\]|\[(?:NAMA\s*)?KELAB(?:\s*\/\s*PERSATUAN(?:\s*\/\s*AKTIVITI)?)?\]|\{\{?KELAB\}?\}/, cleanText(student.unitClub) || 'UNIT / KELAB', isFieldBold('unit', true));
-                processed = replaceVar(processed, /\[\s*\{\{?IC\}?\}\s*\]|\[(?:NO\.?\s*)?(?:MYKID|KP|K\/P|KAD\s*PENGENALAN)\]|\[NO\.?\s*MYKID\s*\/\s*NO\.?\s*KP\]|\{\{?IC\}?\}/, cleanText(student.ic) || 'NO. KAD PENGENALAN', isFieldBold('ic', false));
+                processed = replaceVar(processed, /\[\s*\{\{?NAMA\}?\}\s*\]|\[NAMA(?:\s*PENUH)?(?:\s*MURID)?(?:\s*DENGAN\s*HURUF\s*BESAR)?\]|\{\{?NAMA\}?\}/, sNameFormatted, isFieldBold('name', true), 'name');
+                processed = replaceVar(processed, /\[\s*\{\{?AKTIVITI\}?\}\s*\]|\[(?:NAMA\s*)?PROGRAM(?:\s*ATAU\s*JENIS\s*PENGHARGAAN)?\]|\[(?:NAMA\s*)?MATA\s*PELAJARAN(?:\s*\/\s*PENCAPAIAN)?\]|\[AKTIVITI\]|\{\{?AKTIVITI\}?\}|\[PROGRAM\]|\{\{?PROGRAM\}?\}/, cleanText(student.activity || student.achievement) || 'NAMA PROGRAM', isFieldBold('activity', true), 'activity');
+                processed = replaceVar(processed, /\[\s*\{\{?JAWATAN\}?\}\s*\]|\[JAWATAN(?:\s*\/\s*PERANAN(?:\s*MURID)?)?\]|\{\{?JAWATAN\}?\}|\[PERANAN\]|\{\{?PERANAN\}?\}/, cleanText(student.positionRole) || 'JAWATAN', isFieldBold('position', true), 'achievement');
+                processed = replaceVar(processed, /\[\s*\{\{?PENCAPAIAN\}?\}\s*\]|\[PENCAPAIAN(?:\s*CEMERLANG)?\]|\[PENYERTAAN\s*\/\s*PENCAPAIAN\s*CEMERLANG\]|\{\{?PENCAPAIAN\}?\}/, cleanText(student.achievement) || 'PENCAPAIAN', isFieldBold('achievement', true), 'achievement');
+                processed = replaceVar(processed, /\[\s*\{\{?KELAS\}?\}\s*\]|\[(?:NAMA\s*)?KELAS(?:\s*\/\s*TINGKATAN)?\]|\{\{?KELAS\}?\}|\[TINGKATAN\]|\{\{?TINGKATAN\}?\}/, cleanText(student.class) || 'KELAS', isFieldBold('class', true), 'meta');
+                processed = replaceVar(processed, /\[\s*\{\{?UNIT\}?\}\s*\]|\[UNIT(?:\s*\/\s*BADAN\s*BERUNIFORM)?\]|\{\{?UNIT\}?\}|\[\s*\{\{?KELAB\}?\}\s*\]|\[(?:NAMA\s*)?KELAB(?:\s*\/\s*PERSATUAN(?:\s*\/\s*AKTIVITI)?)?\]|\{\{?KELAB\}?\}/, cleanText(student.unitClub) || 'UNIT / KELAB', isFieldBold('unit', true), 'activity');
+                processed = replaceVar(processed, /\[\s*\{\{?IC\}?\}\s*\]|\[(?:NO\.?\s*)?(?:MYKID|KP|K\/P|KAD\s*PENGENALAN)\]|\[NO\.?\s*MYKID\s*\/\s*NO\.?\s*KP\]|\{\{?IC\}?\}/, cleanText(student.ic) || 'NO. KAD PENGENALAN', isFieldBold('ic', false), 'meta');
                 const dateVal = config.showEventDate !== false ? certDate : '';
                 const sessionVal = config.showSessionYear !== false ? (cleanText(config.academicSession || config.eventYear) || '2025/2026') : '';
                 const yearVal = config.showSessionYear !== false ? (cleanText(config.eventYear) || '2026') : '';
 
-                processed = replaceVar(processed, /\[\s*\{\{?TARIKH\}?\}\s*\]|\[(?:TARIKH|TARIKH\s*MAJLIS)\]|\{\{?TARIKH\}?\}/, dateVal, isFieldBold('date', false));
-                processed = replaceVar(processed, /\[\s*\{\{?SESI\}?\}\s*\]|\[SESI\]|\{\{?SESI\}?\}/, sessionVal, false);
-                processed = replaceVar(processed, /\[\s*\{\{?TAHUN\}?\}\s*\]|\[TAHUN\]|\{\{?TAHUN\}?\}/, yearVal, false);
+                processed = replaceVar(processed, /\[\s*\{\{?TARIKH\}?\}\s*\]|\[(?:TARIKH|TARIKH\s*MAJLIS)\]|\{\{?TARIKH\}?\}/, dateVal, isFieldBold('date', false), 'meta');
+                processed = replaceVar(processed, /\[\s*\{\{?SESI\}?\}\s*\]|\[SESI\]|\{\{?SESI\}?\}/, sessionVal, false, 'meta');
+                processed = replaceVar(processed, /\[\s*\{\{?TAHUN\}?\}\s*\]|\[TAHUN\]|\{\{?TAHUN\}?\}/, yearVal, false, 'meta');
                 processed = replaceVar(processed, /\[\s*\{\{?TEMPAT\}?\}\s*\]|\[(?:TEMPAT|LOKASI|DEWAN\s*SEKOLAH\s*\/\s*LOKASI\s*MAJLIS)\]|\{\{?TEMPAT\}?\}|\[LOKASI\]|\{\{?LOKASI\}?\}/, cleanText(student.venue || config.eventVenue) || 'DEWAN SEKOLAH', false);
                 processed = replaceVar(processed, /\[\s*\{\{?PERINGKAT\}?\}\s*\]|\[PERINGKAT\]|\{\{?PERINGKAT\}?\}/, sLevelFormatted, isFieldBold('level', true));
                 processed = replaceVar(processed, /\[\s*\{\{?SEKOLAH\}?\}\s*\]|\[NAMA\s*SEKOLAH\]|\{\{?SEKOLAH\}?\}/, cleanText(config.schoolName) || 'SEKOLAH', isFieldBold('school', true));
@@ -540,12 +571,87 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                   config.customTextLineHeight === 'relaxed' ? 'leading-loose' : 'leading-relaxed';
 
                 const parseFormatting = (lineText: string) => {
-                  const tokenRegex = /(\[TEBAL\].*?\[\/TEBAL\]|\*\*.*?\*\*|<b>.*?<\/b>|<strong>.*?<\/strong>|\[B\].*?\[\/B\]|\[CONDONG\].*?\[\/CONDONG\]|\*.*?\*|<i>.*?<\/i>|<em>.*?<\/em>|\[I\].*?\[\/I\])/gi;
+                  const tokenRegex = /(\[VAR_NAME\].*?\[\/VAR_NAME\]|\[VAR_META\].*?\[\/VAR_META\]|\[VAR_ACT\].*?\[\/VAR_ACT\]|\[VAR_ACH\].*?\[\/VAR_ACH\]|\[TEBAL\].*?\[\/TEBAL\]|\*\*.*?\*\*|<b>.*?<\/b>|<strong>.*?<\/strong>|\[B\].*?\[\/B\]|\[CONDONG\].*?\[\/CONDONG\]|\*.*?\*|<i>.*?<\/i>|<em>.*?<\/em>|\[I\].*?\[\/I\])/gi;
                   const parts = lineText.split(tokenRegex);
 
                   return parts.map((part, pIdx) => {
                     if (!part) return null;
                     const lower = part.toLowerCase();
+
+                    // 1. Variabel Nama Murid (Guna fon & saiz nama murid)
+                    if (lower.startsWith('[var_name]') && lower.endsWith('[/var_name]')) {
+                      const inner = part.slice(10, -11);
+                      return (
+                        <strong
+                          key={pIdx}
+                          className="text-slate-950 inline-block px-1 tracking-wider"
+                          style={{
+                            fontFamily: studentNameFontCss,
+                            fontSize: nameSizeStyle.fontSize,
+                            lineHeight: nameSizeStyle.lineHeight,
+                            fontWeight: 900,
+                          }}
+                        >
+                          {cleanText(inner)}
+                        </strong>
+                      );
+                    }
+
+                    // 2. Variabel IC, Kelas & Tarikh (Guna meta font & saiz)
+                    if (lower.startsWith('[var_meta]') && lower.endsWith('[/var_meta]')) {
+                      const inner = part.slice(10, -11);
+                      return (
+                        <span
+                          key={pIdx}
+                          className="text-slate-900 inline-block px-0.5 font-bold tracking-wider"
+                          style={{
+                            fontFamily: metaFontCss,
+                            fontSize: metaSizeStyle.fontSize,
+                            lineHeight: metaSizeStyle.lineHeight,
+                          }}
+                        >
+                          {cleanText(inner)}
+                        </span>
+                      );
+                    }
+
+                    // 3. Variabel Aktiviti / Acara / Sukan (Guna activity font & saiz)
+                    if (lower.startsWith('[var_act]') && lower.endsWith('[/var_act]')) {
+                      const inner = part.slice(9, -10);
+                      return (
+                        <strong
+                          key={pIdx}
+                          className="text-slate-950 uppercase inline-block px-1 tracking-wide"
+                          style={{
+                            fontFamily: activityFontCss,
+                            fontSize: activitySizeStyle.fontSize,
+                            lineHeight: activitySizeStyle.lineHeight,
+                            fontWeight: 800,
+                          }}
+                        >
+                          {cleanText(inner)}
+                        </strong>
+                      );
+                    }
+
+                    // 4. Variabel Pencapaian / Jawatan (Guna achievement font & saiz)
+                    if (lower.startsWith('[var_ach]') && lower.endsWith('[/var_ach]')) {
+                      const inner = part.slice(9, -10);
+                      return (
+                        <strong
+                          key={pIdx}
+                          className="text-slate-950 uppercase inline-block px-1 tracking-wide"
+                          style={{
+                            fontFamily: achievementFontCss,
+                            fontSize: achievementSizeStyle.fontSize,
+                            lineHeight: achievementSizeStyle.lineHeight,
+                            fontWeight: 800,
+                          }}
+                        >
+                          {cleanText(inner)}
+                        </strong>
+                      );
+                    }
 
                     // Pengendalian Teks Tebal (Bold)
                     const isBold = 
@@ -735,7 +841,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
               </p>
 
               {/* NAMA PROGRAM ATAU JENIS PENGHARGAAN (Tanpa tanda kurungan siku) */}
-              <div className="pt-0.5">
+              <div className="pt-0.5 space-y-1">
                 <p 
                   className="font-black text-slate-950 uppercase tracking-wide max-w-xl mx-auto leading-snug"
                   style={{
@@ -746,6 +852,18 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                 >
                   {cleanText(student.activity || student.achievement) || 'KEHADIRAN PENUH / SAHSIAH TERPUJI / KHIDMAT BAKTI PENGAWAS'}
                 </p>
+                {student.achievement && student.activity && cleanText(student.achievement) !== cleanText(student.activity) && (
+                  <p 
+                    className="font-black text-slate-950 uppercase tracking-wide max-w-xl mx-auto leading-snug"
+                    style={{
+                      fontFamily: achievementFontCss,
+                      fontSize: achievementSizeStyle.fontSize,
+                      lineHeight: achievementSizeStyle.lineHeight,
+                    }}
+                  >
+                    {cleanText(student.achievement)}
+                  </p>
+                )}
                 {student.extraInfo && (
                   <p 
                     className="text-xs text-slate-500 italic mt-0.5"
@@ -769,7 +887,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                     className="font-bold text-slate-950 tracking-wide mt-0.5"
                     style={{
                       fontFamily: metaFontCss,
-                      fontSize: '16px',
+                      fontSize: metaSizeStyle.fontSize,
                     }}
                   >
                     {cleanText(config.eventYear || student.date?.match(/\d{4}/)?.[0]) || '2026'}
@@ -829,6 +947,20 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                 </div>
               )}
 
+              {/* NAMA KELAS / TINGKATAN (jika diaktifkan) */}
+              {config.showStudentClass && (
+                <p 
+                  className="font-bold text-slate-900 uppercase tracking-wide"
+                  style={{
+                    fontFamily: metaFontCss,
+                    fontSize: metaSizeStyle.fontSize,
+                    lineHeight: metaSizeStyle.lineHeight,
+                  }}
+                >
+                  {cleanText(student.class) || 'NAMA KELAS / TINGKATAN'}
+                </p>
+              )}
+
               {/* Atas pencapaian cemerlang dan usaha gigih dalam */}
               <p 
                 className="italic text-slate-700 max-w-lg mx-auto leading-relaxed pt-1"
@@ -841,7 +973,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
               </p>
 
               {/* NAMA MATA PELAJARAN / PENCAPAIAN (Tanpa tanda kurungan siku) */}
-              <div className="pt-0.5">
+              <div className="pt-0.5 space-y-1">
                 <p 
                   className="font-black text-slate-950 uppercase tracking-wide max-w-xl mx-auto leading-snug"
                   style={{
@@ -852,6 +984,18 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                 >
                   {cleanText(student.activity || student.achievement) || 'PEPERIKSAAN AKHIR TAHUN / SUBJEK MATEMATIK'}
                 </p>
+                {student.achievement && student.activity && cleanText(student.achievement) !== cleanText(student.activity) && (
+                  <p 
+                    className="font-black text-slate-950 uppercase tracking-wide max-w-xl mx-auto leading-snug"
+                    style={{
+                      fontFamily: achievementFontCss,
+                      fontSize: achievementSizeStyle.fontSize,
+                      lineHeight: achievementSizeStyle.lineHeight,
+                    }}
+                  >
+                    {cleanText(student.achievement)}
+                  </p>
+                )}
                 {student.extraInfo && (
                   <p 
                     className="text-xs text-slate-500 italic mt-0.5"
@@ -875,7 +1019,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                     className="font-bold text-slate-950 tracking-wide mt-0.5"
                     style={{
                       fontFamily: metaFontCss,
-                      fontSize: '16px',
+                      fontSize: metaSizeStyle.fontSize,
                     }}
                   >
                     {cleanText(config.academicSession || config.eventYear) || '2025/2026'}

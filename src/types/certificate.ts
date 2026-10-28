@@ -30,6 +30,7 @@ export type TemplateStyle =
   | 'custom-bg';  // User uploaded background
 
 export type CertificateFont = 
+  | 'commercial-script' // Commercial Script BT (Fon Kaligrafi Rasmi Sijil)
   | 'cinzel' 
   | 'cinzel-decor'
   | 'garamond' 
@@ -43,6 +44,7 @@ export type CertificateFont =
 
 export type StudentNameFont = 
   | 'inherit'
+  | 'commercial-script' // Commercial Script BT (Klasik Sijil)
   | 'greatvibes' // Kaligrafi Klasik Mudah Dibaca
   | 'calligraphy-royal'
   | 'calligraphy-brush'
@@ -50,6 +52,25 @@ export type StudentNameFont =
   | 'garamond'
   | 'cormorant'
   | 'playfair';
+
+export type TitleFontOption = 
+  | 'inherit'           // Ikut Tema Utama Sijil
+  | 'commercial-script' // 🖋️ Commercial Script BT (Kaligrafi Bersambung Rasmi Sijil)
+  | 'greatvibes'        // ✒️ Great Vibes (Kaligrafi Anggun Bersambung)
+  | 'italianno'         // 📜 Italianno (Kaligrafi Meleret Bersambung)
+  | 'calligraphy-royal' // 👑 Pinyon Script (Kaligrafi Diraja)
+  | 'calligraphy-brush' // 🖌️ Alex Brush (Kaligrafi Berus)
+  | 'tangerine'         // 🌿 Tangerine (Kaligrafi Halus Antik)
+  | 'cormorant'         // 📜 Cormorant Garamond (Rasmi KPM)
+  | 'cinzel'            // 🏛️ Cinzel (Klasik Kebangsaan Romawi)
+  | 'cinzel-decor'      // ⚜️ Cinzel Decorative (Prestij Mahkota)
+  | 'playfair'          // ✨ Playfair Display (Formal Elegan)
+  | 'garamond'          // 📖 Garamond (Tradisional Antik)
+  | 'marcellus'         // 🏛️ Marcellus (Monumental Formal)
+  | 'lora'              // 🖋️ Lora (Serif Kontemporari)
+  | 'merriweather'      // 📚 Merriweather (Formal Berwibawa)
+  | 'montserrat'        // 💎 Montserrat (Moden Kemas Sans)
+  | 'sans';             // 📐 Plus Jakarta Sans (Moden Bersih);
 
 export type FontSizeOption = 'sm' | 'md' | 'lg' | 'xl' | '2xl';
 
@@ -169,6 +190,7 @@ export interface CertificateConfig {
   accentColor: string;
   fontFamily: CertificateFont;
   studentNameFont: StudentNameFont;
+  titleFont?: TitleFontOption; // Fon khusus untuk tajuk sijil sahaja
   titleFontSize: FontSizeOption; // Saiz font tajuk sijil
   studentNameFontSize: FontSizeOption; // Saiz font nama murid
   

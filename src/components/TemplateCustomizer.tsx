@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { CertificateConfig, TemplateStyle } from '../types/certificate';
+import { CertificateConfig, TemplateStyle, TitleFontOption, FontSizeOption } from '../types/certificate';
 import { 
   Palette, 
   School, 
@@ -11,7 +11,7 @@ import {
   Upload, 
   Trash2, 
   Check, 
-  Sparkles,
+  Sparkles, 
   Sliders,
   FileText,
   MessageSquare,
@@ -25,7 +25,39 @@ import {
   Info
 } from 'lucide-react';
 import { DEFAULT_CONFIG, PRESET_AYAT_SIJIL, WordingPreset, PURPOSE_PRESETS, PurposePresetData, CUSTOM_FREEDOM_TEMPLATES, CustomFreedomTemplate } from '../data/defaultData';
-import { FontSizeOption } from '../types/certificate';
+
+const TITLE_FONT_OPTIONS: { 
+  id: TitleFontOption; 
+  label: string; 
+  category: string; 
+  desc: string; 
+  style: string; 
+  preview: string;
+}[] = [
+  { id: 'inherit', label: 'Ikut Tema Utama', category: 'Lalai', desc: 'Sama seperti tema sijil', style: '', preview: 'SIJIL PENGHARGAAN' },
+  // 1. Kaligrafi Bersambung
+  { id: 'commercial-script', label: 'Commercial Script BT', category: 'Kaligrafi Bersambung', desc: 'Klasik Sijil Rasmi ⭐', style: 'font-commercial-script text-sm font-bold', preview: 'Sijil Penghargaan' },
+  { id: 'greatvibes', label: 'Great Vibes', category: 'Kaligrafi Bersambung', desc: 'Kaligrafi Anggun Bersambung', style: 'font-greatvibes text-base', preview: 'Sijil Penghargaan' },
+  { id: 'italianno', label: 'Italianno', category: 'Kaligrafi Bersambung', desc: 'Kaligrafi Meleret Bersambung', style: 'font-italianno text-lg font-bold', preview: 'Sijil Penghargaan' },
+  { id: 'calligraphy-royal', label: 'Pinyon Script (Diraja)', category: 'Kaligrafi Bersambung', desc: 'Kaligrafi Istana Diraja', style: 'font-calligraphy-royal text-sm font-bold', preview: 'Sijil Penghargaan' },
+  { id: 'calligraphy-brush', label: 'Alex Brush (Berus)', category: 'Kaligrafi Bersambung', desc: 'Kaligrafi Berus Artistik', style: 'font-calligraphy-brush text-sm font-bold', preview: 'Sijil Penghargaan' },
+  { id: 'tangerine', label: 'Tangerine', category: 'Kaligrafi Bersambung', desc: 'Kaligrafi Halus Antik', style: 'font-tangerine text-lg font-black', preview: 'Sijil Penghargaan' },
+  // 2. Rasmi & Rasmi KPM
+  { id: 'cormorant', label: 'Cormorant Garamond', category: 'Rasmi KPM', desc: 'Gaya Rasmi KPM & Surat Kerajaan', style: 'font-cormorant font-bold', preview: 'SIJIL PENGHARGAAN' },
+  // 3. Klasik Kebangsaan & Romawi
+  { id: 'cinzel', label: 'Cinzel', category: 'Klasik Kebangsaan', desc: 'Romawi Huruf Besar', style: 'font-cinzel font-bold', preview: 'SIJIL PENGHARGAAN' },
+  { id: 'cinzel-decor', label: 'Cinzel Decorative', category: 'Klasik Berhias', desc: 'Prestij Mahkota Berhias', style: 'font-cinzel-decor font-bold', preview: 'SIJIL PENGHARGAAN' },
+  { id: 'marcellus', label: 'Marcellus', category: 'Klasik Romawi', desc: 'Monumental Formal Romawi', style: 'font-marcellus font-bold', preview: 'SIJIL PENGHARGAAN' },
+  // 4. Formal & Mewah
+  { id: 'playfair', label: 'Playfair Display', category: 'Formal & Mewah', desc: 'Elegan Mewah Berwibawa', style: 'font-playfair font-bold', preview: 'SIJIL PENGHARGAAN' },
+  // 5. Tradisional & Serif
+  { id: 'garamond', label: 'Garamond', category: 'Tradisional & Serif', desc: 'Akademik Tradisional Antik', style: 'font-garamond font-bold', preview: 'SIJIL PENGHARGAAN' },
+  { id: 'lora', label: 'Lora', category: 'Serif Kontemporari', desc: 'Serif Moden Berwibawa', style: 'font-lora font-bold', preview: 'SIJIL PENGHARGAAN' },
+  { id: 'merriweather', label: 'Merriweather', category: 'Formal Berwibawa', desc: 'Formal Tegap Berwibawa', style: 'font-merriweather font-bold', preview: 'SIJIL PENGHARGAAN' },
+  // 6. Moden Kemas
+  { id: 'montserrat', label: 'Montserrat', category: 'Moden Kemas', desc: 'Moden Kemas Tanpa Serif', style: 'font-montserrat font-bold', preview: 'SIJIL PENGHARGAAN' },
+  { id: 'sans', label: 'Plus Jakarta Sans', category: 'Moden Kemas', desc: 'Sans-Serif Korporat & STEM', style: 'font-sans font-bold', preview: 'SIJIL PENGHARGAAN' },
+];
 
 interface TemplateCustomizerProps {
   config: CertificateConfig;
@@ -1973,6 +2005,7 @@ export const TemplateCustomizer: React.FC<TemplateCustomizerProps> = ({
         {/* Font Grid with Clear, Legible Official Fonts (Edwardian removed as requested) */}
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {[
+            { id: 'commercial-script', label: 'Commercial Script BT', style: 'font-commercial-script text-base', desc: 'Kaligrafi Rasmi Sijil ⭐' },
             { id: 'cinzel', label: 'Cinzel', style: 'font-cinzel', desc: 'Klasik Kebangsaan' },
             { id: 'cormorant', label: 'Cormorant Garamond', style: 'font-cormorant', desc: 'Rasmi KPM (Mudah Dibaca)' },
             { id: 'greatvibes', label: 'Great Vibes', style: 'font-greatvibes text-lg', desc: 'Kaligrafi Jelas & Anggun' },
@@ -2024,6 +2057,7 @@ export const TemplateCustomizer: React.FC<TemplateCustomizerProps> = ({
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {[
               { id: 'inherit', label: 'Ikut Tema Utama', preview: 'MUHAMMAD DANISH' },
+              { id: 'commercial-script', label: '🖋️ Commercial Script BT', preview: 'Muhammad Danish' },
               { id: 'cormorant', label: '📜 Cormorant Rasmi KPM', preview: 'MUHAMMAD DANISH' },
               { id: 'greatvibes', label: '✒️ Kaligrafi Great Vibes', preview: 'Muhammad Danish' },
               { id: 'calligraphy-royal', label: '👑 Kaligrafi Diraja', preview: 'Muhammad Danish' },
@@ -2137,6 +2171,82 @@ export const TemplateCustomizer: React.FC<TemplateCustomizerProps> = ({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+            {/* KAD UTAMA: 👑 TAJUK UTAMA SIJIL (KHUSUS PERKATAAN TAJUK SAHAJA) */}
+            <div className="col-span-1 md:col-span-2 p-3.5 bg-blue-50/90 border-2 border-blue-300 rounded-xl space-y-3 shadow-2xs">
+              <div className="flex flex-wrap items-center justify-between gap-1">
+                <span className="text-xs font-black text-blue-950 flex items-center gap-1.5 uppercase tracking-wide">
+                  <span>👑</span> Fon & Saiz Khusus Tajuk Sijil Sahaja
+                </span>
+                <div className="flex items-center gap-1">
+                  <span className="text-[10px] font-bold text-blue-800 bg-white px-2 py-0.5 rounded border border-blue-200">
+                    Aktif: {TITLE_FONT_OPTIONS.find(f => f.id === (config.titleFont || 'inherit'))?.label || 'Ikut Tema Utama'}
+                  </span>
+                  <span className="text-[10px] font-mono text-blue-700 bg-white px-2 py-0.5 rounded border border-blue-200 uppercase font-bold">
+                    Saiz: {config.titleFontSize || 'lg'}
+                  </span>
+                </div>
+              </div>
+              <p className="text-[11px] text-slate-600">
+                Pilih jenis tulisan (font) untuk perkataan tajuk utama sijil (contoh: <em>SIJIL PENGHARGAAN, SIJIL PENYERTAAN, WATIKAH PELANTIKAN</em>) tanpa menjejaskan tulisan kandungan lain.
+              </p>
+
+              {/* Pilihan Jenis Fon Tajuk Mengikut Kategori */}
+              <div>
+                <label className="block text-[10px] font-bold text-blue-900 uppercase mb-1.5">
+                  Pilih Jenis Fon Tajuk (Font Family):
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-1.5">
+                  {TITLE_FONT_OPTIONS.map((tf) => {
+                    const isSel = (config.titleFont || 'inherit') === tf.id;
+                    return (
+                      <button
+                        key={tf.id}
+                        type="button"
+                        onClick={() => update({ titleFont: tf.id })}
+                        className={`p-2 rounded-lg border text-left transition ${
+                          isSel
+                            ? 'bg-blue-600 text-white border-blue-600 shadow-2xs font-bold'
+                            : 'bg-white text-slate-700 border-slate-200 hover:border-blue-300 hover:bg-blue-50/50'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-0.5">
+                          <span className={`text-[8px] px-1 py-0.2 rounded uppercase ${isSel ? 'bg-blue-700 text-blue-100' : 'bg-slate-100 text-slate-500'}`}>
+                            {tf.category}
+                          </span>
+                          {isSel && <Check className="w-3 h-3 text-white shrink-0" />}
+                        </div>
+                        <div className="text-[11px] font-bold mt-1 truncate">{tf.label}</div>
+                        <div className={`text-[10px] truncate mt-0.5 ${tf.style} ${isSel ? 'text-blue-100' : 'text-blue-900'}`}>{tf.preview}</div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Pilihan Saiz Tajuk Sijil */}
+              <div className="pt-2 border-t border-blue-200/70 flex flex-wrap items-center justify-between gap-2">
+                <span className="text-[10px] font-bold text-blue-900 uppercase">
+                  Saiz Tulisan Tajuk (Font Size):
+                </span>
+                <div className="flex items-center gap-1">
+                  {(['sm', 'md', 'lg', 'xl', '2xl'] as FontSizeOption[]).map((sz) => (
+                    <button
+                      key={sz}
+                      type="button"
+                      onClick={() => update({ titleFontSize: sz })}
+                      className={`px-3 py-1 text-xs font-bold rounded-lg border transition ${
+                        (config.titleFontSize || 'lg') === sz
+                          ? 'bg-blue-600 text-white border-blue-600 shadow-2xs'
+                          : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
+                      }`}
+                    >
+                      {sz === 'sm' ? 'Kecil' : sz === 'md' ? 'Sedang' : sz === 'lg' ? 'Besar' : sz === 'xl' ? 'X-Besar' : 'Maksimum'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
             {/* 1. NO. KP / MYKID & KELAS */}
             <div className="p-3 bg-white border border-slate-200 rounded-xl space-y-2.5 shadow-2xs">
               <div className="flex items-center justify-between">

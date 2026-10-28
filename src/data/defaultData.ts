@@ -102,6 +102,7 @@ export const DEFAULT_CONFIG: CertificateConfig = {
   accentColor: '#1e3a8a',
   fontFamily: 'cinzel',
   studentNameFont: 'inherit',
+  titleFont: 'inherit',
   titleFontSize: 'lg',
   studentNameFontSize: 'lg',
   
