@@ -13,6 +13,7 @@ import {
   Sparkles,
   Edit3
 } from 'lucide-react';
+import { sortStudents } from '../utils/classHelper';
 
 interface StudentSelectorProps {
   students: Student[];
@@ -63,22 +64,26 @@ export const StudentSelector: React.FC<StudentSelectorProps> = ({
     }
   };
 
-  // Filter students by search query and level
-  const filteredStudents = students.filter((s) => {
-    const q = searchQuery.toLowerCase();
-    const matchesSearch = 
-      s.name.toLowerCase().includes(q) || 
-      s.ic.toLowerCase().includes(q) || 
-      s.class.toLowerCase().includes(q) || 
-      s.activity.toLowerCase().includes(q) ||
-      (s.unitClub && s.unitClub.toLowerCase().includes(q)) ||
-      (s.positionRole && s.positionRole.toLowerCase().includes(q)) ||
-      s.achievement.toLowerCase().includes(q);
+  // Filter students by search query and level, and sort by stream & class
+  const filteredStudents = React.useMemo(() => {
+    const list = students.filter((s) => {
+      const q = searchQuery.toLowerCase();
+      const matchesSearch = 
+        s.name.toLowerCase().includes(q) || 
+        s.ic.toLowerCase().includes(q) || 
+        s.class.toLowerCase().includes(q) || 
+        s.activity.toLowerCase().includes(q) ||
+        (s.unitClub && s.unitClub.toLowerCase().includes(q)) ||
+        (s.positionRole && s.positionRole.toLowerCase().includes(q)) ||
+        s.achievement.toLowerCase().includes(q);
 
-    const matchesLevel = levelFilter === 'all' || s.level === levelFilter;
+      const matchesLevel = levelFilter === 'all' || s.level === levelFilter;
 
-    return matchesSearch && matchesLevel;
-  });
+      return matchesSearch && matchesLevel;
+    });
+
+    return sortStudents(list, 'aliran-kelas', 'asc');
+  }, [students, searchQuery, levelFilter]);
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-200/90 p-4 transition-all">

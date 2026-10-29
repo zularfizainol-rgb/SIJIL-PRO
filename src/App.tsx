@@ -1908,6 +1908,9 @@ export default function App() {
             ? students.filter((s) => batchSelectedIds.includes(s.id))
             : students
         }
+        allStudents={students}
+        initialSelectedIds={batchSelectedIds}
+        onUpdateSelectedIds={setBatchSelectedIds}
         config={config}
       />
 
