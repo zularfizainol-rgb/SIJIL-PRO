@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { CertificateConfig, Student } from '../types/certificate';
 import { CertificateView } from './CertificateView';
 import { 
@@ -18,10 +18,9 @@ import {
   RotateCcw,
   Sparkles,
   Layers,
-  CopyCheck
+  CopyCheck,
 } from 'lucide-react';
-import { createJsPdf, triggerPrint } from '../utils/pdfExport';
-import html2canvas from 'html2canvas';
+import { createJsPdf, triggerPrint, captureElementToDataUrl, downloadDataUrl } from '../utils/pdfExport';
 import { 
   getStudentStream, 
   getStudentClassName, 
@@ -62,8 +61,14 @@ export const BatchPrintModal: React.FC<BatchPrintModalProps> = ({
   const [selectedStream, setSelectedStream] = useState<string>('all');
   const [selectedClass, setSelectedClass] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
-  const [previewStudentId, setPreviewStudentId] = useState<string>('');
+  const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>(() => {
+    if (initialSelectedIds && initialSelectedIds.length > 0) return initialSelectedIds;
+    return studentPool.map((s) => s.id);
+  });
+  const [previewStudentId, setPreviewStudentId] = useState<string>(() => {
+    if (initialSelectedIds && initialSelectedIds.length > 0) return initialSelectedIds[0];
+    return studentPool[0]?.id || '';
+  });
   
   // 1-certificate-per-student duplicate elimination settings
   const [printOnlyUnique, setPrintOnlyUnique] = useState<boolean>(false);
@@ -75,20 +80,6 @@ export const BatchPrintModal: React.FC<BatchPrintModalProps> = ({
 
   // Pool duplicate analysis
   const poolDuplicates = useMemo(() => analyzeDuplicates(studentPool), [studentPool]);
-
-  // Initialize selectedStudentIds when modal opens or initialSelectedIds change
-  useEffect(() => {
-    if (isOpen) {
-      if (initialSelectedIds && initialSelectedIds.length > 0) {
-        setSelectedStudentIds(initialSelectedIds);
-        setPreviewStudentId(initialSelectedIds[0]);
-      } else if (students.length > 0) {
-        const ids = students.map((s) => s.id);
-        setSelectedStudentIds(ids);
-        setPreviewStudentId(ids[0]);
-      }
-    }
-  }, [isOpen, initialSelectedIds, students]);
 
   // Unique streams and classes from the pool
   const uniqueStreams = useMemo(() => getUniqueStreams(studentPool), [studentPool]);
@@ -152,13 +143,6 @@ export const BatchPrintModal: React.FC<BatchPrintModalProps> = ({
     }
     return rawCheckedStudents;
   }, [rawCheckedStudents, printOnlyUnique, uniqueStrategy]);
-
-  // Sync target students back to parent for window.print container
-  useEffect(() => {
-    if (onUpdateSelectedIds && studentsToPrint.length > 0) {
-      onUpdateSelectedIds(studentsToPrint.map((s) => s.id));
-    }
-  }, [studentsToPrint, onUpdateSelectedIds]);
 
   // Set active preview student
   const previewStudent = useMemo(() => {
@@ -261,25 +245,13 @@ export const BatchPrintModal: React.FC<BatchPrintModalProps> = ({
         const element = document.getElementById(`batch-cert-${student.id}`);
         if (element) {
           // Allow DOM to settle
-          await new Promise((resolve) => setTimeout(resolve, 80));
+          await new Promise((resolve) => setTimeout(resolve, 60));
 
-          const canvas = await html2canvas(element, {
-            scale: 2,
-            useCORS: true,
-            allowTaint: true,
-            logging: false,
-            backgroundColor: '#ffffff',
+          const imgData = await captureElementToDataUrl(element, {
             width: targetWidth,
             height: targetHeight,
-            windowWidth: targetWidth,
-            windowHeight: targetHeight,
-            scrollX: 0,
-            scrollY: 0,
-            x: 0,
-            y: 0,
+            format: 'jpeg',
           });
-
-          const imgData = canvas.toDataURL('image/jpeg', 0.95);
 
           if (i > 0) {
             pdf.addPage('a4', isLandscape ? 'landscape' : 'portrait');
@@ -292,8 +264,18 @@ export const BatchPrintModal: React.FC<BatchPrintModalProps> = ({
       const streamLabel = selectedStream !== 'all' ? `_${selectedStream.replace(/\s+/g, '_')}` : '';
       const classLabel = selectedClass !== 'all' ? `_${selectedClass.replace(/\s+/g, '_')}` : '';
       const uniqueTag = printOnlyUnique ? '_1Sijil1Murid' : '';
+      const filename = `Sijil_Penghargaan${streamLabel}${classLabel}${uniqueTag}_${studentsToPrint.length}_Murid.pdf`;
+
       setStatusMessage('Menyimpan fail PDF...');
-      pdf.save(`Sijil_Penghargaan${streamLabel}${classLabel}${uniqueTag}_${studentsToPrint.length}_Murid.pdf`);
+      try {
+        pdf.save(filename);
+      } catch (saveErr) {
+        console.warn('pdf.save failed in batch, using blob fallback', saveErr);
+        const blob = pdf.output('blob');
+        const blobUrl = URL.createObjectURL(blob);
+        downloadDataUrl(blobUrl, filename);
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
+      }
       setStatusMessage('Selesai! Fail PDF berjaya dimuat turun.');
     } catch (err) {
       console.error('Ralat semasa menjana batch PDF:', err);
@@ -794,6 +776,9 @@ export const BatchPrintModal: React.FC<BatchPrintModalProps> = ({
               key={s.id} 
               id={`batch-container-${s.id}`}
               style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
                 width: isLandscape ? '1123px' : '794px',
                 height: isLandscape ? '794px' : '1123px',
                 overflow: 'hidden',

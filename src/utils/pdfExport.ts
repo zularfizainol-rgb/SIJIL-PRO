@@ -1,9 +1,10 @@
 import { jsPDF } from 'jspdf';
 import * as jspdfModule from 'jspdf';
+import { toJpeg, toPng } from 'html-to-image';
 import html2canvas from 'html2canvas';
 
 /**
- * Helper to safely construct a jsPDF instance across ESM, CJS, and Vite bundlers
+ * Safely construct a jsPDF instance across ESM, CJS, and Vite bundlers
  */
 export function createJsPdf(options: {
   orientation: 'portrait' | 'landscape';
@@ -22,6 +23,103 @@ export function createJsPdf(options: {
 }
 
 /**
+ * Trigger file download from a Blob or DataURL across any browser
+ */
+export function downloadDataUrl(dataUrl: string, filename: string): void {
+  try {
+    const link = document.createElement('a');
+    link.download = filename;
+    link.href = dataUrl;
+    link.target = '_self';
+    document.body.appendChild(link);
+    link.click();
+    setTimeout(() => {
+      if (document.body.contains(link)) {
+        document.body.removeChild(link);
+      }
+    }, 500);
+  } catch (err) {
+    console.error('Download link error:', err);
+    // Fallback: window.location
+    window.location.href = dataUrl;
+  }
+}
+
+/**
+ * High-fidelity DOM capture to DataURL
+ * Uses browser-native SVG ForeignObject (html-to-image) to guarantee 100% support
+ * for Tailwind v4 modern CSS (oklch, CSS variables, transforms, SVG filters)
+ */
+export async function captureElementToDataUrl(
+  element: HTMLElement,
+  options: {
+    width: number;
+    height: number;
+    format?: 'jpeg' | 'png';
+  }
+): Promise<string> {
+  const isJpeg = options.format !== 'png';
+
+  const baseConfig = {
+    width: options.width,
+    height: options.height,
+    pixelRatio: 2, // High resolution (300 DPI equivalent on A4)
+    quality: 0.95,
+    skipFonts: true, // Prevents CORS blocks on external Google font fetches inside foreignObject
+    backgroundColor: '#ffffff',
+    filter: (node: Node) => {
+      // Skip script or interactive UI elements if any
+      if (node.nodeName === 'SCRIPT' || node.nodeName === 'NOSCRIPT') {
+        return false;
+      }
+      return true;
+    },
+    style: {
+      transform: 'none',
+      transformOrigin: 'top left',
+      margin: '0',
+      boxShadow: 'none',
+    },
+  };
+
+  // 1. Primary Engine: html-to-image with skipFonts (fast, native SVG foreignObject, supports oklch)
+  try {
+    if (isJpeg) {
+      return await toJpeg(element, baseConfig);
+    } else {
+      return await toPng(element, baseConfig);
+    }
+  } catch (firstErr) {
+    console.warn('html-to-image skipFonts primary attempt failed, retrying with full font embed', firstErr);
+
+    // 2. Secondary Engine: Retry with font embed enabled
+    try {
+      const fullFontConfig = { ...baseConfig, skipFonts: false };
+      if (isJpeg) {
+        return await toJpeg(element, fullFontConfig);
+      } else {
+        return await toPng(element, fullFontConfig);
+      }
+    } catch (secondErr) {
+      console.warn('html-to-image full font embed failed, falling back to html2canvas', secondErr);
+
+      // 3. Fallback Engine: html2canvas
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        width: options.width,
+        height: options.height,
+      });
+
+      return isJpeg ? canvas.toDataURL('image/jpeg', 0.95) : canvas.toDataURL('image/png');
+    }
+  }
+}
+
+/**
  * Export a certificate element as a high-quality downloadable PDF file
  */
 export async function exportCertificateToPDF(
@@ -31,81 +129,48 @@ export async function exportCertificateToPDF(
 ): Promise<boolean> {
   const element = document.getElementById(elementId);
   if (!element) {
-    console.error(`Element #${elementId} not found`);
+    console.error(`Element #${elementId} not found in DOM`);
     return false;
   }
 
   const isLandscape = orientation === 'landscape';
   const targetWidth = isLandscape ? 1123 : 794;
   const targetHeight = isLandscape ? 794 : 1123;
-
-  // Staging container placed at origin (0,0) behind the view (z-index -9999) with full opacity
-  // This guarantees html2canvas captures 100% of the content without viewport cropping or blank canvas
-  const stagingContainer = document.createElement('div');
-  stagingContainer.id = `pdf-export-staging-${Date.now()}`;
-  stagingContainer.style.position = 'fixed';
-  stagingContainer.style.top = '0px';
-  stagingContainer.style.left = '0px';
-  stagingContainer.style.width = `${targetWidth}px`;
-  stagingContainer.style.height = `${targetHeight}px`;
-  stagingContainer.style.zIndex = '-9999';
-  stagingContainer.style.overflow = 'hidden';
-  stagingContainer.style.backgroundColor = '#ffffff';
-  stagingContainer.style.opacity = '1';
-  stagingContainer.style.pointerEvents = 'none';
-
-  const clone = element.cloneNode(true) as HTMLElement;
-  clone.id = `${elementId}-export-clone`;
-  clone.style.transform = 'none';
-  clone.style.margin = '0';
-  clone.style.boxShadow = 'none';
-  clone.style.width = `${targetWidth}px`;
-  clone.style.height = `${targetHeight}px`;
-
-  stagingContainer.appendChild(clone);
-  document.body.appendChild(stagingContainer);
+  const pdfWidth = isLandscape ? 297 : 210;
+  const pdfHeight = isLandscape ? 210 : 297;
 
   try {
-    // Wait briefly for all fonts, SVG elements, and images to settle in DOM
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
-    const canvas = await html2canvas(clone, {
-      scale: 2,
-      useCORS: true,
-      allowTaint: true,
-      logging: false,
-      backgroundColor: '#ffffff',
+    // Capture high-res image data
+    const imgData = await captureElementToDataUrl(element, {
       width: targetWidth,
       height: targetHeight,
-      windowWidth: targetWidth,
-      windowHeight: targetHeight,
-      scrollX: 0,
-      scrollY: 0,
-      x: 0,
-      y: 0,
+      format: 'jpeg',
     });
 
-    const imgData = canvas.toDataURL('image/jpeg', 0.98);
-
+    // Create jsPDF document
     const pdf = createJsPdf({
       orientation: isLandscape ? 'landscape' : 'portrait',
       unit: 'mm',
       format: 'a4',
     });
 
-    const pdfWidth = isLandscape ? 297 : 210;
-    const pdfHeight = isLandscape ? 210 : 297;
-
     pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
-    pdf.save(filename);
+
+    // Trigger download using Blob URL first (most reliable across iframes and sandboxes)
+    try {
+      const blob = pdf.output('blob');
+      const blobUrl = URL.createObjectURL(blob);
+      downloadDataUrl(blobUrl, filename);
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 3000);
+    } catch (blobErr) {
+      console.warn('Blob URL download failed, trying pdf.save', blobErr);
+      pdf.save(filename);
+    }
+
     return true;
   } catch (error) {
     console.error('Error generating PDF:', error);
     return false;
-  } finally {
-    if (document.body.contains(stagingContainer)) {
-      document.body.removeChild(stagingContainer);
-    }
   }
 }
 
@@ -118,67 +183,27 @@ export async function exportCertificateToImage(
   orientation: 'portrait' | 'landscape' = 'portrait'
 ): Promise<boolean> {
   const element = document.getElementById(elementId);
-  if (!element) return false;
+  if (!element) {
+    console.error(`Element #${elementId} not found`);
+    return false;
+  }
 
   const isLandscape = orientation === 'landscape';
   const targetWidth = isLandscape ? 1123 : 794;
   const targetHeight = isLandscape ? 794 : 1123;
 
-  const stagingContainer = document.createElement('div');
-  stagingContainer.id = `png-export-staging-${Date.now()}`;
-  stagingContainer.style.position = 'fixed';
-  stagingContainer.style.top = '0px';
-  stagingContainer.style.left = '0px';
-  stagingContainer.style.width = `${targetWidth}px`;
-  stagingContainer.style.height = `${targetHeight}px`;
-  stagingContainer.style.zIndex = '-9999';
-  stagingContainer.style.overflow = 'hidden';
-  stagingContainer.style.backgroundColor = '#ffffff';
-  stagingContainer.style.opacity = '1';
-  stagingContainer.style.pointerEvents = 'none';
-
-  const clone = element.cloneNode(true) as HTMLElement;
-  clone.id = `${elementId}-png-export-clone`;
-  clone.style.transform = 'none';
-  clone.style.margin = '0';
-  clone.style.boxShadow = 'none';
-  clone.style.width = `${targetWidth}px`;
-  clone.style.height = `${targetHeight}px`;
-
-  stagingContainer.appendChild(clone);
-  document.body.appendChild(stagingContainer);
-
   try {
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
-    const canvas = await html2canvas(clone, {
-      scale: 2,
-      useCORS: true,
-      allowTaint: true,
-      logging: false,
-      backgroundColor: '#ffffff',
+    const dataUrl = await captureElementToDataUrl(element, {
       width: targetWidth,
       height: targetHeight,
-      windowWidth: targetWidth,
-      windowHeight: targetHeight,
-      scrollX: 0,
-      scrollY: 0,
-      x: 0,
-      y: 0,
+      format: 'png',
     });
 
-    const link = document.createElement('a');
-    link.download = filename;
-    link.href = canvas.toDataURL('image/png');
-    link.click();
+    downloadDataUrl(dataUrl, filename);
     return true;
   } catch (err) {
-    console.error('Error generating image:', err);
+    console.error('Error exporting image:', err);
     return false;
-  } finally {
-    if (document.body.contains(stagingContainer)) {
-      document.body.removeChild(stagingContainer);
-    }
   }
 }
 

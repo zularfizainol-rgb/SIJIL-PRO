@@ -1959,38 +1959,40 @@ export default function App() {
       />
 
       {/* Student Edit / Add Modal */}
-      <StudentEditModal
-        isOpen={isEditModalOpen}
-        student={studentToEdit}
-        onClose={() => setIsEditModalOpen(false)}
-        onSave={handleSaveStudentFromModal}
-      />
+      {isEditModalOpen && (
+        <StudentEditModal
+          isOpen={isEditModalOpen}
+          student={studentToEdit}
+          onClose={() => setIsEditModalOpen(false)}
+          onSave={handleSaveStudentFromModal}
+        />
+      )}
 
       {/* Batch Print Modal */}
-      <BatchPrintModal
-        isOpen={isBatchPrintOpen}
-        onClose={() => setIsBatchPrintOpen(false)}
-        students={
-          batchSelectedIds.length > 0
-            ? students.filter((s) => batchSelectedIds.includes(s.id))
-            : students
-        }
-        allStudents={students}
-        initialSelectedIds={batchSelectedIds}
-        onUpdateSelectedIds={setBatchSelectedIds}
-        config={config}
-      />
+      {isBatchPrintOpen && (
+        <BatchPrintModal
+          isOpen={isBatchPrintOpen}
+          onClose={() => setIsBatchPrintOpen(false)}
+          students={students}
+          allStudents={students}
+          initialSelectedIds={batchSelectedIds}
+          onUpdateSelectedIds={setBatchSelectedIds}
+          config={config}
+        />
+      )}
 
       {/* Modal Tetapan Sekolah, No Kod Sekolah & Logo TS25 */}
-      <SchoolSettingsModal
-        isOpen={isSchoolSettingsOpen}
-        onClose={() => setIsSchoolSettingsOpen(false)}
-        config={config}
-        onSaveConfig={(newCfg) => {
-          setConfig(newCfg);
-          showToast('Maklumat sekolah dan logo berjaya dikemaskini!');
-        }}
-      />
+      {isSchoolSettingsOpen && (
+        <SchoolSettingsModal
+          isOpen={isSchoolSettingsOpen}
+          onClose={() => setIsSchoolSettingsOpen(false)}
+          config={config}
+          onSaveConfig={(newCfg) => {
+            setConfig(newCfg);
+            showToast('Maklumat sekolah dan logo berjaya dikemaskini!');
+          }}
+        />
+      )}
 
       {/* Modal Bantuan & Panduan Deploy GitHub Pages */}
       {isDeployHelpOpen && (
