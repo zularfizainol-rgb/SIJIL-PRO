@@ -36,7 +36,9 @@ import {
   Plus,
   Trash2,
   ExternalLink,
-  BookOpen
+  BookOpen,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 
 export default function App() {
@@ -1811,6 +1813,67 @@ export default function App() {
                     </div>
                   </div>
                 )}
+
+                {/* Certificate Navigation Toolbar (Seterusnya / Sebelumnya) */}
+                <div className="flex flex-wrap items-center justify-between gap-2 p-3 bg-white border border-slate-200 rounded-2xl shadow-xs">
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (students.length === 0) {
+                          showToast('Pangkalan data kosong. Sila klik "Muat Data Contoh" untuk mencuba.');
+                          return;
+                        }
+                        const idx = students.findIndex((s) => s.id === currentStudent.id);
+                        const prevIdx = idx > 0 ? idx - 1 : students.length - 1;
+                        handleSelectStudent(students[prevIdx]);
+                      }}
+                      disabled={students.length <= 1}
+                      className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold flex items-center gap-1 disabled:opacity-40 transition shadow-2xs"
+                      title="Lihat sijil murid sebelumnya"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                      <span>Sebelumnya</span>
+                    </button>
+
+                    <span className="text-xs font-bold font-mono text-slate-800 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 min-w-[85px] text-center">
+                      {students.length > 0
+                        ? `Sijil ${Math.max(1, students.findIndex((s) => s.id === currentStudent.id) + 1)} / ${students.length}`
+                        : 'Sijil Contoh'}
+                    </span>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (students.length === 0) {
+                          showToast('Pangkalan data kosong. Sila klik "Muat Data Contoh" untuk mencuba.');
+                          return;
+                        }
+                        const idx = students.findIndex((s) => s.id === currentStudent.id);
+                        const nextIdx = idx >= 0 && idx < students.length - 1 ? idx + 1 : 0;
+                        handleSelectStudent(students[nextIdx]);
+                      }}
+                      disabled={students.length <= 1}
+                      className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs disabled:opacity-40 transition"
+                      title="Lihat sijil murid seterusnya (Next)"
+                    >
+                      <span>Seterusnya (Next)</span>
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-2 text-xs truncate max-w-full sm:max-w-md">
+                    <span className="text-slate-500 font-medium shrink-0">Pratonton:</span>
+                    <span className="font-bold text-slate-900 uppercase truncate">
+                      {currentStudent.name}
+                    </span>
+                    {currentStudent.class && (
+                      <span className="text-blue-700 font-bold bg-blue-50 px-2 py-0.5 rounded border border-blue-200 shrink-0 font-sans text-[11px]">
+                        {currentStudent.class}
+                      </span>
+                    )}
+                  </div>
+                </div>
 
                 {/* Certificate Canvas Area */}
                 <div className="bg-slate-200/80 rounded-2xl p-4 sm:p-6 overflow-x-auto flex justify-center items-start border border-slate-300/80 min-h-[600px] shadow-inner">

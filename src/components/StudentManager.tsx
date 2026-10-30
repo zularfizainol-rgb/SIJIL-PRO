@@ -558,9 +558,34 @@ export const StudentManager: React.FC<StudentManagerProps> = ({
         </div>
 
         {/* Quick Selection Shortcuts */}
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {/* Pilih Semua Termasuk Duplicate */}
+          <button
+            type="button"
+            onClick={() => setSelectedIds(students.map((s) => s.id))}
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-300 rounded-lg text-xs font-bold transition shadow-2xs"
+            title="Tandakan semua rekod murid termasuk yang menyertai lebih daripada satu acara (duplicate)"
+          >
+            <CheckSquare className="w-3.5 h-3.5 text-blue-600" />
+            <span>Pilih Semua (Termasuk Duplicate)</span>
+          </button>
+
+          {/* Untick / Batal Tandaan */}
+          {selectedIds.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setSelectedIds([])}
+              className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 rounded-lg text-xs font-bold transition shadow-2xs"
+              title="Kosongkan tandaan checkbox sahaja (tidak memadam sebarang data)"
+            >
+              <Square className="w-3.5 h-3.5 text-slate-500" />
+              <span>Untick / Batal Tandaan ({selectedIds.length})</span>
+            </button>
+          )}
+
           {duplicateResult.hasDuplicates && (
             <button
+              type="button"
               onClick={handleSelectOnePerStudent}
               className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-300 rounded-lg text-xs font-bold transition shadow-2xs"
               title="Tandakan 1 sijil pencapaian tertinggi sahaja bagi setiap murid"
@@ -571,6 +596,7 @@ export const StudentManager: React.FC<StudentManagerProps> = ({
           )}
 
           <button
+            type="button"
             onClick={() => {
               const idsToPrint = selectedIds.length > 0 ? selectedIds : sortedAndFiltered.map((s) => s.id);
               onOpenBatchPrint(idsToPrint);
@@ -580,7 +606,9 @@ export const StudentManager: React.FC<StudentManagerProps> = ({
           >
             <Printer className="w-3.5 h-3.5" />
             <span>
-              {streamFilter !== 'all' || classFilter !== 'all'
+              {selectedIds.length > 0
+                ? `Cetak ${selectedIds.length} Sijil Bertanda`
+                : streamFilter !== 'all' || classFilter !== 'all'
                 ? `Cetak ${classFilter !== 'all' ? classFilter : streamFilter} (${sortedAndFiltered.length} Murid)`
                 : `Cetak Yang Ditapis (${sortedAndFiltered.length} Murid)`}
             </span>
@@ -590,30 +618,48 @@ export const StudentManager: React.FC<StudentManagerProps> = ({
 
       {/* Bulk Action Bar if items selected */}
       {selectedIds.length > 0 && (
-        <div className="flex items-center justify-between p-3 bg-blue-100/70 border border-blue-300 rounded-xl animate-fade-in">
+        <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-blue-50 border border-blue-200 rounded-xl animate-fade-in shadow-xs">
           <div className="flex items-center gap-2 text-xs font-bold text-blue-950">
-            <CheckSquare className="w-4 h-4 text-blue-700" />
-            <span>{selectedIds.length} murid dipilih daripada senarai</span>
+            <CheckSquare className="w-4 h-4 text-blue-600" />
+            <span>{selectedIds.length} murid ditandakan (sedia untuk dicetak)</span>
           </div>
-          <div className="flex items-center gap-2">
+
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Butang Batal Tandaan (Untick) - Menjelaskan kepada guru bahawa ini TIDAK memadam data */}
             <button
+              type="button"
+              onClick={() => setSelectedIds([])}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 rounded-lg text-xs font-bold transition shadow-2xs"
+              title="Nyahpilih / Untick semua kotak semakan tanpa memadam sebarang rekod"
+            >
+              <Square className="w-3.5 h-3.5 text-slate-400" />
+              <span>Untick / Nyahpilih Semua</span>
+            </button>
+
+            {/* Butang Cetak Pilihan */}
+            <button
+              type="button"
               onClick={() => onOpenBatchPrint(selectedIds)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-blue-700 hover:bg-blue-800 text-white rounded-lg text-xs font-bold transition shadow-xs"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition shadow-xs"
             >
               <Printer className="w-3.5 h-3.5" />
-              <span>Cetak {selectedIds.length} Sijil Pilihan</span>
+              <span>Buka Cetakan Pilihan ({selectedIds.length})</span>
             </button>
+
+            {/* Butang Hapus Rekod Kekal (Diasingkan dengan teks amaran jelas) */}
             <button
+              type="button"
               onClick={() => {
-                if (window.confirm(`Adakah anda pasti untuk memadam ${selectedIds.length} murid yang dipilih?`)) {
+                if (window.confirm(`PERINGATAN: Adakah anda pasti mahu memadam ${selectedIds.length} rekod murid ini secara KEKAL daripada pangkalan data?\n\n(Jika hanya mahu buang tandaan semakan cetak, sila klik 'Untick / Nyahpilih Semua')`)) {
                   selectedIds.forEach((id) => onDeleteStudent(id));
                   setSelectedIds([]);
                 }
               }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-xs font-bold transition"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-lg text-xs font-semibold transition"
+              title="Hapus rekod ini daripada pangkalan data secara kekal"
             >
-              <Trash2 className="w-3.5 h-3.5" />
-              <span>Padam Pilihan</span>
+              <Trash2 className="w-3.5 h-3.5 text-red-500" />
+              <span>Hapus Rekod (Padam Data)</span>
             </button>
           </div>
         </div>

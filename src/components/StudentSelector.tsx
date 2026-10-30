@@ -49,19 +49,17 @@ export const StudentSelector: React.FC<StudentSelectorProps> = ({
   const currentIndex = students.findIndex((s) => s.id === selectedStudent.id);
 
   const handlePrev = () => {
-    if (currentIndex > 0) {
-      onSelectStudent(students[currentIndex - 1]);
-    } else if (students.length > 0) {
-      onSelectStudent(students[students.length - 1]);
-    }
+    if (students.length === 0) return;
+    const currentIdx = students.findIndex((s) => s.id === selectedStudent.id);
+    const nextIdx = currentIdx > 0 ? currentIdx - 1 : students.length - 1;
+    onSelectStudent(students[nextIdx]);
   };
 
   const handleNext = () => {
-    if (currentIndex < students.length - 1) {
-      onSelectStudent(students[currentIndex + 1]);
-    } else if (students.length > 0) {
-      onSelectStudent(students[0]);
-    }
+    if (students.length === 0) return;
+    const currentIdx = students.findIndex((s) => s.id === selectedStudent.id);
+    const nextIdx = currentIdx >= 0 && currentIdx < students.length - 1 ? currentIdx + 1 : 0;
+    onSelectStudent(students[nextIdx]);
   };
 
   // Filter students by search query and level, and sort by stream & class
@@ -90,24 +88,32 @@ export const StudentSelector: React.FC<StudentSelectorProps> = ({
       <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
         
         {/* Left: Quick Cycle Controls */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 shrink-0">
           <button
+            type="button"
             onClick={handlePrev}
-            title="Murid Sebelumnya"
-            className="p-2 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-700 transition"
+            disabled={students.length <= 1}
+            title="Lihat Murid Sebelumnya"
+            className="px-2.5 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-700 transition flex items-center gap-1 text-xs font-bold disabled:opacity-40"
           >
             <ChevronLeft className="w-4 h-4" />
+            <span className="hidden sm:inline">Sebelumnya</span>
           </button>
 
-          <span className="text-xs font-semibold text-slate-500 whitespace-nowrap min-w-[70px] text-center">
-            {currentIndex >= 0 ? `${currentIndex + 1} / ${students.length}` : '0 / 0'}
+          <span className="text-xs font-bold font-mono text-slate-700 bg-slate-100 px-2.5 py-1 rounded-lg min-w-[75px] text-center border border-slate-200">
+            {currentIndex >= 0 && students.length > 0 
+              ? `${currentIndex + 1} / ${students.length}` 
+              : students.length > 0 ? `1 / ${students.length}` : '0 / 0'}
           </span>
 
           <button
+            type="button"
             onClick={handleNext}
-            title="Murid Seterusnya"
-            className="p-2 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-700 transition"
+            disabled={students.length <= 1}
+            title="Lihat Murid Seterusnya (Next)"
+            className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition flex items-center gap-1.5 text-xs font-bold shadow-xs disabled:opacity-40"
           >
+            <span>Seterusnya (Next)</span>
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>

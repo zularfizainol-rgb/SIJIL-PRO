@@ -179,6 +179,17 @@ export const BatchPrintModal: React.FC<BatchPrintModalProps> = ({
     setSelectedStudentIds((prev) => prev.filter((id) => !idsToRemove.has(id)));
   };
 
+  // Pilih SEMUA murid dalam database termasuk yang duplicate
+  const selectAllPoolIncludingDuplicates = () => {
+    setSelectedStudentIds(studentPool.map((s) => s.id));
+    setPrintOnlyUnique(false); // Matikan tapisan duplicate agar semua rekod dicetak
+  };
+
+  // Nyahpilih / Untick SEMUA tandaan (hanya uncheck kotak tanpa memadam data)
+  const deselectAll = () => {
+    setSelectedStudentIds([]);
+  };
+
   const selectCurrentStreamOnly = () => {
     if (selectedStream === 'all') {
       selectAllFiltered();
@@ -285,17 +296,22 @@ export const BatchPrintModal: React.FC<BatchPrintModalProps> = ({
     }
   };
 
-  // Preview Pagination
-  const currentPreviewIndex = studentsToPrint.findIndex((s) => s.id === previewStudent?.id);
+  // Preview Pagination (Guna studentsToPrint jika ada, atau fallback kepada studentPool)
+  const targetPreviewList = studentsToPrint.length > 0 ? studentsToPrint : studentPool;
+  const currentPreviewIndex = targetPreviewList.findIndex((s) => s.id === previewStudent?.id);
+
   const handlePrevPreview = () => {
-    if (studentsToPrint.length === 0) return;
-    const nextIdx = currentPreviewIndex > 0 ? currentPreviewIndex - 1 : studentsToPrint.length - 1;
-    setPreviewStudentId(studentsToPrint[nextIdx].id);
+    if (targetPreviewList.length === 0) return;
+    const currentIdx = targetPreviewList.findIndex((s) => s.id === previewStudent?.id);
+    const nextIdx = currentIdx > 0 ? currentIdx - 1 : targetPreviewList.length - 1;
+    setPreviewStudentId(targetPreviewList[nextIdx].id);
   };
+
   const handleNextPreview = () => {
-    if (studentsToPrint.length === 0) return;
-    const nextIdx = currentPreviewIndex < studentsToPrint.length - 1 ? currentPreviewIndex + 1 : 0;
-    setPreviewStudentId(studentsToPrint[nextIdx].id);
+    if (targetPreviewList.length === 0) return;
+    const currentIdx = targetPreviewList.findIndex((s) => s.id === previewStudent?.id);
+    const nextIdx = currentIdx >= 0 && currentIdx < targetPreviewList.length - 1 ? currentIdx + 1 : 0;
+    setPreviewStudentId(targetPreviewList[nextIdx].id);
   };
 
   return (
@@ -466,29 +482,57 @@ export const BatchPrintModal: React.FC<BatchPrintModalProps> = ({
 
               {/* Quick Batch Selection Buttons */}
               <div className="pt-1 flex flex-wrap gap-1.5 text-[11px]">
+                {/* 1. Pilih SEMUA termasuk Duplicate */}
                 <button
                   type="button"
-                  onClick={selectAllFiltered}
-                  className="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold rounded-lg transition border border-blue-200"
-                  title="Tandakan semua murid dalam tapisan ini"
+                  onClick={selectAllPoolIncludingDuplicates}
+                  className="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition shadow-2xs flex items-center gap-1"
+                  title="Pilih SEMUA nama murid dalam senarai termasuk nama yang sama dalam acara berbeza (duplicate)"
                 >
-                  ✓ Pilih Semua ({filteredStudents.length})
+                  <CheckSquare className="w-3.5 h-3.5" />
+                  <span>Pilih Semua (Termasuk Duplicate) ({studentPool.length})</span>
                 </button>
+
+                {/* 2. Untick / Batal Tandaan Semua */}
                 <button
                   type="button"
-                  onClick={deselectAllFiltered}
-                  className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg transition"
-                  title="Nyahpilih semua murid dalam tapisan ini"
+                  onClick={deselectAll}
+                  className="px-2.5 py-1.5 bg-white hover:bg-slate-100 text-slate-700 font-bold rounded-lg transition border border-slate-300 flex items-center gap-1 shadow-2xs"
+                  title="Untick / Nyahpilih semua kotak semakan cetak (tidak memadam sebarang data)"
                 >
-                  ✗ Kosongkan Tapisan
+                  <Square className="w-3.5 h-3.5 text-slate-400" />
+                  <span>Untick / Nyahpilih Semua</span>
                 </button>
+
+                {/* 3. Pilih Yang Ditapis */}
+                {(selectedStream !== 'all' || selectedClass !== 'all' || searchQuery) && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={selectAllFiltered}
+                      className="px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold rounded-lg transition border border-blue-200"
+                      title="Tandakan semua murid dalam tapisan ini"
+                    >
+                      ✓ Pilih Yang Ditapis ({filteredStudents.length})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={deselectAllFiltered}
+                      className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg transition border border-slate-200"
+                      title="Nyahpilih murid dalam tapisan ini sahaja"
+                    >
+                      ✗ Untick Yang Ditapis
+                    </button>
+                  </>
+                )}
+
                 {selectedStream !== 'all' && (
                   <button
                     type="button"
                     onClick={selectCurrentStreamOnly}
                     className="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold rounded-lg transition border border-amber-200"
                   >
-                    ★ Pilih Semua {selectedStream}
+                    ★ Pilih {selectedStream}
                   </button>
                 )}
                 {selectedClass !== 'all' && (
@@ -497,7 +541,7 @@ export const BatchPrintModal: React.FC<BatchPrintModalProps> = ({
                     onClick={selectCurrentClassOnly}
                     className="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold rounded-lg transition border border-emerald-200"
                   >
-                    ★ Pilih Kelas {selectedClass}
+                    ★ Pilih {selectedClass}
                   </button>
                 )}
               </div>

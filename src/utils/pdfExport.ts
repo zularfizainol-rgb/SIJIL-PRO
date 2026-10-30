@@ -46,9 +46,65 @@ export function downloadDataUrl(dataUrl: string, filename: string): void {
 }
 
 /**
+ * Converts modern CSS oklch(...) colors to standard hex / rgba using browser canvas
+ */
+function sanitizeOklchColors(str: string): string {
+  if (!str || !str.includes('oklch')) return str;
+  try {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1;
+    canvas.height = 1;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return str.replace(/oklch\([^)]+\)/g, '#1e293b');
+
+    return str.replace(/oklch\([^)]+\)/g, (match) => {
+      try {
+        ctx.fillStyle = '#1e293b';
+        ctx.fillStyle = match;
+        return ctx.fillStyle;
+      } catch {
+        return '#1e293b';
+      }
+    });
+  } catch {
+    return str.replace(/oklch\([^)]+\)/g, '#1e293b');
+  }
+}
+
+/**
+ * Pre-cleans a cloned document for html2canvas so that it never encounters oklch
+ */
+function cleanClonedDocForCapture(clonedDoc: Document, clonedEl: HTMLElement) {
+  try {
+    // 1. Sanitize all <style> tags
+    const styleTags = clonedDoc.querySelectorAll('style');
+    styleTags.forEach((styleTag) => {
+      if (styleTag.textContent && styleTag.textContent.includes('oklch')) {
+        styleTag.textContent = sanitizeOklchColors(styleTag.textContent);
+      }
+    });
+
+    // 2. Sanitize inline style attributes on cloned elements
+    clonedEl.querySelectorAll('*').forEach((el) => {
+      const inlineStyle = el.getAttribute('style');
+      if (inlineStyle && inlineStyle.includes('oklch')) {
+        el.setAttribute('style', sanitizeOklchColors(inlineStyle));
+      }
+    });
+
+    // 3. Ensure transform is reset on the cloned certificate container
+    clonedEl.style.transform = 'none';
+    clonedEl.style.transformOrigin = 'top left';
+    clonedEl.style.margin = '0';
+    clonedEl.style.boxShadow = 'none';
+  } catch (e) {
+    console.warn('cleanClonedDocForCapture warning:', e);
+  }
+}
+
+/**
  * High-fidelity DOM capture to DataURL
- * Uses browser-native SVG ForeignObject (html-to-image) to guarantee 100% support
- * for Tailwind v4 modern CSS (oklch, CSS variables, transforms, SVG filters)
+ * Uses dual-engine: html2canvas with oklch sanitizer + html-to-image fallback
  */
 export async function captureElementToDataUrl(
   element: HTMLElement,
@@ -60,61 +116,56 @@ export async function captureElementToDataUrl(
 ): Promise<string> {
   const isJpeg = options.format !== 'png';
 
-  const baseConfig = {
-    width: options.width,
-    height: options.height,
-    pixelRatio: 2, // High resolution (300 DPI equivalent on A4)
-    quality: 0.95,
-    skipFonts: true, // Prevents CORS blocks on external Google font fetches inside foreignObject
-    backgroundColor: '#ffffff',
-    filter: (node: Node) => {
-      // Skip script or interactive UI elements if any
-      if (node.nodeName === 'SCRIPT' || node.nodeName === 'NOSCRIPT') {
-        return false;
-      }
-      return true;
-    },
-    style: {
-      transform: 'none',
-      transformOrigin: 'top left',
-      margin: '0',
-      boxShadow: 'none',
-    },
-  };
-
-  // 1. Primary Engine: html-to-image with skipFonts (fast, native SVG foreignObject, supports oklch)
+  // 1. Primary Engine: html2canvas with oklch sanitization
   try {
-    if (isJpeg) {
-      return await toJpeg(element, baseConfig);
-    } else {
-      return await toPng(element, baseConfig);
-    }
-  } catch (firstErr) {
-    console.warn('html-to-image skipFonts primary attempt failed, retrying with full font embed', firstErr);
+    const canvas = await html2canvas(element, {
+      scale: 2, // High resolution (300 DPI equivalent)
+      useCORS: true,
+      allowTaint: true,
+      logging: false,
+      backgroundColor: '#ffffff',
+      width: options.width,
+      height: options.height,
+      onclone: (clonedDoc, clonedEl) => {
+        cleanClonedDocForCapture(clonedDoc, clonedEl);
+      },
+    });
 
-    // 2. Secondary Engine: Retry with font embed enabled
+    return isJpeg ? canvas.toDataURL('image/jpeg', 0.95) : canvas.toDataURL('image/png');
+  } catch (html2canvasErr) {
+    console.warn('html2canvas capture failed, trying html-to-image engine:', html2canvasErr);
+
+    // 2. Secondary Engine: html-to-image with skipFonts
     try {
-      const fullFontConfig = { ...baseConfig, skipFonts: false };
-      if (isJpeg) {
-        return await toJpeg(element, fullFontConfig);
-      } else {
-        return await toPng(element, fullFontConfig);
-      }
-    } catch (secondErr) {
-      console.warn('html-to-image full font embed failed, falling back to html2canvas', secondErr);
-
-      // 3. Fallback Engine: html2canvas
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        backgroundColor: '#ffffff',
+      const captureConfig = {
         width: options.width,
         height: options.height,
-      });
+        pixelRatio: 2,
+        quality: 0.95,
+        skipFonts: true,
+        backgroundColor: '#ffffff',
+        filter: (node: Node) => {
+          if (node.nodeName === 'SCRIPT' || node.nodeName === 'NOSCRIPT') {
+            return false;
+          }
+          return true;
+        },
+        style: {
+          transform: 'none',
+          transformOrigin: 'top left',
+          margin: '0',
+          boxShadow: 'none',
+        },
+      };
 
-      return isJpeg ? canvas.toDataURL('image/jpeg', 0.95) : canvas.toDataURL('image/png');
+      if (isJpeg) {
+        return await toJpeg(element, captureConfig);
+      } else {
+        return await toPng(element, captureConfig);
+      }
+    } catch (htmlToImageErr) {
+      console.error('Both capture engines failed:', htmlToImageErr);
+      throw htmlToImageErr;
     }
   }
 }
