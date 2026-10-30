@@ -20,7 +20,10 @@ import {
   Layers,
   GraduationCap,
   RotateCcw,
-  Sparkles
+  Sparkles,
+  CopyCheck,
+  Award,
+  AlertCircle
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { 
@@ -33,6 +36,12 @@ import {
   SortOption, 
   SortDirection 
 } from '../utils/classHelper';
+import { 
+  analyzeDuplicates, 
+  getUniqueStudents, 
+  DuplicateFilterStrategy 
+} from '../utils/duplicateHelper';
+import { DuplicateResolutionModal } from './DuplicateResolutionModal';
 
 interface StudentManagerProps {
   students: Student[];
@@ -45,6 +54,7 @@ interface StudentManagerProps {
   onOpenImport: () => void;
   onClearAllStudents?: () => void;
   onLoadSampleData?: () => void;
+  onDeduplicateStudents?: (strategy: DuplicateFilterStrategy) => void;
 }
 
 export const StudentManager: React.FC<StudentManagerProps> = ({
@@ -58,14 +68,20 @@ export const StudentManager: React.FC<StudentManagerProps> = ({
   onOpenImport,
   onClearAllStudents,
   onLoadSampleData,
+  onDeduplicateStudents,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [levelFilter, setLevelFilter] = useState<'all' | AchievementLevel>('all');
   const [streamFilter, setStreamFilter] = useState<string>('all');
   const [classFilter, setClassFilter] = useState<string>('all');
+  const [duplicateFilter, setDuplicateFilter] = useState<'all' | 'duplicates-only' | 'unique-only'>('all');
   const [sortBy, setSortBy] = useState<SortOption>('aliran-kelas');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false);
+
+  // Analyze duplicates in full dataset
+  const duplicateResult = useMemo(() => analyzeDuplicates(students), [students]);
 
   // Unique streams and classes for filters
   const uniqueStreams = useMemo(() => getUniqueStreams(students), [students]);
@@ -91,6 +107,12 @@ export const StudentManager: React.FC<StudentManagerProps> = ({
     });
     return map;
   }, [students, streamFilter]);
+
+  // Set of IDs representing unique 1-certificate-per-student (highest achievement)
+  const uniqueStudentIdsSet = useMemo(() => {
+    const uniqueList = getUniqueStudents(students, 'highest-achievement');
+    return new Set(uniqueList.map((s) => s.id));
+  }, [students]);
 
   // 1. Filtering logic
   const filtered = useMemo(() => {
@@ -121,22 +143,37 @@ export const StudentManager: React.FC<StudentManagerProps> = ({
       // Class match
       const matchesClass = classFilter === 'all' || s.class === classFilter || studentClassName === classFilter;
 
-      return matchesSearch && matchesLevel && matchesStream && matchesClass;
+      // Duplicate match
+      const dupInfo = duplicateResult.studentDuplicateInfo.get(s.id);
+      let matchesDuplicate = true;
+      if (duplicateFilter === 'duplicates-only') {
+        matchesDuplicate = !!dupInfo?.isDuplicate;
+      } else if (duplicateFilter === 'unique-only') {
+        matchesDuplicate = uniqueStudentIdsSet.has(s.id);
+      }
+
+      return matchesSearch && matchesLevel && matchesStream && matchesClass && matchesDuplicate;
     });
-  }, [students, searchQuery, levelFilter, streamFilter, classFilter]);
+  }, [students, searchQuery, levelFilter, streamFilter, classFilter, duplicateFilter, duplicateResult, uniqueStudentIdsSet]);
 
   // 2. Sorting logic
   const sortedAndFiltered = useMemo(() => {
     return sortStudents(filtered, sortBy, sortDirection);
   }, [filtered, sortBy, sortDirection]);
 
-  const hasActiveFilters = searchQuery !== '' || levelFilter !== 'all' || streamFilter !== 'all' || classFilter !== 'all';
+  const hasActiveFilters = 
+    searchQuery !== '' || 
+    levelFilter !== 'all' || 
+    streamFilter !== 'all' || 
+    classFilter !== 'all' || 
+    duplicateFilter !== 'all';
 
   const resetAllFilters = () => {
     setSearchQuery('');
     setLevelFilter('all');
     setStreamFilter('all');
     setClassFilter('all');
+    setDuplicateFilter('all');
     setSortBy('aliran-kelas');
     setSortDirection('asc');
   };
@@ -166,9 +203,16 @@ export const StudentManager: React.FC<StudentManagerProps> = ({
     }
   };
 
+  // Quick select 1 best certificate per student from the filtered list
+  const handleSelectOnePerStudent = () => {
+    const uniqueSubset = getUniqueStudents(sortedAndFiltered, 'highest-achievement');
+    setSelectedIds(uniqueSubset.map((s) => s.id));
+  };
+
   const exportCurrentListToExcel = () => {
     const dataToExport = sortedAndFiltered.map((s, idx) => {
       const parsed = parseClassString(s.class);
+      const dupInfo = duplicateResult.studentDuplicateInfo.get(s.id);
       return {
         'Bil': idx + 1,
         'Nama Murid': s.name,
@@ -179,6 +223,8 @@ export const StudentManager: React.FC<StudentManagerProps> = ({
         'Aktiviti / Pertandingan': s.activity,
         'Peringkat': LEVEL_BADGES[s.level]?.label || s.level,
         'Pencapaian': s.achievement,
+        'Jumlah Acara Disertai': dupInfo?.count || 1,
+        'Status Duplikasi': dupInfo?.isDuplicate ? `Berulang (${dupInfo.count} acara)` : 'Unik',
         'Tarikh Sijil': s.date,
         'No. Siri Sijil': s.certNumber,
         'Catatan': s.extraInfo || '',
@@ -193,6 +239,7 @@ export const StudentManager: React.FC<StudentManagerProps> = ({
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-200/90 p-5 space-y-4">
+      
       {/* Top Header & Action Buttons */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
         <div className="flex items-center gap-2.5">
@@ -202,21 +249,39 @@ export const StudentManager: React.FC<StudentManagerProps> = ({
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <h2 className="text-base font-bold text-slate-900">
-                Pangkalan Data Penerima Sijil ({students.length} Murid)
+                Pangkalan Data Penerima Sijil ({students.length} Rekod)
               </h2>
               {sortedAndFiltered.length !== students.length && (
                 <span className="text-xs bg-blue-100 text-blue-800 font-bold px-2.5 py-0.5 rounded-full">
-                  {sortedAndFiltered.length} ditapis
+                  {sortedAndFiltered.length} dipaparkan
+                </span>
+              )}
+              {duplicateResult.hasDuplicates && (
+                <span className="text-[10px] bg-amber-100 text-amber-900 font-bold px-2 py-0.5 rounded-full border border-amber-300 flex items-center gap-1">
+                  <CopyCheck className="w-3 h-3" />
+                  {duplicateResult.duplicateGroupCount} Murid Berulang ({duplicateResult.excessRecordCount} Lebihan)
                 </span>
               )}
             </div>
             <p className="text-xs text-slate-500">
-              Urus, susun (sort), tapis mengikut aliran & kelas, dan cetak sijil murid dengan pantas
+              Urus, susun (sort), kenalpasti nama berulang, dan cetak 1 sijil terbaik atau cetak pukal
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
+          {/* Duplicate manager trigger button */}
+          {duplicateResult.hasDuplicates && (
+            <button
+              onClick={() => setIsDuplicateModalOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 rounded-xl text-xs font-bold transition shadow-2xs"
+              title="Kenalpasti murid berulang dan pilih 1 sijil terbaik"
+            >
+              <CopyCheck className="w-3.5 h-3.5 text-amber-700" />
+              <span>Urus Nama Berulang</span>
+            </button>
+          )}
+
           {/* Quick Print Button for Filtered List */}
           {sortedAndFiltered.length > 0 && (
             <button
@@ -239,7 +304,7 @@ export const StudentManager: React.FC<StudentManagerProps> = ({
             className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-bold text-slate-700 transition"
           >
             <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Import Excel / Sheet</span>
+            <span>Import Excel</span>
           </button>
 
           {students.length > 0 && (
@@ -249,7 +314,7 @@ export const StudentManager: React.FC<StudentManagerProps> = ({
               title="Eksport ke fail Excel"
             >
               <Download className="w-3.5 h-3.5 text-slate-600" />
-              <span className="hidden md:inline">Eksport Excel</span>
+              <span className="hidden md:inline">Eksport</span>
             </button>
           )}
 
@@ -264,7 +329,7 @@ export const StudentManager: React.FC<StudentManagerProps> = ({
               title="Padam semua data murid untuk mulakan sesi baharu"
             >
               <Trash2 className="w-3.5 h-3.5" />
-              <span>Kosongkan Semua</span>
+              <span>Kosongkan</span>
             </button>
           )}
 
@@ -272,10 +337,9 @@ export const StudentManager: React.FC<StudentManagerProps> = ({
             <button
               onClick={onLoadSampleData}
               className="inline-flex items-center gap-1.5 px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 rounded-xl text-xs font-bold transition"
-              title="Muat 5 data murid contoh untuk ujian sijil"
+              title="Muat data murid contoh"
             >
-              <span>🧪</span>
-              <span>Muat Data Contoh</span>
+              <span>🧪 Muat Contoh</span>
             </button>
           )}
 
@@ -284,10 +348,55 @@ export const StudentManager: React.FC<StudentManagerProps> = ({
             className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow-xs"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>Tambah Murid</span>
+            <span>+ Murid</span>
           </button>
         </div>
       </div>
+
+      {/* DUPLICATE RECOGNITION ALERT CARD (Shown when duplicate names exist) */}
+      {duplicateResult.hasDuplicates && (
+        <div className="p-3.5 bg-amber-50/90 border border-amber-300 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-2xs">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 bg-amber-100 text-amber-800 rounded-lg shrink-0">
+              <CopyCheck className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs font-bold text-amber-950">
+                  Dikesan {duplicateResult.duplicateGroupCount} Murid Mempunyai Rekod Berulang ({duplicateResult.totalDuplicateRecords} rekod penyertaan)
+                </span>
+                <span className="text-[10px] font-bold bg-amber-200 text-amber-900 px-2 py-0.5 rounded-full">
+                  {duplicateResult.excessRecordCount} Sijil Lebihan Boleh Disingkirkan
+                </span>
+              </div>
+              <p className="text-[11px] text-amber-900/80 mt-0.5">
+                Murid ini menyertai pelbagai acara berbeza. Anda boleh menapis nama mereka, memilih hanya 1 sijil terbaik untuk dicetak, atau membersihkan pangkalan data.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0 flex-wrap">
+            <button
+              onClick={() => setDuplicateFilter(duplicateFilter === 'duplicates-only' ? 'all' : 'duplicates-only')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
+                duplicateFilter === 'duplicates-only'
+                  ? 'bg-amber-900 text-white shadow-xs'
+                  : 'bg-white hover:bg-amber-100 text-amber-950 border border-amber-300'
+              }`}
+            >
+              <span>{duplicateFilter === 'duplicates-only' ? '✓ Sedang Papar Berulang' : '👁️ Tapis Berulang Sahaja'}</span>
+            </button>
+
+            <button
+              onClick={() => setIsDuplicateModalOpen(true)}
+              className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-xs"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Urus & Pilih 1 Terbaik</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* FILTER CONTROLS: Search, Aliran, Kelas & Level */}
       <div className="bg-slate-50/80 rounded-xl p-3 border border-slate-200/80 space-y-3">
@@ -311,7 +420,7 @@ export const StudentManager: React.FC<StudentManagerProps> = ({
                 value={streamFilter}
                 onChange={(e) => {
                   setStreamFilter(e.target.value);
-                  setClassFilter('all'); // Reset class when stream changes
+                  setClassFilter('all');
                 }}
                 className="w-full text-xs px-3 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold text-slate-800"
               >
@@ -346,10 +455,10 @@ export const StudentManager: React.FC<StudentManagerProps> = ({
           </div>
         </div>
 
-        {/* Level Filters & Sort Row */}
+        {/* Level Filters & Duplicate Status Pills */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-1 border-t border-slate-200/60">
-          {/* Level Filter Pills */}
-          <div className="flex items-center gap-1.5 overflow-x-auto text-xs pb-1 sm:pb-0">
+          <div className="flex items-center gap-1.5 overflow-x-auto text-xs pb-1 sm:pb-0 flex-wrap">
+            {/* Level Filter Pills */}
             <span className="text-slate-400 text-[11px] font-bold uppercase mr-1 flex items-center gap-1 shrink-0">
               <Filter className="w-3 h-3" /> Peringkat:
             </span>
@@ -366,6 +475,33 @@ export const StudentManager: React.FC<StudentManagerProps> = ({
                 {lvl === 'all' ? 'Semua' : lvl === 'zon' ? 'Zon' : lvl.charAt(0).toUpperCase() + lvl.slice(1)}
               </button>
             ))}
+
+            {/* Duplicate Filter Filter Toggle */}
+            <div className="h-4 w-px bg-slate-200 mx-1 hidden sm:block" />
+            <button
+              onClick={() => setDuplicateFilter(duplicateFilter === 'duplicates-only' ? 'all' : 'duplicates-only')}
+              className={`px-2.5 py-1 rounded-lg font-bold transition shrink-0 text-xs flex items-center gap-1 ${
+                duplicateFilter === 'duplicates-only'
+                  ? 'bg-amber-600 text-white shadow-xs'
+                  : 'bg-white hover:bg-amber-50 text-amber-800 border border-amber-300'
+              }`}
+              title="Tapis hanya murid yang mempunyai rekod berulang"
+            >
+              <CopyCheck className="w-3 h-3" />
+              <span>Berulang Sahaja</span>
+            </button>
+
+            <button
+              onClick={() => setDuplicateFilter(duplicateFilter === 'unique-only' ? 'all' : 'unique-only')}
+              className={`px-2.5 py-1 rounded-lg font-bold transition shrink-0 text-xs flex items-center gap-1 ${
+                duplicateFilter === 'unique-only'
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-300'
+              }`}
+              title="Papar 1 sijil terbaik sahaja setiap murid"
+            >
+              <span>1 Murid 1 Sijil ({uniqueStudentIdsSet.size})</span>
+            </button>
           </div>
 
           {/* Reset Filters if Active */}
@@ -381,7 +517,7 @@ export const StudentManager: React.FC<StudentManagerProps> = ({
         </div>
       </div>
 
-      {/* SORT CONTROLS & BATCH PRINT BAR */}
+      {/* SORT CONTROLS & BATCH ACTIONS BAR */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-blue-50/50 border border-blue-100 rounded-xl">
         {/* Sort Controls */}
         <div className="flex items-center gap-2 flex-wrap text-xs">
@@ -421,8 +557,19 @@ export const StudentManager: React.FC<StudentManagerProps> = ({
           </button>
         </div>
 
-        {/* Quick Stream/Class Print Shortcut Button */}
-        <div className="flex items-center gap-2">
+        {/* Quick Selection Shortcuts */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {duplicateResult.hasDuplicates && (
+            <button
+              onClick={handleSelectOnePerStudent}
+              className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-300 rounded-lg text-xs font-bold transition shadow-2xs"
+              title="Tandakan 1 sijil pencapaian tertinggi sahaja bagi setiap murid"
+            >
+              <Sparkles className="w-3 h-3 text-emerald-600" />
+              <span>Tanda 1 Terbaik Setiap Murid</span>
+            </button>
+          )}
+
           <button
             onClick={() => {
               const idsToPrint = selectedIds.length > 0 ? selectedIds : sortedAndFiltered.map((s) => s.id);
@@ -435,7 +582,7 @@ export const StudentManager: React.FC<StudentManagerProps> = ({
             <span>
               {streamFilter !== 'all' || classFilter !== 'all'
                 ? `Cetak ${classFilter !== 'all' ? classFilter : streamFilter} (${sortedAndFiltered.length} Murid)`
-                : `Cetak Semua Yang Ditapis (${sortedAndFiltered.length} Murid)`}
+                : `Cetak Yang Ditapis (${sortedAndFiltered.length} Murid)`}
             </span>
           </button>
         </div>
@@ -620,6 +767,8 @@ export const StudentManager: React.FC<StudentManagerProps> = ({
                 const badge = LEVEL_BADGES[s.level];
                 const stream = getStudentStream(s);
                 const classNameOnly = getStudentClassName(s);
+                const dupInfo = duplicateResult.studentDuplicateInfo.get(s.id);
+                const isTopUniqueCert = uniqueStudentIdsSet.has(s.id);
 
                 return (
                   <tr
@@ -643,7 +792,32 @@ export const StudentManager: React.FC<StudentManagerProps> = ({
                     </td>
 
                     <td className="p-3">
-                      <div className="font-bold text-slate-900">{s.name}</div>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="font-bold text-slate-900">{s.name}</span>
+                        
+                        {/* Duplicate badge indicator */}
+                        {dupInfo?.isDuplicate && (
+                          <button
+                            type="button"
+                            onClick={() => setSearchQuery(s.name)}
+                            className="text-[10px] font-bold text-amber-900 bg-amber-100 hover:bg-amber-200 border border-amber-300 px-1.5 py-0.5 rounded inline-flex items-center gap-1 cursor-pointer transition"
+                            title={`Murid ini menyertai ${dupInfo.count} acara:\n• ${dupInfo.otherActivities.join('\n• ')}\n\n(Klik untuk lihat semua acara murid ini)`}
+                          >
+                            <CopyCheck className="w-3 h-3 text-amber-700" />
+                            <span>{dupInfo.count} Acara</span>
+                          </button>
+                        )}
+
+                        {dupInfo?.isDuplicate && isTopUniqueCert && (
+                          <span 
+                            className="text-[9px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300 px-1 py-0.2 rounded"
+                            title="Sijil dengan skor pencapaian tertinggi murid ini"
+                          >
+                            ★ Terbaik
+                          </span>
+                        )}
+                      </div>
+
                       {s.positionRole && (
                         <span className="text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded inline-block mt-0.5">
                           {s.positionRole}
@@ -729,6 +903,18 @@ export const StudentManager: React.FC<StudentManagerProps> = ({
           </tbody>
         </table>
       </div>
+
+      {/* DUPLICATE RESOLUTION MODAL */}
+      <DuplicateResolutionModal
+        isOpen={isDuplicateModalOpen}
+        onClose={() => setIsDuplicateModalOpen(false)}
+        duplicateResult={duplicateResult}
+        onSelectForPrint={(chosenIds) => {
+          setSelectedIds(chosenIds);
+          onOpenBatchPrint(chosenIds);
+        }}
+        onDeduplicateDatabase={onDeduplicateStudents}
+      />
 
     </div>
   );

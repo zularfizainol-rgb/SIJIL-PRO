@@ -17,7 +17,8 @@ import {
   Search,
   RotateCcw,
   Sparkles,
-  Layers
+  Layers,
+  CopyCheck
 } from 'lucide-react';
 import { createJsPdf, triggerPrint } from '../utils/pdfExport';
 import html2canvas from 'html2canvas';
@@ -28,6 +29,11 @@ import {
   getUniqueClasses, 
   sortStudents 
 } from '../utils/classHelper';
+import { 
+  analyzeDuplicates, 
+  getUniqueStudents, 
+  DuplicateFilterStrategy 
+} from '../utils/duplicateHelper';
 
 interface BatchPrintModalProps {
   isOpen: boolean;
@@ -59,9 +65,16 @@ export const BatchPrintModal: React.FC<BatchPrintModalProps> = ({
   const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
   const [previewStudentId, setPreviewStudentId] = useState<string>('');
   
+  // 1-certificate-per-student duplicate elimination settings
+  const [printOnlyUnique, setPrintOnlyUnique] = useState<boolean>(false);
+  const [uniqueStrategy, setUniqueStrategy] = useState<DuplicateFilterStrategy>('highest-achievement');
+
   const [isExportingPDF, setIsExportingPDF] = useState(false);
   const [progress, setProgress] = useState(0);
   const [statusMessage, setStatusMessage] = useState('');
+
+  // Pool duplicate analysis
+  const poolDuplicates = useMemo(() => analyzeDuplicates(studentPool), [studentPool]);
 
   // Initialize selectedStudentIds when modal opens or initialSelectedIds change
   useEffect(() => {
@@ -76,13 +89,6 @@ export const BatchPrintModal: React.FC<BatchPrintModalProps> = ({
       }
     }
   }, [isOpen, initialSelectedIds, students]);
-
-  // Sync selectedStudentIds back to parent for window.print container
-  useEffect(() => {
-    if (onUpdateSelectedIds && selectedStudentIds.length > 0) {
-      onUpdateSelectedIds(selectedStudentIds);
-    }
-  }, [selectedStudentIds, onUpdateSelectedIds]);
 
   // Unique streams and classes from the pool
   const uniqueStreams = useMemo(() => getUniqueStreams(studentPool), [studentPool]);
@@ -133,22 +139,37 @@ export const BatchPrintModal: React.FC<BatchPrintModalProps> = ({
     return sortStudents(list, 'aliran-kelas', 'asc');
   }, [studentPool, selectedStream, selectedClass, searchQuery]);
 
-  // Target students to actually print (the ones that are both in selectedStudentIds and filtered)
-  const studentsToPrint = useMemo(() => {
+  // Raw checked students
+  const rawCheckedStudents = useMemo(() => {
     const targets = studentPool.filter((s) => selectedStudentIds.includes(s.id));
     return sortStudents(targets, 'aliran-kelas', 'asc');
   }, [studentPool, selectedStudentIds]);
 
+  // Target students to actually print (handles 1-certificate-per-student mode if active)
+  const studentsToPrint = useMemo(() => {
+    if (printOnlyUnique) {
+      return getUniqueStudents(rawCheckedStudents, uniqueStrategy);
+    }
+    return rawCheckedStudents;
+  }, [rawCheckedStudents, printOnlyUnique, uniqueStrategy]);
+
+  // Sync target students back to parent for window.print container
+  useEffect(() => {
+    if (onUpdateSelectedIds && studentsToPrint.length > 0) {
+      onUpdateSelectedIds(studentsToPrint.map((s) => s.id));
+    }
+  }, [studentsToPrint, onUpdateSelectedIds]);
+
   // Set active preview student
   const previewStudent = useMemo(() => {
     if (previewStudentId) {
-      const found = studentPool.find((s) => s.id === previewStudentId);
+      const found = studentsToPrint.find((s) => s.id === previewStudentId);
       if (found) return found;
     }
     if (studentsToPrint.length > 0) return studentsToPrint[0];
     if (filteredStudents.length > 0) return filteredStudents[0];
     return studentPool[0];
-  }, [previewStudentId, studentPool, studentsToPrint, filteredStudents]);
+  }, [previewStudentId, studentsToPrint, filteredStudents, studentPool]);
 
   if (!isOpen || studentPool.length === 0) return null;
 
@@ -203,9 +224,8 @@ export const BatchPrintModal: React.FC<BatchPrintModalProps> = ({
       return;
     }
     if (onUpdateSelectedIds) {
-      onUpdateSelectedIds(selectedStudentIds);
+      onUpdateSelectedIds(studentsToPrint.map((s) => s.id));
     }
-    // Give browser brief tick to sync print container
     setTimeout(() => {
       triggerPrint();
     }, 120);
@@ -271,8 +291,9 @@ export const BatchPrintModal: React.FC<BatchPrintModalProps> = ({
 
       const streamLabel = selectedStream !== 'all' ? `_${selectedStream.replace(/\s+/g, '_')}` : '';
       const classLabel = selectedClass !== 'all' ? `_${selectedClass.replace(/\s+/g, '_')}` : '';
+      const uniqueTag = printOnlyUnique ? '_1Sijil1Murid' : '';
       setStatusMessage('Menyimpan fail PDF...');
-      pdf.save(`Sijil_Penghargaan${streamLabel}${classLabel}_${studentsToPrint.length}_Murid.pdf`);
+      pdf.save(`Sijil_Penghargaan${streamLabel}${classLabel}${uniqueTag}_${studentsToPrint.length}_Murid.pdf`);
       setStatusMessage('Selesai! Fail PDF berjaya dimuat turun.');
     } catch (err) {
       console.error('Ralat semasa menjana batch PDF:', err);
@@ -307,16 +328,18 @@ export const BatchPrintModal: React.FC<BatchPrintModalProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-base sm:text-lg font-bold">Cetak Mengikut Aliran & Kelas</h2>
+                <h2 className="text-base sm:text-lg font-bold">Cetak Mengikut Aliran, Kelas & Status Unik</h2>
                 <span className="text-[10px] bg-blue-500 text-white font-bold px-2.5 py-0.5 rounded-full">
-                  {studentsToPrint.length} Dipilih Untuk Dicetak
+                  {studentsToPrint.length} Sijil Akan Dicetak
                 </span>
-                <span className="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full border border-slate-700">
-                  Jumlah Pangkalan Data: {studentPool.length} Murid
-                </span>
+                {printOnlyUnique && (
+                  <span className="text-[10px] bg-emerald-500 text-white font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3" /> Mod 1 Murid 1 Sijil
+                  </span>
+                )}
               </div>
               <p className="text-xs text-slate-300 mt-0.5">
-                Tapis aliran & kelas, pilih murid yang hendak dicetak, kemudian cetak terus atau eksport PDF pukal
+                Tapis aliran & kelas, hapus nama berulang (jika perlu), dan cetak sijil dengan pantas
               </p>
             </div>
           </div>
@@ -337,7 +360,54 @@ export const BatchPrintModal: React.FC<BatchPrintModalProps> = ({
           {/* Left Column (5 cols): Filters, Selection Controls & Student Check-List */}
           <div className="lg:col-span-5 p-4 sm:p-5 overflow-y-auto space-y-4 border-b lg:border-b-0 lg:border-r border-slate-200 bg-slate-50/70">
             
-            {/* 1. FILTER CONTROLS: ALIRAN & KELAS */}
+            {/* 1. DUPLICATE 1-STUDENT-1-CERT TOGGLE (Direct answer to user request) */}
+            {poolDuplicates.hasDuplicates && (
+              <div className="p-3.5 bg-amber-50 border border-amber-300 rounded-xl space-y-2 shadow-2xs">
+                <div className="flex items-center justify-between">
+                  <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-amber-950">
+                    <input
+                      type="checkbox"
+                      checked={printOnlyUnique}
+                      onChange={(e) => setPrintOnlyUnique(e.target.checked)}
+                      className="w-4 h-4 text-blue-600 rounded border-amber-400 focus:ring-blue-500"
+                    />
+                    <span className="flex items-center gap-1.5">
+                      <CopyCheck className="w-4 h-4 text-amber-700" />
+                      Cetak 1 Sijil Sahaja Setiap Murid
+                    </span>
+                  </label>
+                  <span className="text-[10px] font-bold bg-amber-200 text-amber-900 px-2 py-0.5 rounded-full">
+                    {poolDuplicates.duplicateGroupCount} Murid &gt; 1 Acara
+                  </span>
+                </div>
+
+                {printOnlyUnique ? (
+                  <div className="pt-2 border-t border-amber-200/90 space-y-2">
+                    <div className="flex items-center justify-between gap-2 text-[11px]">
+                      <span className="text-amber-950 font-bold shrink-0">Kriteria Pilihan:</span>
+                      <select
+                        value={uniqueStrategy}
+                        onChange={(e) => setUniqueStrategy(e.target.value as DuplicateFilterStrategy)}
+                        className="text-xs bg-white border border-amber-300 rounded-lg px-2 py-1 font-bold text-amber-950 focus:outline-none focus:ring-1 focus:ring-blue-500 w-full max-w-[210px]"
+                      >
+                        <option value="highest-achievement">🥇 Pencapaian Terbaik (Johan/Emas)</option>
+                        <option value="highest-level">🏅 Peringkat Tertinggi (Kebangsaan/Negeri)</option>
+                        <option value="first-entry">⏱️ Rekod Pertama Dimasukkan</option>
+                      </select>
+                    </div>
+                    <div className="p-2 bg-amber-100/70 rounded-lg text-[10px] text-amber-950 font-medium">
+                      🎯 <strong>Aktif:</strong> Sistem menapis rekod bertindih. Hanya 1 sijil terbaik bagi setiap murid akan dicetak ({rawCheckedStudents.length - studentsToPrint.length} sijil lebihan disingkirkan).
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-[10px] text-amber-800 leading-tight">
+                    Tandakan pilihan di atas jika anda hanya ingin mencetak <strong>1 sijil bagi setiap murid</strong> walaupun mereka menyertai pelbagai pertandingan.
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* 2. FILTER CONTROLS: ALIRAN & KELAS */}
             <div className="p-3.5 bg-white border border-slate-200 rounded-xl space-y-3 shadow-2xs">
               <div className="flex items-center justify-between border-b border-slate-100 pb-2">
                 <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
@@ -368,7 +438,7 @@ export const BatchPrintModal: React.FC<BatchPrintModalProps> = ({
                   value={selectedStream}
                   onChange={(e) => {
                     setSelectedStream(e.target.value);
-                    setSelectedClass('all'); // reset class
+                    setSelectedClass('all');
                   }}
                   className="w-full text-xs font-bold px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900"
                 >
@@ -451,7 +521,7 @@ export const BatchPrintModal: React.FC<BatchPrintModalProps> = ({
               </div>
             </div>
 
-            {/* 2. PRINT ACTION BUTTONS */}
+            {/* 3. PRINT ACTION BUTTONS */}
             <div className="space-y-2.5">
               {/* Option A: Direct Browser Print */}
               <div className="p-3 bg-white border border-slate-200 rounded-xl space-y-2 shadow-2xs hover:border-blue-300 transition">
@@ -464,9 +534,6 @@ export const BatchPrintModal: React.FC<BatchPrintModalProps> = ({
                     Syor Utama
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-600 leading-snug">
-                  Membuka dialog cetak komputer anda. Setiap sijil dicetak pada helaian kertas A4 berasingan secara kemas.
-                </p>
                 <button
                   onClick={handlePrintAll}
                   disabled={isExportingPDF || studentsToPrint.length === 0}
@@ -519,15 +586,15 @@ export const BatchPrintModal: React.FC<BatchPrintModalProps> = ({
               </div>
             )}
 
-            {/* 3. STUDENT CHECKLIST ACCORDING TO FILTER */}
+            {/* 4. STUDENT CHECKLIST ACCORDING TO FILTER */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
                   <FileText className="w-3.5 h-3.5 text-slate-500" />
-                  Pilih Murid ({filteredStudents.length} ditapis):
+                  Senarai Murid ({filteredStudents.length} ditapis):
                 </h3>
                 <span className="text-[10px] text-slate-500 font-medium">
-                  {studentsToPrint.length} ditandakan
+                  {studentsToPrint.length} sedia dicetak
                 </span>
               </div>
 
@@ -539,9 +606,11 @@ export const BatchPrintModal: React.FC<BatchPrintModalProps> = ({
                 ) : (
                   filteredStudents.map((s, idx) => {
                     const isChecked = selectedStudentIds.includes(s.id);
+                    const willBePrinted = studentsToPrint.some((target) => target.id === s.id);
                     const isCurrent = previewStudent?.id === s.id;
                     const stream = getStudentStream(s);
                     const classNameOnly = getStudentClassName(s);
+                    const isDup = poolDuplicates.studentDuplicateInfo.get(s.id)?.isDuplicate;
 
                     return (
                       <div
@@ -572,9 +641,21 @@ export const BatchPrintModal: React.FC<BatchPrintModalProps> = ({
                             onClick={() => setPreviewStudentId(s.id)}
                             title="Klik untuk lihat pratonton sijil murid ini"
                           >
-                            <p className={`text-xs truncate ${isChecked ? 'font-bold text-slate-900' : 'text-slate-500 line-through'}`}>
-                              {idx + 1}. {s.name}
-                            </p>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <p className={`text-xs truncate ${willBePrinted ? 'font-bold text-slate-900' : 'text-slate-400 line-through'}`}>
+                                {idx + 1}. {s.name}
+                              </p>
+                              {isDup && (
+                                <span className="text-[9px] font-bold bg-amber-100 text-amber-800 px-1 py-0.2 rounded border border-amber-300">
+                                  Berulang
+                                </span>
+                              )}
+                              {printOnlyUnique && isChecked && !willBePrinted && (
+                                <span className="text-[9px] font-medium text-slate-400 italic">
+                                  (Dilepaskan - bukan sijil tertinggi)
+                                </span>
+                              )}
+                            </div>
                             <div className="flex items-center gap-1.5 mt-0.5 text-[10px] text-slate-500 font-mono flex-wrap">
                               {stream && stream !== 'Tiada Aliran' && (
                                 <span className="bg-slate-100 text-slate-700 font-bold px-1 rounded">
@@ -582,7 +663,8 @@ export const BatchPrintModal: React.FC<BatchPrintModalProps> = ({
                                 </span>
                               )}
                               <span>{classNameOnly || s.class}</span>
-                              {s.ic && <span>• {s.ic}</span>}
+                              <span>• {s.activity}</span>
+                              <span className="text-amber-800 font-bold">({s.achievement || s.level})</span>
                             </div>
                           </div>
                         </div>
@@ -624,7 +706,7 @@ export const BatchPrintModal: React.FC<BatchPrintModalProps> = ({
                     {previewStudent?.name || 'Tiada Murid Dipilih'}
                   </span>
                   <span className="text-[10px] text-slate-500 font-mono">
-                    {previewStudent?.class} • {previewStudent?.achievement || previewStudent?.level}
+                    {previewStudent?.class} • {previewStudent?.activity} ({previewStudent?.achievement || previewStudent?.level})
                   </span>
                 </div>
               </div>
@@ -733,7 +815,7 @@ export const BatchPrintModal: React.FC<BatchPrintModalProps> = ({
           <div className="flex items-center gap-2 text-[11px] text-slate-600 font-medium">
             <span className="p-1 bg-emerald-100 text-emerald-800 rounded font-bold">A4</span>
             <span>
-              {studentsToPrint.length} sijil sedia untuk dicetak mengikut aliran & kelas yang dipilih
+              {studentsToPrint.length} sijil sedia dicetak {printOnlyUnique ? '(Mod 1 Murid 1 Sijil Aktif)' : ''}
             </span>
           </div>
 

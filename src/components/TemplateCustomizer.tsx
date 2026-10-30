@@ -518,7 +518,7 @@ export const TemplateCustomizer: React.FC<TemplateCustomizerProps> = ({
           Maklumat Rasmi Sekolah
         </label>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div>
             <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
               Nama Sekolah:
@@ -526,8 +526,21 @@ export const TemplateCustomizer: React.FC<TemplateCustomizerProps> = ({
             <input
               type="text"
               value={config.schoolName}
-              onChange={(e) => update({ schoolName: e.target.value })}
+              onChange={(e) => update({ schoolName: e.target.value.toUpperCase() })}
               className="w-full text-xs font-bold p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none uppercase"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
+              No. Kod Sekolah:
+            </label>
+            <input
+              type="text"
+              value={config.schoolCode || ''}
+              onChange={(e) => update({ schoolCode: e.target.value.toUpperCase() })}
+              placeholder="Contoh: WBA0001"
+              className="w-full text-xs font-mono font-bold p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none uppercase"
             />
           </div>
 
@@ -538,7 +551,7 @@ export const TemplateCustomizer: React.FC<TemplateCustomizerProps> = ({
             <input
               type="text"
               value={config.schoolLocation}
-              onChange={(e) => update({ schoolLocation: e.target.value })}
+              onChange={(e) => update({ schoolLocation: e.target.value.toUpperCase() })}
               className="w-full text-xs font-bold p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none uppercase"
             />
           </div>

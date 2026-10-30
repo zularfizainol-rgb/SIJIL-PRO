@@ -10,9 +10,13 @@ import { StudentEditModal } from './components/StudentEditModal';
 import { BatchPrintModal } from './components/BatchPrintModal';
 import { StudentQuickForm } from './components/StudentQuickForm';
 import { UserGuideModal } from './components/UserGuideModal';
+import { SchoolSettingsModal } from './components/SchoolSettingsModal';
+import { SchoolCrestLogo, TS25Logo } from './components/CertificateArt';
 import { exportCertificateToPDF, exportCertificateToImage, triggerPrint } from './utils/pdfExport';
+import { getUniqueStudents, DuplicateFilterStrategy } from './utils/duplicateHelper';
 import { 
   Award, 
+  Edit3, 
   Printer, 
   Download, 
   FileSpreadsheet, 
@@ -87,6 +91,7 @@ export default function App() {
   const [batchSelectedIds, setBatchSelectedIds] = useState<string[]>([]);
   const [isDeployHelpOpen, setIsDeployHelpOpen] = useState(false);
   const [isUserGuideOpen, setIsUserGuideOpen] = useState(false);
+  const [isSchoolSettingsOpen, setIsSchoolSettingsOpen] = useState(false);
 
   // Preview zoom scale
   const [zoomScale, setZoomScale] = useState<number>(0.72);
@@ -206,6 +211,16 @@ export default function App() {
     showToast('Rekod murid dipadam');
   };
 
+  const handleDeduplicateStudents = (strategy: DuplicateFilterStrategy) => {
+    const uniqueList = getUniqueStudents(students, strategy);
+    const removedCount = students.length - uniqueList.length;
+    setStudents(uniqueList);
+    if (uniqueList.length > 0 && !uniqueList.some((s) => s.id === selectedStudentId)) {
+      setSelectedStudentId(uniqueList[0].id);
+    }
+    showToast(`Pangkalan data dibersihkan: ${removedCount} rekod duplikasi disingkirkan.`);
+  };
+
   const handleImportStudents = (newStudents: Student[], mode: 'replace' | 'append') => {
     if (mode === 'replace') {
       setStudents(newStudents);
@@ -275,20 +290,62 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             
-            {/* Logo & School Branding */}
+            {/* Logo & School Branding (Logo Sekolah & TS25 sebelah tajuk SijilPro) */}
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 text-slate-950 flex items-center justify-center font-black shadow-md">
-                <Award className="w-6 h-6" />
+              {/* Logo Sekolah & Logo TS25 */}
+              <div className="flex items-center gap-1.5 shrink-0">
+                {/* Logo Sekolah */}
+                <div 
+                  onClick={() => setIsSchoolSettingsOpen(true)}
+                  className="w-10 h-10 rounded-xl bg-white p-1 flex items-center justify-center shadow-sm cursor-pointer hover:scale-105 hover:ring-2 hover:ring-amber-400 transition border border-slate-700/60"
+                  title="Logo Sekolah • Klik untuk tukar logo / edit sekolah"
+                >
+                  {config.leftLogoUrl ? (
+                    <img src={config.leftLogoUrl} alt="Logo Sekolah" className="w-8 h-8 object-contain" />
+                  ) : (
+                    <SchoolCrestLogo className="w-7 h-8" />
+                  )}
+                </div>
+
+                {/* Logo TS25 (Program Transformasi Sekolah 2025) */}
+                <div 
+                  onClick={() => setIsSchoolSettingsOpen(true)}
+                  className="w-10 h-10 rounded-xl bg-white p-1 flex items-center justify-center shadow-sm cursor-pointer hover:scale-105 hover:ring-2 hover:ring-purple-400 transition border border-slate-700/60"
+                  title="Logo TS25 • Klik untuk tukar logo / edit sekolah"
+                >
+                  {config.rightLogoUrl ? (
+                    <img src={config.rightLogoUrl} alt="Logo TS25" className="w-8 h-8 object-contain" />
+                  ) : (
+                    <TS25Logo className="w-8 h-8" />
+                  )}
+                </div>
               </div>
+
               <div>
                 <div className="flex items-center gap-2">
                   <h1 className="text-base font-extrabold tracking-tight text-white flex items-center gap-1.5">
                     SijilPro <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-600 text-blue-100">RASMI</span>
                   </h1>
+                  <button
+                    onClick={() => setIsSchoolSettingsOpen(true)}
+                    className="p-1 text-slate-400 hover:text-amber-400 hover:bg-slate-800 rounded-lg transition"
+                    title="Edit Nama Sekolah, No Kod Sekolah & Logo"
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
+                  </button>
                 </div>
-                <p className="text-[11px] text-slate-400 font-medium truncate max-w-xs sm:max-w-sm">
-                  {config.schoolName} ({config.schoolCode})
-                </p>
+                <div className="flex items-center gap-1.5 text-[11px] text-slate-300 font-medium">
+                  <span 
+                    onClick={() => setIsSchoolSettingsOpen(true)}
+                    className="truncate max-w-[150px] sm:max-w-xs text-slate-200 font-bold hover:text-amber-300 cursor-pointer transition"
+                    title="Klik untuk edit nama sekolah"
+                  >
+                    {config.schoolName}
+                  </span>
+                  <span className="text-amber-300 font-mono font-bold bg-amber-500/15 px-1 rounded border border-amber-500/30 shrink-0">
+                    {config.schoolCode}
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -313,6 +370,15 @@ export default function App() {
 
             {/* Top Right Action Buttons */}
             <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsSchoolSettingsOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 rounded-xl text-xs font-bold transition shadow-xs"
+                title="Edit Nama Sekolah, No Kod Sekolah & Logo Sekolah / TS25"
+              >
+                <School className="w-3.5 h-3.5 text-blue-400" />
+                <span className="hidden sm:inline">Tetapan Sekolah</span>
+              </button>
+
               <button
                 onClick={() => setIsUserGuideOpen(true)}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold transition shadow-xs ring-1 ring-blue-400/30"
@@ -1793,6 +1859,7 @@ export default function App() {
             onOpenImport={() => setIsImportOpen(true)}
             onClearAllStudents={handleClearAllStudents}
             onLoadSampleData={handleLoadSampleData}
+            onDeduplicateStudents={handleDeduplicateStudents}
           />
         )}
 
@@ -1912,6 +1979,17 @@ export default function App() {
         initialSelectedIds={batchSelectedIds}
         onUpdateSelectedIds={setBatchSelectedIds}
         config={config}
+      />
+
+      {/* Modal Tetapan Sekolah, No Kod Sekolah & Logo TS25 */}
+      <SchoolSettingsModal
+        isOpen={isSchoolSettingsOpen}
+        onClose={() => setIsSchoolSettingsOpen(false)}
+        config={config}
+        onSaveConfig={(newCfg) => {
+          setConfig(newCfg);
+          showToast('Maklumat sekolah dan logo berjaya dikemaskini!');
+        }}
       />
 
       {/* Modal Bantuan & Panduan Deploy GitHub Pages */}
