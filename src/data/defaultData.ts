@@ -308,7 +308,7 @@ telah menunjukkan prestasi yang cemerlang dan terpuji dalam program / aspek:
 {{AKTIVITI}}
 
 bagi tahun
-{{TARIKH}}`,
+{{TAHUN}}`,
   },
   {
     id: 'format-2-akademik',
@@ -328,7 +328,7 @@ Atas pencapaian cemerlang dan usaha gigih dalam
 {{AKTIVITI}}
 
 Bagi Sesi
-{{TARIKH}}
+{{SESI}}
 
 Semoga kejayaan ini menjadi pendorong untuk terus cemerlang pada masa hadapan.`,
   },
@@ -353,7 +353,7 @@ Dalam
 {{KELAB}}
 
 Bagi
-{{TARIKH}}`,
+{{TAHUN}}`,
   },
   {
     id: 'kbs-kepimpinan',
@@ -369,7 +369,7 @@ Bagi
 (K/P: {{IC}})
 
 kerana telah
-MENYERTAI
+Menyertai
 
 {{AKTIVITI}}
 {{PERINGKAT}}
@@ -378,7 +378,7 @@ Pada:
 {{TARIKH}}
 
 Tempat:
-DEWAN MERDEKA, IDCC SHAH ALAM`,
+{{TEMPAT}}`,
   },
   {
     id: 'sukan-zon-daerah',

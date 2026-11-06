@@ -2,11 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { 
   STANDARD_STREAMS, 
   SECONDARY_STREAMS, 
-  POPULAR_CLASS_NAMES, 
   parseClassString, 
   formatFullClassName 
 } from '../utils/classHelper';
-import { GraduationCap, Check, Sparkles, Sliders } from 'lucide-react';
+import { GraduationCap, Sliders, Sparkles } from 'lucide-react';
 
 interface ClassSelectorProps {
   value: string;
@@ -21,8 +20,6 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
 }) => {
   const initial = parseClassString(value);
   const [selectedStream, setSelectedStream] = useState<string>(initial.stream || 'Tahun 6');
-  const [selectedClassName, setSelectedClassName] = useState<string>(initial.className || 'IBNU SINA');
-  const [formatStyle, setFormatStyle] = useState<'short' | 'full'>('short');
   const [showSecondary, setShowSecondary] = useState<boolean>(
     initial.stream.toLowerCase().includes('tingkatan')
   );
@@ -36,47 +33,26 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
         setShowSecondary(true);
       }
     }
-    if (parsed.className) {
-      setSelectedClassName(parsed.className);
-    }
   }, [value]);
 
   const handleStreamClick = (streamLabel: string) => {
     setSelectedStream(streamLabel);
-    const combined = formatFullClassName(streamLabel, selectedClassName, formatStyle);
-    onChange(combined, streamLabel, selectedClassName);
-  };
-
-  const handleClassNameClick = (name: string) => {
-    setSelectedClassName(name);
-    const combined = formatFullClassName(selectedStream, name, formatStyle);
-    onChange(combined, selectedStream, name);
-  };
-
-  const handleCustomClassNameChange = (text: string) => {
-    const clean = text.toUpperCase();
-    setSelectedClassName(clean);
-    const combined = formatFullClassName(selectedStream, clean, formatStyle);
-    onChange(combined, selectedStream, clean);
-  };
-
-  const handleFormatStyleChange = (style: 'short' | 'full') => {
-    setFormatStyle(style);
-    const combined = formatFullClassName(selectedStream, selectedClassName, style);
-    onChange(combined, selectedStream, selectedClassName);
+    const parsed = parseClassString(value);
+    const classNameOnly = parsed.className || '';
+    const combined = formatFullClassName(streamLabel, classNameOnly, 'short');
+    onChange(combined, streamLabel, classNameOnly);
   };
 
   const handleDirectClassChange = (text: string) => {
     const clean = text.toUpperCase();
     const parsed = parseClassString(clean);
     if (parsed.stream) setSelectedStream(parsed.stream);
-    if (parsed.className) setSelectedClassName(parsed.className);
-    onChange(clean, parsed.stream, parsed.className);
+    onChange(clean, parsed.stream || selectedStream, parsed.className);
   };
 
   return (
     <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-3.5 space-y-3">
-      {/* 1. Bar Butang Pilihan Aliran (Tahun 1 hingga 6) */}
+      {/* 1. Bar Butang Pilihan Aliran (Tahun 1 hingga 6 / Tingkatan 1 hingga 5) */}
       <div>
         <div className="flex items-center justify-between mb-1.5">
           <label className="text-[11px] font-bold text-slate-700 uppercase flex items-center gap-1.5">
@@ -97,7 +73,7 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
         {!showSecondary ? (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
             {STANDARD_STREAMS.map((s) => {
-              const isSelected = selectedStream === s.label || selectedStream === `Tahun ${s.number}`;
+              const isSelected = selectedStream === s.label || selectedStream === `Tahun ${s.number}` || value.trim().startsWith(s.number);
               return (
                 <button
                   key={s.id}
@@ -143,105 +119,37 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
         )}
       </div>
 
-      {/* 2. Pilihan & Butang Nama Kelas */}
+      {/* 2. Kotak Input Taip Nama Kelas (Tanpa Pilihan Nama Default) */}
       <div className="space-y-1.5">
         <label className="block text-[11px] font-bold text-slate-700 uppercase">
-          Pilih / Taip Nama Kelas:
+          Nama Kelas Lengkap Pada Sijil:
         </label>
-
-        {/* Butang Pantas Nama Kelas Popular Sekolah */}
-        <div className="flex flex-wrap items-center gap-1 max-h-24 overflow-y-auto p-1 bg-white border border-slate-200 rounded-xl">
-          {POPULAR_CLASS_NAMES.map((clsName) => {
-            const isSelected = selectedClassName.toUpperCase() === clsName;
-            return (
-              <button
-                key={clsName}
-                type="button"
-                onClick={() => handleClassNameClick(clsName)}
-                className={`px-2 py-1 rounded-lg text-[11px] font-bold transition shrink-0 border ${
-                  isSelected
-                    ? 'bg-emerald-600 text-white border-emerald-600 shadow-2xs'
-                    : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
-                }`}
-              >
-                {clsName}
-                {isSelected && <Check className="w-3 h-3 inline ml-1" />}
-              </button>
-            );
-          })}
+        <div className="relative">
+          <input
+            type="text"
+            value={value}
+            onChange={(e) => handleDirectClassChange(e.target.value)}
+            placeholder="CONTOH: 6 AMANAH / 5 CEMERLANG / 4 SAINS"
+            className="w-full text-xs font-black uppercase p-2.5 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 font-sans shadow-2xs"
+          />
         </div>
-
-        {/* Kotak Input Taip Nama Kelas Sendiri */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-          <div>
-            <span className="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">
-              Taip Nama Kelas Sendiri:
-            </span>
-            <input
-              type="text"
-              value={selectedClassName}
-              onChange={(e) => handleCustomClassNameChange(e.target.value)}
-              placeholder="CONTOH: IBNU SINA / CEMERLANG"
-              className="w-full text-xs font-bold uppercase p-2 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
-            />
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between mb-0.5">
-              <span className="block text-[10px] font-bold text-slate-500 uppercase">
-                Format Sijil:
-              </span>
-              <div className="flex items-center gap-1 text-[10px]">
-                <button
-                  type="button"
-                  onClick={() => handleFormatStyleChange('short')}
-                  className={`px-1.5 py-0.5 rounded font-bold transition ${
-                    formatStyle === 'short'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
-                  }`}
-                  title="Format ringkas standard: 6 IBNU SINA"
-                >
-                  Ringkas (6 IBNU SINA)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleFormatStyleChange('full')}
-                  className={`px-1.5 py-0.5 rounded font-bold transition ${
-                    formatStyle === 'full'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
-                  }`}
-                  title="Format penuh: TAHUN 6 IBNU SINA"
-                >
-                  Penuh (TAHUN 6...)
-                </button>
-              </div>
-            </div>
-
-            {/* Kotak Teks Penuh Kelas Yang Dicetak Pada Sijil */}
-            <input
-              type="text"
-              value={value}
-              onChange={(e) => handleDirectClassChange(e.target.value)}
-              placeholder="CONTOH: 6 IBNU SINA"
-              className="w-full text-xs font-black uppercase p-2 bg-blue-50/70 border border-blue-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-blue-950 font-sans"
-              title="Nama kelas lengkap yang akan dipaparkan dan dicetak pada sijil murid"
-            />
-          </div>
-        </div>
+        <p className="text-[10px] text-slate-500">
+          *Taip nama kelas sekolah anda secara terus tanpa terikat dengan nama lalai. Klik butang aliran di atas untuk mengemaskini tahun aliran.
+        </p>
       </div>
 
       {/* Pratonton Hasil Kelas Sijil */}
-      <div className="flex items-center justify-between text-[11px] bg-white px-3 py-1.5 rounded-xl border border-slate-200">
-        <span className="text-slate-500 flex items-center gap-1">
-          <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-          <span>Nama Kelas Pada Sijil:</span>
-        </span>
-        <span className="font-black text-slate-900 uppercase tracking-wide font-sans">
-          {value || '6 IBNU SINA'}
-        </span>
-      </div>
+      {value && (
+        <div className="flex items-center justify-between text-[11px] bg-white px-3 py-1.5 rounded-xl border border-slate-200">
+          <span className="text-slate-500 flex items-center gap-1">
+            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+            <span>Paparan Pada Sijil:</span>
+          </span>
+          <span className="font-black text-slate-900 uppercase tracking-wide font-sans">
+            {value}
+          </span>
+        </div>
+      )}
     </div>
   );
 };

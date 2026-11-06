@@ -156,6 +156,8 @@ export interface CertificateConfig {
     date?: boolean;
     level?: boolean;
     school?: boolean;
+    year?: boolean;
+    session?: boolean;
   };
   customShowUnderline?: boolean; // Togel garis bawah bagi nama murid dalam mod karangan bebas
   

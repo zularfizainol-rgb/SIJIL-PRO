@@ -53,7 +53,7 @@ export function parseClassString(rawClass?: string): {
   className: string;
 } {
   if (!rawClass || !rawClass.trim()) {
-    return { stream: 'Tahun 6', streamNumber: '6', className: 'IBNU SINA' };
+    return { stream: 'Tahun 6', streamNumber: '6', className: '' };
   }
 
   const clean = rawClass.trim();

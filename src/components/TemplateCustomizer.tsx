@@ -1303,6 +1303,8 @@ export const TemplateCustomizer: React.FC<TemplateCustomizerProps> = ({
                             date: true,
                             level: true,
                             school: true,
+                            year: true,
+                            session: true,
                           }
                         })}
                         className="text-[10px] font-bold text-amber-800 hover:text-amber-950 bg-white/80 px-2 py-0.5 rounded border border-amber-200"
@@ -1323,6 +1325,8 @@ export const TemplateCustomizer: React.FC<TemplateCustomizerProps> = ({
                             date: false,
                             level: true,
                             school: true,
+                            year: false,
+                            session: false,
                           }
                         })}
                         className="text-[10px] font-bold text-amber-800 hover:text-amber-950 bg-white/80 px-2 py-0.5 rounded border border-amber-200"
@@ -1332,7 +1336,7 @@ export const TemplateCustomizer: React.FC<TemplateCustomizerProps> = ({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     {[
                       { id: 'name', label: 'Nama Murid', tag: '{{NAMA}}', default: true },
                       { id: 'activity', label: 'Aktiviti / Sukan', tag: '{{AKTIVITI}}', default: true },
@@ -1342,6 +1346,8 @@ export const TemplateCustomizer: React.FC<TemplateCustomizerProps> = ({
                       { id: 'unit', label: 'Unit / Kelab', tag: '{{UNIT}}', default: true },
                       { id: 'level', label: 'Peringkat', tag: '{{PERINGKAT}}', default: true },
                       { id: 'school', label: 'Nama Sekolah', tag: '{{SEKOLAH}}', default: true },
+                      { id: 'year', label: 'Tahun', tag: '{{TAHUN}}', default: false },
+                      { id: 'session', label: 'Sesi Persekolahan', tag: '{{SESI}}', default: false },
                       { id: 'ic', label: 'No. IC / MyKid', tag: '{{IC}}', default: false },
                       { id: 'date', label: 'Tarikh Sijil', tag: '{{TARIKH}}', default: false },
                     ].map((item) => {
@@ -1370,6 +1376,8 @@ export const TemplateCustomizer: React.FC<TemplateCustomizerProps> = ({
                                 date: false,
                                 level: true,
                                 school: true,
+                                year: false,
+                                session: false,
                               };
                               update({
                                 customBoldFields: {
@@ -1437,11 +1445,13 @@ export const TemplateCustomizer: React.FC<TemplateCustomizerProps> = ({
                   { tag: '{{UNIT}}', label: 'Unit / Kelab', boldKey: 'unit', color: 'bg-indigo-50 text-indigo-800 border-indigo-300' },
                   { tag: '{{PERINGKAT}}', label: 'Peringkat', boldKey: 'level', color: 'bg-orange-50 text-orange-800 border-orange-300' },
                   { tag: '{{SEKOLAH}}', label: 'Nama Sekolah', boldKey: 'school', color: 'bg-cyan-50 text-cyan-800 border-cyan-300' },
+                  { tag: '{{TAHUN}}', label: 'Tahun Acara / Sijil', boldKey: 'year', color: 'bg-amber-50 text-amber-900 border-amber-300' },
+                  { tag: '{{SESI}}', label: 'Sesi Persekolahan', boldKey: 'session', color: 'bg-emerald-50 text-emerald-900 border-emerald-300' },
                   { tag: '{{IC}}', label: 'No. IC / MyKid', boldKey: 'ic', color: 'bg-slate-50 text-slate-700 border-slate-300' },
                   { tag: '{{TARIKH}}', label: 'Tarikh Sijil', boldKey: 'date', color: 'bg-teal-50 text-teal-800 border-teal-300' },
                 ].map((item) => {
                   const isVarBolded = config.customHighlightVariables !== false && 
-                    (item.boldKey ? (config.customBoldFields?.[item.boldKey as keyof typeof config.customBoldFields] ?? true) : false);
+                    (item.boldKey ? (config.customBoldFields?.[item.boldKey as keyof typeof config.customBoldFields] ?? false) : false);
 
                   return (
                     <button
@@ -1461,6 +1471,84 @@ export const TemplateCustomizer: React.FC<TemplateCustomizerProps> = ({
                     </button>
                   );
                 })}
+              </div>
+            </div>
+
+            {/* PAUTAN NILAI PEMBOLEHUBAH TAHUN & SESI (DIPAUTKAN KE {{TAHUN}} & {{SESI}}) */}
+            <div className="p-3 bg-amber-50/90 border border-amber-300 rounded-xl space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-amber-950 uppercase flex items-center gap-1.5">
+                  <span>🗓️</span> Pautan Nilai Pembolehubah Tahun & Sesi Persekolahan:
+                </span>
+                <span className="text-[10px] text-amber-800 font-semibold bg-amber-100 px-2 py-0.5 rounded-full">
+                  Dipautkan terus ke {"{{TAHUN}}"} & {"{{SESI}}"}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {/* Tahun Acara / Sijil */}
+                <div className="bg-white p-2.5 rounded-lg border border-amber-200 space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[10px] font-bold text-slate-700 uppercase">
+                      Tahun Acara / Sijil: <code className="text-amber-800">{"{{TAHUN}}"}</code>
+                    </label>
+                    <div className="flex items-center gap-1">
+                      {['2026', '2025', '2027'].map((yr) => (
+                        <button
+                          key={yr}
+                          type="button"
+                          onClick={() => update({ eventYear: yr })}
+                          className={`px-1.5 py-0.5 rounded text-[9px] font-bold border transition ${
+                            (config.eventYear || '2026') === yr
+                              ? 'bg-amber-600 text-white border-amber-600'
+                              : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                          }`}
+                        >
+                          {yr}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <input
+                    type="text"
+                    value={config.eventYear || '2026'}
+                    onChange={(e) => update({ eventYear: e.target.value })}
+                    placeholder="Contoh: 2026"
+                    className="w-full text-xs font-bold p-1.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:bg-white outline-none"
+                  />
+                </div>
+
+                {/* Sesi Persekolahan */}
+                <div className="bg-white p-2.5 rounded-lg border border-amber-200 space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[10px] font-bold text-slate-700 uppercase">
+                      Sesi Persekolahan: <code className="text-emerald-800">{"{{SESI}}"}</code>
+                    </label>
+                    <div className="flex items-center gap-1">
+                      {['2025/2026', '2026/2027', '2026'].map((ses) => (
+                        <button
+                          key={ses}
+                          type="button"
+                          onClick={() => update({ academicSession: ses })}
+                          className={`px-1.5 py-0.5 rounded text-[9px] font-bold border transition ${
+                            (config.academicSession || '2025/2026') === ses
+                              ? 'bg-emerald-600 text-white border-emerald-600'
+                              : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                          }`}
+                        >
+                          {ses}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <input
+                    type="text"
+                    value={config.academicSession || '2025/2026'}
+                    onChange={(e) => update({ academicSession: e.target.value })}
+                    placeholder="Contoh: 2025/2026"
+                    className="w-full text-xs font-bold p-1.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:bg-white outline-none"
+                  />
+                </div>
               </div>
             </div>
 

@@ -80,7 +80,7 @@ export const StudentQuickForm: React.FC<StudentQuickFormProps> = ({
                       type="button"
                       onClick={() => {
                         const parsed = parseClassString(student.class);
-                        const newClass = `${num} ${parsed.className || 'IBNU SINA'}`;
+                        const newClass = parsed.className ? `${num} ${parsed.className}` : `Tahun ${num}`;
                         updateField('class', newClass);
                       }}
                       className={`w-4.5 h-4.5 rounded text-[10px] font-bold transition flex items-center justify-center border ${
@@ -100,26 +100,9 @@ export const StudentQuickForm: React.FC<StudentQuickFormProps> = ({
               type="text"
               value={student.class}
               onChange={(e) => updateField('class', e.target.value.toUpperCase())}
-              placeholder="6 IBNU SINA"
+              placeholder="6 AMANAH"
               className="w-full text-xs font-bold p-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none uppercase font-sans text-slate-900"
             />
-            {/* Butang Pantas Nama Kelas */}
-            <div className="flex items-center gap-1 overflow-x-auto pt-1 pb-0.5">
-              {['IBNU SINA', 'IBNU KHALDUN', 'AL-FARABI', 'CEMERLANG', 'PINTAR', 'BESTARI', 'AMANAH'].map((cls) => (
-                <button
-                  key={cls}
-                  type="button"
-                  onClick={() => {
-                    const parsed = parseClassString(student.class);
-                    const streamNum = parsed.streamNumber || '6';
-                    updateField('class', `${streamNum} ${cls}`);
-                  }}
-                  className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 shrink-0"
-                >
-                  {cls}
-                </button>
-              ))}
-            </div>
           </div>
         </div>
 
@@ -132,9 +115,9 @@ export const StudentQuickForm: React.FC<StudentQuickFormProps> = ({
             <input
               type="text"
               value={student.unitClub || ''}
-              onChange={(e) => updateField('unitClub', e.target.value.toUpperCase())}
-              placeholder="CONTOH: PERSATUAN BULAN SABIT MERAH / KELAB CATUR"
-              className="w-full text-xs font-bold p-2.5 bg-white border border-blue-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none uppercase"
+              onChange={(e) => updateField('unitClub', e.target.value)}
+              placeholder="Contoh: Persatuan Bulan Sabit Merah / Kelab Catur"
+              className="w-full text-xs font-bold p-2.5 bg-white border border-blue-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
             />
           </div>
 
@@ -145,9 +128,9 @@ export const StudentQuickForm: React.FC<StudentQuickFormProps> = ({
             <input
               type="text"
               value={student.positionRole || ''}
-              onChange={(e) => updateField('positionRole', e.target.value.toUpperCase())}
-              placeholder="CONTOH: PENGERUSI / KETUA PATROL / AJK"
-              className="w-full text-xs font-bold p-2.5 bg-white border border-blue-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none uppercase text-blue-900"
+              onChange={(e) => updateField('positionRole', e.target.value)}
+              placeholder="Contoh: Pengerusi / Ketua Patrol / AJK"
+              className="w-full text-xs font-bold p-2.5 bg-white border border-blue-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-blue-900"
             />
           </div>
         </div>
@@ -161,9 +144,9 @@ export const StudentQuickForm: React.FC<StudentQuickFormProps> = ({
           <input
             type="text"
             value={student.activity}
-            onChange={(e) => updateField('activity', e.target.value.toUpperCase())}
-            placeholder="CONTOH: KEJOHANAN MSSD KERAMAT / MAJLIS WATIKAH PELANTIKAN"
-            className="w-full text-xs font-bold p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none uppercase"
+            onChange={(e) => updateField('activity', e.target.value)}
+            placeholder="Contoh: Kejohanan MSSD Keramat / Majlis Watikah Pelantikan"
+            className="w-full text-xs font-bold p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none"
           />
         </div>
 
@@ -194,9 +177,9 @@ export const StudentQuickForm: React.FC<StudentQuickFormProps> = ({
             <input
               type="text"
               value={student.achievement}
-              onChange={(e) => updateField('achievement', e.target.value.toUpperCase())}
-              placeholder="JOHAN / NAIB JOHAN / PENYERTAAN"
-              className="w-full text-xs font-bold p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none uppercase text-amber-700"
+              onChange={(e) => updateField('achievement', e.target.value)}
+              placeholder="Johan / Naib Johan / Penyertaan"
+              className="w-full text-xs font-bold p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none text-amber-700"
             />
           </div>
         </div>
@@ -209,9 +192,9 @@ export const StudentQuickForm: React.FC<StudentQuickFormProps> = ({
           <input
             type="text"
             value={student.venue || ''}
-            onChange={(e) => updateField('venue', e.target.value.toUpperCase())}
-            placeholder="CONTOH: DEWAN MERDEKA, IDCC SHAH ALAM"
-            className="w-full text-xs font-bold p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none uppercase"
+            onChange={(e) => updateField('venue', e.target.value)}
+            placeholder="Contoh: Dewan Merdeka, IDCC Shah Alam"
+            className="w-full text-xs font-bold p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none"
           />
         </div>
 

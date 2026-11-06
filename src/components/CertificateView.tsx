@@ -228,12 +228,12 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
   const renderLevelDisplay = () => {
     const rawLevel = getLevelFormatted(student.level);
     const prefix = config.atLevelText?.trim() || '';
-    if (!prefix) return rawLevel.toUpperCase();
+    if (!prefix) return rawLevel;
     if (prefix.toLowerCase().includes('peringkat')) {
       const cleanLevel = rawLevel.replace(/^Peringkat\s+/i, '');
-      return `${prefix} ${cleanLevel}`.toUpperCase();
+      return `${prefix} ${cleanLevel}`;
     }
-    return `${prefix} ${rawLevel}`.toUpperCase();
+    return `${prefix} ${rawLevel}`;
   };
 
   return (
@@ -517,6 +517,8 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                   date: false,
                   level: true,
                   school: true,
+                  year: false,
+                  session: false,
                 };
 
                 const isFieldBold = (fieldKey: keyof typeof boldFields, fallback = true) => {
@@ -545,13 +547,14 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                 processed = replaceVar(processed, /\[\s*\{\{?UNIT\}?\}\s*\]|\[UNIT(?:\s*\/\s*BADAN\s*BERUNIFORM)?\]|\{\{?UNIT\}?\}|\[\s*\{\{?KELAB\}?\}\s*\]|\[(?:NAMA\s*)?KELAB(?:\s*\/\s*PERSATUAN(?:\s*\/\s*AKTIVITI)?)?\]|\{\{?KELAB\}?\}/, cleanText(student.unitClub) || 'UNIT / KELAB', isFieldBold('unit', true), 'activity');
                 processed = replaceVar(processed, /\[\s*\{\{?IC\}?\}\s*\]|\[(?:NO\.?\s*)?(?:MYKID|KP|K\/P|KAD\s*PENGENALAN)\]|\[NO\.?\s*MYKID\s*\/\s*NO\.?\s*KP\]|\{\{?IC\}?\}/, cleanText(student.ic) || 'NO. KAD PENGENALAN', isFieldBold('ic', false), 'meta');
                 const dateVal = config.showEventDate !== false ? certDate : '';
-                const sessionVal = config.showSessionYear !== false ? (cleanText(config.academicSession || config.eventYear) || '2025/2026') : '';
-                const yearVal = config.showSessionYear !== false ? (cleanText(config.eventYear) || '2026') : '';
+                const sessionVal = cleanText(config.academicSession) || cleanText(config.eventYear) || '2025/2026';
+                const yearVal = cleanText(config.eventYear) || (student.date?.match(/\d{4}/)?.[0]) || '2026';
+                const venueVal = cleanText(student.venue || config.eventVenue) || 'DEWAN SEKOLAH';
 
                 processed = replaceVar(processed, /\[\s*\{\{?TARIKH\}?\}\s*\]|\[(?:TARIKH|TARIKH\s*MAJLIS)\]|\{\{?TARIKH\}?\}/, dateVal, isFieldBold('date', false), 'meta');
-                processed = replaceVar(processed, /\[\s*\{\{?SESI\}?\}\s*\]|\[SESI\]|\{\{?SESI\}?\}/, sessionVal, false, 'meta');
-                processed = replaceVar(processed, /\[\s*\{\{?TAHUN\}?\}\s*\]|\[TAHUN\]|\{\{?TAHUN\}?\}/, yearVal, false, 'meta');
-                processed = replaceVar(processed, /\[\s*\{\{?TEMPAT\}?\}\s*\]|\[(?:TEMPAT|LOKASI|DEWAN\s*SEKOLAH\s*\/\s*LOKASI\s*MAJLIS)\]|\{\{?TEMPAT\}?\}|\[LOKASI\]|\{\{?LOKASI\}?\}/, cleanText(student.venue || config.eventVenue) || 'DEWAN SEKOLAH', false);
+                processed = replaceVar(processed, /\[\s*\{\{?SESI\}?\}\s*\]|\[SESI\]|\{\{?SESI\}?\}/, sessionVal, isFieldBold('session', false), 'meta');
+                processed = replaceVar(processed, /\[\s*\{\{?TAHUN\}?\}\s*\]|\[TAHUN\]|\{\{?TAHUN\}?\}/, yearVal, isFieldBold('year', false), 'meta');
+                processed = replaceVar(processed, /\[\s*\{\{?TEMPAT\}?\}\s*\]|\[(?:TEMPAT|LOKASI|DEWAN\s*SEKOLAH\s*\/\s*LOKASI\s*MAJLIS)\]|\{\{?TEMPAT\}?\}|\[LOKASI\]|\{\{?LOKASI\}?\}/, venueVal, false);
                 processed = replaceVar(processed, /\[\s*\{\{?PERINGKAT\}?\}\s*\]|\[PERINGKAT\]|\{\{?PERINGKAT\}?\}/, sLevelFormatted, isFieldBold('level', true));
                 processed = replaceVar(processed, /\[\s*\{\{?SEKOLAH\}?\}\s*\]|\[NAMA\s*SEKOLAH\]|\{\{?SEKOLAH\}?\}/, cleanText(config.schoolName) || 'SEKOLAH', isFieldBold('school', true));
 
@@ -615,13 +618,13 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                       );
                     }
 
-                    // 3. Variabel Aktiviti / Acara / Sukan (Guna activity font & saiz)
+                    // 3. Variabel Aktiviti / Acara / Sukan (Guna activity font & saiz - Tulisan wajar mengikut input pengguna)
                     if (lower.startsWith('[var_act]') && lower.endsWith('[/var_act]')) {
                       const inner = part.slice(9, -10);
                       return (
                         <strong
                           key={pIdx}
-                          className="text-slate-950 uppercase inline-block px-1 tracking-wide"
+                          className="text-slate-950 inline-block px-1 tracking-wide"
                           style={{
                             fontFamily: activityFontCss,
                             fontSize: activitySizeStyle.fontSize,
@@ -634,13 +637,13 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                       );
                     }
 
-                    // 4. Variabel Pencapaian / Jawatan (Guna achievement font & saiz)
+                    // 4. Variabel Pencapaian / Jawatan (Guna achievement font & saiz - Tulisan wajar mengikut input pengguna)
                     if (lower.startsWith('[var_ach]') && lower.endsWith('[/var_ach]')) {
                       const inner = part.slice(9, -10);
                       return (
                         <strong
                           key={pIdx}
-                          className="text-slate-950 uppercase inline-block px-1 tracking-wide"
+                          className="text-slate-950 inline-block px-1 tracking-wide"
                           style={{
                             fontFamily: achievementFontCss,
                             fontSize: achievementSizeStyle.fontSize,
@@ -819,14 +822,14 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
 
               {/* NAMA KELAS / TINGKATAN */}
               <p 
-                className="font-bold text-slate-900 uppercase tracking-wide"
+                className="font-bold text-slate-900 tracking-wide"
                 style={{
                   fontFamily: metaFontCss,
                   fontSize: metaSizeStyle.fontSize,
                   lineHeight: metaSizeStyle.lineHeight,
                 }}
               >
-                {cleanText(student.class) || 'NAMA KELAS / TINGKATAN'}
+                {cleanText(student.class) || 'Nama Kelas / Tingkatan'}
               </p>
 
               {/* telah menunjukkan prestasi yang cemerlang dan terpuji dalam program / aspek: */}
@@ -843,18 +846,18 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
               {/* NAMA PROGRAM ATAU JENIS PENGHARGAAN (Tanpa tanda kurungan siku) */}
               <div className="pt-0.5 space-y-1">
                 <p 
-                  className="font-black text-slate-950 uppercase tracking-wide max-w-xl mx-auto leading-snug"
+                  className="font-black text-slate-950 tracking-wide max-w-xl mx-auto leading-snug"
                   style={{
                     fontFamily: activityFontCss,
                     fontSize: activitySizeStyle.fontSize,
                     lineHeight: activitySizeStyle.lineHeight,
                   }}
                 >
-                  {cleanText(student.activity || student.achievement) || 'KEHADIRAN PENUH / SAHSIAH TERPUJI / KHIDMAT BAKTI PENGAWAS'}
+                  {cleanText(student.activity || student.achievement) || 'Kehadiran Penuh / Sahsiah Terpuji / Khidmat Bakti Pengawas'}
                 </p>
                 {student.achievement && student.activity && cleanText(student.achievement) !== cleanText(student.activity) && (
                   <p 
-                    className="font-black text-slate-950 uppercase tracking-wide max-w-xl mx-auto leading-snug"
+                    className="font-black text-slate-950 tracking-wide max-w-xl mx-auto leading-snug"
                     style={{
                       fontFamily: achievementFontCss,
                       fontSize: achievementSizeStyle.fontSize,
@@ -950,14 +953,14 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
               {/* NAMA KELAS / TINGKATAN (jika diaktifkan) */}
               {config.showStudentClass && (
                 <p 
-                  className="font-bold text-slate-900 uppercase tracking-wide"
+                  className="font-bold text-slate-900 tracking-wide"
                   style={{
                     fontFamily: metaFontCss,
                     fontSize: metaSizeStyle.fontSize,
                     lineHeight: metaSizeStyle.lineHeight,
                   }}
                 >
-                  {cleanText(student.class) || 'NAMA KELAS / TINGKATAN'}
+                  {cleanText(student.class) || 'Nama Kelas / Tingkatan'}
                 </p>
               )}
 
@@ -975,18 +978,18 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
               {/* NAMA MATA PELAJARAN / PENCAPAIAN (Tanpa tanda kurungan siku) */}
               <div className="pt-0.5 space-y-1">
                 <p 
-                  className="font-black text-slate-950 uppercase tracking-wide max-w-xl mx-auto leading-snug"
+                  className="font-black text-slate-950 tracking-wide max-w-xl mx-auto leading-snug"
                   style={{
                     fontFamily: activityFontCss,
                     fontSize: activitySizeStyle.fontSize,
                     lineHeight: activitySizeStyle.lineHeight,
                   }}
                 >
-                  {cleanText(student.activity || student.achievement) || 'PEPERIKSAAN AKHIR TAHUN / SUBJEK MATEMATIK'}
+                  {cleanText(student.activity || student.achievement) || 'Peperiksaan Akhir Tahun / Subjek Matematik'}
                 </p>
                 {student.achievement && student.activity && cleanText(student.achievement) !== cleanText(student.activity) && (
                   <p 
-                    className="font-black text-slate-950 uppercase tracking-wide max-w-xl mx-auto leading-snug"
+                    className="font-black text-slate-950 tracking-wide max-w-xl mx-auto leading-snug"
                     style={{
                       fontFamily: achievementFontCss,
                       fontSize: achievementSizeStyle.fontSize,
@@ -1108,14 +1111,14 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
               {/* JAWATAN / PERANAN MURID (Tanpa tanda kurungan siku) */}
               <div className="pt-0.5">
                 <p 
-                  className="font-black text-slate-950 uppercase tracking-wide max-w-xl mx-auto leading-snug"
+                  className="font-black text-slate-950 tracking-wide max-w-xl mx-auto leading-snug"
                   style={{
                     fontFamily: achievementFontCss,
                     fontSize: achievementSizeStyle.fontSize,
                     lineHeight: achievementSizeStyle.lineHeight,
                   }}
                 >
-                  {cleanText(student.positionRole || student.achievement) || 'AHLI JAWATANKUASA / PESERTA / WAKIL SEKOLAH'}
+                  {cleanText(student.positionRole || student.achievement) || 'Ahli Jawatankuasa / Peserta / Wakil Sekolah'}
                 </p>
               </div>
 
@@ -1133,14 +1136,14 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
               {/* NAMA KELAB / PERSATUAN / AKTIVITI (Tanpa tanda kurungan siku) */}
               <div className="pt-0.5">
                 <p 
-                  className="font-black text-slate-950 uppercase tracking-wide max-w-xl mx-auto leading-snug"
+                  className="font-black text-slate-950 tracking-wide max-w-xl mx-auto leading-snug"
                   style={{
                     fontFamily: activityFontCss,
                     fontSize: activitySizeStyle.fontSize,
                     lineHeight: activitySizeStyle.lineHeight,
                   }}
                 >
-                  {cleanText(student.unitClub || student.activity) || 'NAMA KELAB / PERSATUAN / AKTIVITI'}
+                  {cleanText(student.unitClub || student.activity) || 'Nama Kelab / Persatuan / Aktiviti'}
                 </p>
                 {student.extraInfo && (
                   <p 
@@ -1237,14 +1240,14 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                   {config.actionConnectiveText || 'kerana telah'}
                 </p>
                 <p 
-                  className="font-black text-slate-950 uppercase tracking-widest mt-0.5"
+                  className="font-black text-slate-950 tracking-widest mt-0.5"
                   style={{
                     fontFamily: achievementFontCss,
                     fontSize: achievementSizeStyle.fontSize,
                     lineHeight: achievementSizeStyle.lineHeight,
                   }}
                 >
-                  {student.actionVerb || student.achievement || config.actionVerbText || 'MENYERTAI'}
+                  {student.actionVerb || student.achievement || config.actionVerbText || 'Menyertai'}
                 </p>
               </div>
 
@@ -1252,7 +1255,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
               <div className="pt-1.5 space-y-1">
                 {config.showActivity && student.activity && (
                   <p 
-                    className="font-black text-slate-950 uppercase tracking-wide leading-snug max-w-xl mx-auto"
+                    className="font-black text-slate-950 tracking-wide leading-snug max-w-xl mx-auto"
                     style={{
                       fontFamily: activityFontCss,
                       fontSize: activitySizeStyle.fontSize,
@@ -1264,7 +1267,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                 )}
                 {config.showLevel && student.level && (
                   <p 
-                    className="text-xs md:text-sm uppercase tracking-[0.25em] text-slate-700 font-extrabold"
+                    className="text-xs md:text-sm tracking-[0.2em] text-slate-700 font-extrabold"
                     style={{ fontFamily: masterFontCss }}
                   >
                     {renderLevelDisplay()}
@@ -1275,7 +1278,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
               {/* Ruang Unit / Kelab jika diaktifkan */}
               {config.showUnitClub && student.unitClub && (
                 <div 
-                  className="font-bold text-slate-800 uppercase tracking-wide"
+                  className="font-bold text-slate-800 tracking-wide"
                   style={{
                     fontFamily: activityFontCss,
                     fontSize: metaSizeStyle.fontSize,
@@ -1423,7 +1426,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                 <span>{config.bodyLeadText} </span>
                 {config.showActivity && student.activity && (
                   <span 
-                    className="font-extrabold text-slate-950 uppercase tracking-wide"
+                    className="font-extrabold text-slate-950 tracking-wide"
                     style={{
                       fontFamily: activityFontCss,
                       fontSize: activitySizeStyle.fontSize,
@@ -1433,16 +1436,16 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                   </span>
                 )}
                 {config.showUnitClub && student.unitClub && (
-                  <span> bagi unit <span className="font-bold text-slate-950 uppercase" style={{ fontFamily: activityFontCss }}>{student.unitClub}</span></span>
+                  <span> bagi unit <span className="font-bold text-slate-950" style={{ fontFamily: activityFontCss }}>{student.unitClub}</span></span>
                 )}
                 {config.showLevel && student.level && (
                   <span> di <span className="font-bold text-slate-950">{getLevelFormatted(student.level)}</span></span>
                 )}
                 {config.showPositionRole && student.positionRole && (
-                  <span> dan telah diamanahkan menjawat jawatan <span className="font-extrabold text-slate-950 uppercase" style={{ fontFamily: achievementFontCss }}>{student.positionRole}</span></span>
+                  <span> dan telah diamanahkan menjawat jawatan <span className="font-extrabold text-slate-950" style={{ fontFamily: achievementFontCss }}>{student.positionRole}</span></span>
                 )}
                 {config.showAchievement && student.achievement && (!config.showPositionRole || !student.positionRole || student.achievement !== student.positionRole) && (
-                  <span> serta berjaya merangkul <span className="font-extrabold text-slate-950 uppercase" style={{ fontFamily: achievementFontCss }}>{student.achievement}</span></span>
+                  <span> serta berjaya merangkul <span className="font-extrabold text-slate-950" style={{ fontFamily: achievementFontCss }}>{student.achievement}</span></span>
                 )}
                 .
               </p>
@@ -1552,7 +1555,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                 {config.showActivity && student.activity && (
                   <div className="text-center">
                     <p 
-                      className="font-extrabold text-slate-950 uppercase tracking-wide leading-snug"
+                      className="font-extrabold text-slate-950 tracking-wide leading-snug"
                       style={{
                         fontFamily: activityFontCss,
                         fontSize: activitySizeStyle.fontSize,
@@ -1568,7 +1571,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                 {config.showLevel && student.level && (
                   <div className="text-center">
                     <span 
-                      className="text-xs uppercase tracking-widest text-slate-600 font-bold"
+                      className="text-xs tracking-wider text-slate-600 font-bold"
                       style={{ fontFamily: masterFontCss }}
                     >
                       {renderLevelDisplay()}
@@ -1586,7 +1589,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                       {config.connectorStyle === 'label' ? config.unitClubLabel : 'mewakili unit / kelab:'}
                     </span>
                     <span 
-                      className="font-bold text-slate-900 uppercase tracking-wide"
+                      className="font-bold text-slate-900 tracking-wide"
                       style={{
                         fontFamily: activityFontCss,
                         fontSize: metaSizeStyle.fontSize,
@@ -1608,7 +1611,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                       {config.connectorStyle === 'label' ? config.positionRoleLabel : 'telah dilantik memegang amanah jawatan:'}
                     </div>
                     <div 
-                      className="font-black text-slate-950 uppercase tracking-wider"
+                      className="font-black text-slate-950 tracking-wider"
                       style={{
                         fontFamily: achievementFontCss,
                         fontSize: achievementSizeStyle.fontSize,
@@ -1630,7 +1633,7 @@ export const CertificateView: React.FC<CertificateViewProps> = ({
                       {config.connectorStyle === 'label' ? config.achievementLabel : 'dan telah berjaya memperoleh:'}
                     </div>
                     <div 
-                      className="font-black text-slate-950 uppercase tracking-wider"
+                      className="font-black text-slate-950 tracking-wider"
                       style={{
                         fontFamily: achievementFontCss,
                         fontSize: achievementSizeStyle.fontSize,
